@@ -1,0 +1,5 @@
+.direnv
+.private
+.venv
+.vscode
+*.sops.*

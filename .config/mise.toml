@@ -1,0 +1,16 @@
+[settings]
+pipx_uvx = true
+
+[tools]
+"aqua:astral-sh/uv" = "latest"
+"cargo-binstall" = "1.17.4"
+"cargo:cargo-insta" = "1.43.1"
+"cargo:cargo-nextest" = "0.9.126"
+"cargo:dioxus-cli" = "0.7.3"
+"colima" = "0.10.0"
+"git-cliff" = "2.12.0"
+"node" = "24"
+"npm:renovate" = "latest"
+"npm:tailwindcss" = "4.2.0"
+"prettier" = "3.8.1"
+"protobuf" = "33.5"

@@ -1,0 +1,164 @@
+[workspace]
+resolver = "3"
+members = ["crates/bookboss", "crates/integration-tests"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Take control of your digital library"
+readme = "README.md"
+repository = "https://github.com/szinn/BookBoss"
+license = "MIT"
+
+[workspace.dependencies]
+bb-api = { path = "crates/api" }
+bb-core = { path = "crates/core" }
+bb-database = { path = "crates/database" }
+bb-formats = { path = "crates/formats" }
+bb-frontend = { path = "crates/frontend" }
+bb-utils = { path = "crates/utils" }
+
+testcontainers = "0.27.0"
+
+anyhow = "1.0.102"
+async-trait = "0.1.89"
+axum = "0.8.8"
+config = "0.15.19"
+derive_builder = "0.20.2"
+log = "0.4.29"
+prost = "0.14.3"
+prost-types = "0.14.3"
+rand = "0.10.0"
+serde_json = "1.0.149"
+thiserror = "2.0.18"
+tokio-graceful-shutdown = "0.19.2"
+tonic = "0.14.5"
+tonic-prost = "0.14.5"
+tonic-prost-build = "0.14.5"
+tower = "0.5.3"
+tracing-log = "0.2.0"
+
+[workspace.dependencies.axum_session]
+version = "0.18.0"
+default-features = false
+
+[workspace.dependencies.axum_session_auth]
+version = "0.18.0"
+default-features = false
+
+[workspace.dependencies.chrono]
+version = "0.4.43"
+features = ["serde"]
+
+[workspace.dependencies.clap]
+version = "4.5.60"
+features = ["cargo", "derive", "env"]
+
+[workspace.dependencies.dioxus]
+version = "0.7.3"
+features = ["fullstack", "router"]
+
+[workspace.dependencies.hyper]
+version = "1.8.1"
+features = ["full"]
+
+[workspace.dependencies.hyper-util]
+version = "0.1.20"
+features = ["tokio", "server-auto", "http1"]
+
+[workspace.dependencies.insta]
+version = "1.46.3"
+features = ["filters"]
+
+[workspace.dependencies.sea-orm]
+version = "2.0.0-rc.34"
+features = [
+    "debug-print",
+    "postgres-array",
+    "runtime-tokio-rustls",
+    "sqlx-postgres",
+    "sqlx-sqlite",
+    "sqlx-mysql",
+    "with-chrono",
+    "with-json",
+    "with-uuid",
+]
+
+[workspace.dependencies.sea-orm-migration]
+version = "2.0.0-rc.34"
+features = [
+    "sqlx-postgres",
+    "sqlx-sqlite",
+    "sqlx-mysql",
+    "runtime-tokio-rustls",
+    "with-chrono",
+    "with-json",
+    "with-uuid",
+]
+
+[workspace.dependencies.serde]
+version = "1.0.228"
+features = ["derive"]
+
+[workspace.dependencies.tokio]
+version = "1.49.0"
+default-features = false
+features = ["full"]
+
+[workspace.dependencies.tokio-util]
+version = "0.7.18"
+default-features = false
+features = ["rt"]
+
+[workspace.dependencies.tower-http]
+version = "0.6.8"
+features = ["request-id", "trace"]
+
+[workspace.dependencies.tracing]
+version = "0.1.44"
+features = ["log"]
+
+[workspace.dependencies.testcontainers-modules]
+version = "0.15.0"
+features = ["postgres", "mysql"]
+
+[workspace.dependencies.tracing-subscriber]
+version = "0.3.22"
+features = ["std", "fmt", "registry", "env-filter", "json"]
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+borrow_as_ptr = "warn"
+cast_lossless = "warn"
+explicit_into_iter_loop = "warn"
+explicit_iter_loop = "warn"
+flat_map_option = "warn"
+implicit_clone = "warn"
+needless_for_each = "warn"
+ptr_as_ptr = "warn"
+ptr_cast_constness = "warn"
+ref_as_ptr = "warn"
+semicolon_if_nothing_returned = "warn"
+uninlined_format_args = "warn"
+unnecessary_literal_bound = "warn"
+unused_trait_names = "warn"
+use_self = "warn"
+useless_conversion = "warn"
+
+[profile.dev.package]
+# Insta suggests compiling these packages in opt mode for faster testing.
+# See https://docs.rs/insta/latest/insta/#optional-faster-runs.
+insta.opt-level = 3
+similar.opt-level = 3
+# Proptest suggests compiling itself and its RNG in opt mode as well.
+# See https://proptest-rs.github.io/proptest/proptest/tips-and-best-practices.html#setting-opt-level
+# proptest.opt-level = 3
+# proptest-state-machine.opt-level = 3
+# rand_chacha.opt-level = 3
+
+[profile.release]
+strip = "debuginfo"
+codegen-units = 1

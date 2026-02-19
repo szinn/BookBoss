@@ -1,0 +1,44 @@
+[package]
+name = "bb-frontend"
+description = "BookBoss frontend"
+autotests = false
+
+version = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+
+[dependencies]
+bb-core = { workspace = true, optional = true }
+
+anyhow = { workspace = true, optional = true }
+async-trait = { workspace = true, optional = true }
+axum = { workspace = true, optional = true }
+axum_session = { workspace = true, optional = true }
+axum_session_auth = { workspace = true, optional = true }
+chrono = { workspace = true }
+dioxus.workspace = true
+serde = { workspace = true }
+thiserror = { workspace = true, optional = true }
+tower = { workspace = true, optional = true }
+tower-http = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
+
+[dev-dependencies]
+
+[features]
+web = ["dioxus/web"]
+server = [
+    "dep:anyhow",
+    "dep:async-trait",
+    "dep:axum",
+    "dep:axum_session",
+    "dep:axum_session_auth",
+    "dep:bb-core",
+    "dep:thiserror",
+    "dep:tower",
+    "dep:tower-http",
+    "dep:tracing",
+    "dioxus/server",
+]

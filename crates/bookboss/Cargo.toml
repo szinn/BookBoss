@@ -1,0 +1,66 @@
+[package]
+name = "bookboss"
+description = "Take control of your digital library"
+default-run = "bookboss"
+autotests = false
+
+version = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+
+[lib]
+name = "bookboss"
+path = "src/lib.rs"
+
+[[bin]]
+name = "bookboss"
+path = "src/bin/bookboss.rs"
+
+[features]
+server = [
+    "dioxus/server",
+    "dep:bb-api",
+    "dep:bb-core",
+    "dep:bb-database",
+    "dep:bb-formats",
+    "dep:bb-frontend",
+    "dep:anyhow",
+    "dep:clap",
+    "dep:config",
+    "dep:dioxus",
+    "dep:log",
+    "dep:serde",
+    "dep:thiserror",
+    "dep:tokio",
+    "dep:tokio-graceful-shutdown",
+    "dep:tracing",
+    "dep:tracing-log",
+    "dep:tracing-subscriber",
+    "bb-frontend?/server",
+]
+web = ["dioxus/web", "dep:bb-frontend", "bb-frontend?/web"]
+
+[dependencies]
+bb-api = { workspace = true, optional = true }
+bb-core = { workspace = true, optional = true }
+bb-database = { workspace = true, optional = true }
+bb-formats = { workspace = true, optional = true }
+bb-frontend = { workspace = true, optional = true }
+
+anyhow = { workspace = true, optional = true }
+clap = { workspace = true, optional = true }
+config = { workspace = true, optional = true }
+dioxus = { workspace = true, optional = true }
+log = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
+thiserror = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true }
+tokio-graceful-shutdown = { workspace = true, optional = true }
+tracing = { workspace = true, optional = true }
+tracing-log = { workspace = true, optional = true }
+tracing-subscriber = { workspace = true, optional = true }
+
+[dev-dependencies]
+insta.workspace = true

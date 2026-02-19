@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo test:*)",
+      "Bash(curl:*)",
+      "Bash(gh api:*)",
+      "Bash(jj desc:*)",
+      "Bash(jj describe:*)",
+      "Bash(jj log:*)",
+      "Bash(jj show:*)",
+      "Bash(just *)",
+      "WebFetch(domain:booklore.org)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:ptbrowne.github.io)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:stkclient.readthedocs.io)",
+      "WebFetch(domain:wellbeing.io)",
+      "WebFetch(domain:wiki.mobileread.com)",
+      "WebFetch(domain:www.amazon.com)",
+      "WebFetch(domain:www.edrlab.org)",
+      "WebFetch(domain:www.loc.gov)",
+      "WebFetch(domain:www.mobileread.com)",
+      "WebFetch(domain:www.w3.org)",
+      "WebSearch"
+    ]
+  }
+}

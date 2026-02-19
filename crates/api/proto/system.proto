@@ -1,0 +1,14 @@
+syntax = "proto3";
+package bookboss.system;
+
+message StatusRequest {
+  string question = 1;
+}
+
+message StatusResponse {
+  string answer = 1;
+}
+
+service SystemService {
+  rpc Status (StatusRequest) returns (StatusResponse);
+}

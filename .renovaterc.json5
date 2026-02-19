@@ -1,0 +1,68 @@
+{
+  extends: [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":disableRateLimiting",
+    "docker:enableMajor",
+    "helpers:pinGitHubActionDigests",
+    "docker:pinDigests",
+    ":automergeDigest",
+    ":enablePreCommit",
+    ":semanticCommits",
+    ":automergeBranch"
+  ],
+  // gitAuthor: "repo-jeeves <106431701+repo-jeeves[bot]@users.noreply.github.com>",
+  timezone: "America/Toronto",
+  dependencyDashboardTitle: "Renovate Dashboard",
+  suppressNotifications: ["prIgnoreNotification"],
+  commitBodyTable: true,
+  prBodyTemplate: "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}",
+  // commitMessageTopic: "{{depName}}",
+  // commitMessageExtra: "to {{newVersion}}",
+  // commitMessageSuffix: "",
+  packageRules: [
+    // GitHub Actions: auto-merge minor, patch, and digest updates
+    {
+      matchManagers: ["github-actions"],
+      matchUpdateTypes: ["minor", "patch", "digest"],
+      automerge: true
+    },
+    // GitHub Actions: labels and commit message
+    {
+      matchManagers: ["github-actions"],
+      addLabels: ["ci"],
+      semanticCommitScope: "deps"
+    },
+    // Cargo: labels and commit message
+    {
+      matchManagers: ["cargo"],
+      addLabels: ["dependency"],
+      commitMessageTopic: "Crate {{depName}}",
+      semanticCommitScope: "deps",
+      rangeStrategy: "bump"
+    },
+    // Docker: labels and commit message
+    {
+      matchDatasources: ["docker"],
+      addLabels: ["docker"],
+      commitMessageTopic: "Docker image {{depName}}",
+      semanticCommitScope: "deps"
+    },
+    // Update type labels
+    {
+      matchUpdateTypes: ["major"],
+      labels: ["type/major"],
+      semanticCommitType: "feat!"
+    },
+    {
+      matchUpdateTypes: ["minor"],
+      labels: ["type/minor"],
+      semanticCommitType: "feat"
+    },
+    {
+      matchUpdateTypes: ["patch"],
+      labels: ["type/patch"],
+      semanticCommitType: "fix"
+    }
+  ]
+}
