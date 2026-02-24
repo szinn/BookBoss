@@ -51,21 +51,20 @@ body = """
         {%- endif %}
     {%- endfor -%}
 {%- endfor -%}
-
-{%- set valid_contributors = [] -%}
-{%- for c in github.contributors | filter(attribute="is_first_time", value=true) %}
-  {%- if c.username and c.username not in excluded_users and c.username not in valid_contributors %}
-    {%- set_global valid_contributors = valid_contributors | concat(with=c.username) %}
-  {%- endif %}
-{%- endfor %}
-
-{%- if valid_contributors | length > 0 %}
-## New Contributors ❤️
-  {%- for username in valid_contributors %}
-* @{{ username }} made their first contribution
-  {%- endfor %}
-{%- endif %}
 """
+# {%- set valid_contributors = [] -%}
+# {%- for c in github.contributors | filter(attribute="is_first_time", value=true) %}
+#   {%- if c.username and c.username not in excluded_users and c.username not in valid_contributors %}
+#     {%- set_global valid_contributors = valid_contributors | concat(with=c.username) %}
+#   {%- endif %}
+# {%- endfor %}
+#
+# {%- if valid_contributors | length > 0 %}
+# ## New Contributors ❤️
+#   {%- for username in valid_contributors %}
+# * @{{ username }} made their first contribution
+#   {%- endfor %}
+# {%- endif %}
 
 trim = true
 footer = """
@@ -88,6 +87,7 @@ commit_parsers = [
     { message = "^fix!?\\(deps\\)", skip = true },
     { message = "^chore!?\\(deps\\)", skip = true },
     { message = "^ci!?\\(renovate\\)", skip = true },
+    { message = "^ci!?\\(ignore\\)", skip = true },
     { message = "^ignore", skip = true },
     { message = "^feat", group = "<!-- 0 -->Features" },
     { message = "^fix", group = "<!-- 1 -->Bug Fixes" },

@@ -63,6 +63,12 @@
       matchUpdateTypes: ["patch"],
       labels: ["type/patch"],
       semanticCommitType: "fix"
+    },
+    // Pin tailwindcss to 3.x
+    {
+      matchDatasources: ["mise"],
+      matchPackagePatterns: ["npm:tailwindcss"],
+      allowedVersions: "<4"
     }
   ]
 }
