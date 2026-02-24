@@ -14,3 +14,7 @@ pipx_uvx = true
 "npm:tailwindcss" = "4.2.1"
 "prettier" = "3.8.1"
 "protobuf" = "33.5"
+tailwindcss = "4.2.1"
+
+[tool_alias]
+tailwindcss = "github:tailwindlabs/tailwindcss"

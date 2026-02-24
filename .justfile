@@ -32,6 +32,7 @@ changelog:
 
 [doc('Build all applications')]
 build:
+    just tailwindcss
     cargo build --bin bookboss --all-features
 
 [doc('Run BookBoss')]
@@ -48,7 +49,7 @@ deps:
 
 [doc('Update tailwindcss')]
 tailwindcss:
-    npx tailwindcss@3 -i ./crates/frontend/assets/input.css -o ./crates/frontend/assets/tailwind.css
+    tailwindcss -i ./crates/frontend/assets/input.css -o ./crates/frontend/assets/tailwind.css
 
 [doc('Run quick tests using nextest')]
 quick-test:
