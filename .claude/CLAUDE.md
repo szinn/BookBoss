@@ -44,6 +44,7 @@ toward the core domain. Never introduce dependencies from `core` to outer crates
 
 ```
 crates/
+├── api/                # Adapter: GRPC interface, calls into core ports
 ├── core/               # Domain layer: business logic, domain models, and port traits (interfaces)
 ├── database/           # Adapter: implements persistence ports defined in core (SeaORM/Postgres)
 ├── formats/            # Adapter: e-book file format support
@@ -152,7 +153,7 @@ Secrets should be encrypted with `sops` and never committed.
   - All crate dependencies must be defined in the root `Cargo.toml` under `[workspace.dependencies]`
   - Individual crates reference them with `crate-name.workspace = true`
   - In root `Cargo.toml`: version-only deps use inline format (`anyhow = "1.0.100"`), but deps
-    with features or other options use section format:
+      with features or other options use section format:
 
 ```toml
 [workspace.dependencies.uuid]

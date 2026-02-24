@@ -41,6 +41,7 @@ server = [
     "bb-frontend?/server",
 ]
 web = ["dioxus/web", "dep:bb-frontend", "bb-frontend?/web"]
+grpc = []
 
 [dependencies]
 bb-api = { workspace = true, optional = true }

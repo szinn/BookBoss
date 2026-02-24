@@ -9,7 +9,6 @@ fn main() {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     use anyhow::Context;
-    use bb_api::create_api_subsystem;
     use bb_core::create_services;
     use bb_database::{create_repository_service, open_database};
     use bb_frontend::server::launch_server_frontend;
@@ -18,7 +17,11 @@ async fn main() -> anyhow::Result<()> {
         config::Config,
         logging::init_logging,
     };
-    use tokio_graceful_shutdown::{IntoSubsystem, SubsystemBuilder, SubsystemHandle, Toplevel};
+    #[cfg(feature = "grpc")]
+    use {
+        bb_api::create_api_subsystem,
+        tokio_graceful_shutdown::{IntoSubsystem, SubsystemBuilder, SubsystemHandle, Toplevel},
+    };
 
     let cli: CommandLine = clap::Parser::parse();
     let config = Config::load().context("Cannot load configuration")?;
@@ -34,12 +37,12 @@ async fn main() -> anyhow::Result<()> {
 
             let database = open_database(&config.database).await.context("Couldn't create database connection")?;
             let repository_service = create_repository_service(database).await.context("Couldn't create database connection")?;
+            let services = create_services(repository_service.clone()).context("Couldn't create core services")?;
+            let frontend = launch_server_frontend(&config.frontend, services.clone());
 
+            #[cfg(feature = "grpc")]
             let server = {
-                let services = create_services(repository_service.clone()).context("Couldn't create core services")?;
                 let api_subsystem = create_api_subsystem(&config.api, services.clone());
-
-                launch_server_frontend(&config.frontend, services.clone());
 
                 Toplevel::new(async |s: &mut SubsystemHandle| {
                     s.start(SubsystemBuilder::new("Api", api_subsystem.into_subsystem()));
@@ -50,7 +53,10 @@ async fn main() -> anyhow::Result<()> {
 
             span.exit();
 
+            // Wait for shutdown request
+            #[cfg(feature = "grpc")]
             server.await?;
+            let _ = frontend.join();
 
             repository_service.repository().close().await.context("Couldn't close database")?;
         }
