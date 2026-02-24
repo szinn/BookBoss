@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize, de};
 use thiserror::Error;
 
 /// Base-32 alphabet excluding visually ambiguous characters (I, L, O, Q).
-const ALPHABET: &[u8; 32] = b"ABCDEFGHJKMNPRSTUVWXYZ0123456789";
+const ALPHABET: &[u8; 32] = b"Y4XK0N8AR3G6JM2VT9BS5WC1DPH7EUZF";
 
 /// Reverse lookup table: ASCII byte → alphabet index (or `0xFF` for invalid).
 /// Covers the full range `0..=b'Z'` (91 entries).
@@ -240,7 +240,7 @@ impl<'de, P: TokenPrefix, I: TokenId, const MAX: u128> Deserialize<'de> for Toke
 /// # Example
 ///
 /// ```
-/// use hex_play_utils::{define_token_prefix, token::Token};
+/// use bb_utils::{define_token_prefix, token::Token};
 ///
 /// define_token_prefix!(UserPrefix, "U_");
 /// type UserId = u64;
@@ -288,7 +288,7 @@ mod tests {
     #[test]
     fn zero_encodes_to_all_first_char() {
         let token = TestToken::new(0);
-        assert_eq!(token.to_string(), "T_AAAAAAAAAAAAA");
+        assert_eq!(token.to_string(), "T_YYYYYYYYYYYYY");
     }
 
     #[test]
@@ -303,7 +303,7 @@ mod tests {
     fn known_value_encoding() {
         let token = TestToken::new(1);
         let s = token.to_string();
-        assert_eq!(s, "T_AAAAAAAAAAAAB");
+        assert_eq!(s, "T_YYYYYYYYYYYY4");
     }
 
     #[test]
@@ -381,7 +381,7 @@ mod tests {
     fn serde_serializes_as_string() {
         let token = TestToken::new(0);
         let json = serde_json::to_string(&token).unwrap();
-        assert_eq!(json, r#""T_AAAAAAAAAAAAA""#);
+        assert_eq!(json, r#""T_YYYYYYYYYYYYY""#);
     }
 
     #[test]
@@ -394,7 +394,7 @@ mod tests {
     fn debug_format() {
         let token = TestToken::new(0);
         let debug = format!("{token:?}");
-        assert_eq!(debug, "Token(T_AAAAAAAAAAAAA)");
+        assert_eq!(debug, "Token(T_YYYYYYYYYYYYY)");
     }
 
     // --- u128 tests ---
@@ -415,7 +415,7 @@ mod tests {
     #[test]
     fn u128_zero_encodes_to_26_as() {
         let token = BigToken::new(0);
-        assert_eq!(token.to_string(), "B_AAAAAAAAAAAAAAAAAAAAAAAAAA");
+        assert_eq!(token.to_string(), "B_YYYYYYYYYYYYYYYYYYYYYYYYYY");
     }
 
     #[test]
@@ -430,8 +430,8 @@ mod tests {
     fn u128_known_value_encoding() {
         let token = BigToken::new(1);
         let s = token.to_string();
-        // 25 A's + B
-        assert_eq!(s, "B_AAAAAAAAAAAAAAAAAAAAAAAAAB");
+        // 25 Y's + 4
+        assert_eq!(s, "B_YYYYYYYYYYYYYYYYYYYYYYYYY4");
     }
 
     #[test]
@@ -453,7 +453,7 @@ mod tests {
     fn u128_debug_format() {
         let token = BigToken::new(0);
         let debug = format!("{token:?}");
-        assert_eq!(debug, "Token(B_AAAAAAAAAAAAAAAAAAAAAAAAAA)");
+        assert_eq!(debug, "Token(B_YYYYYYYYYYYYYYYYYYYYYYYYYY)");
     }
 
     // --- custom MAX tests ---
