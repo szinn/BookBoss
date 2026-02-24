@@ -48,7 +48,7 @@ version = "0.18.0"
 default-features = false
 
 [workspace.dependencies.chrono]
-version = "0.4.43"
+version = "0.4.44"
 features = ["serde"]
 
 [workspace.dependencies.clap]
