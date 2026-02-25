@@ -22,6 +22,21 @@ mod pg_error_codes {
 }
 
 pub fn handle_dberr(error: DbErr) -> RepositoryError {
+    // Check sql_err first — it is database-agnostic and handles common constraint
+    // violations uniformly across Postgres, MySQL, and SQLite.
+    if let Some(sql_err) = error.sql_err() {
+        return match sql_err {
+            sea_orm::SqlErr::UniqueConstraintViolation(msg) => RepositoryError::Constraint(msg),
+            sea_orm::SqlErr::ForeignKeyConstraintViolation(msg) => RepositoryError::Constraint(format!("Foreign key violation: {}", msg)),
+            _ => {
+                tracing::error!(error = ?error, "Unhandled sql_err");
+                RepositoryError::Database(error.to_string())
+            }
+        };
+    }
+
+    // Fall back to database-specific error codes for errors not covered by sql_err
+    // (read-only transactions, serialization failures, query cancellation, etc.).
     if let DbErr::Query(RuntimeErr::SqlxError(sqlx_err)) | DbErr::Exec(RuntimeErr::SqlxError(sqlx_err)) = &error {
         if let Some(db_err) = sqlx_err.as_database_error() {
             if let Some(code) = db_err.code() {
@@ -43,17 +58,6 @@ pub fn handle_dberr(error: DbErr) -> RepositoryError {
         }
     }
 
-    match error.sql_err() {
-        Some(error) => match error {
-            sea_orm::SqlErr::UniqueConstraintViolation(msg) => RepositoryError::Constraint(msg),
-            _ => {
-                tracing::error!("Got sql_err {:?}", error);
-                RepositoryError::Database(error.to_string())
-            }
-        },
-        _ => {
-            tracing::error!("Got DbErr {:?}", error);
-            RepositoryError::Database(error.to_string())
-        }
-    }
+    tracing::error!(error = ?error, "Unhandled database error");
+    RepositoryError::Database(error.to_string())
 }

@@ -1,0 +1,427 @@
+use std::sync::Arc;
+
+use crate::{
+    Error, RepositoryError,
+    repository::RepositoryService,
+    user::{NewUser, User, UserId, UserToken},
+    with_read_only_transaction, with_transaction,
+};
+
+#[async_trait::async_trait]
+pub trait UserService: Send + Sync {
+    async fn add_user(&self, user: NewUser) -> Result<User, Error>;
+    async fn update_user(&self, user: User) -> Result<User, Error>;
+    async fn list_users(&self, start_id: Option<UserId>, page_size: Option<u64>) -> Result<Vec<User>, Error>;
+    async fn delete_user(&self, id: UserId) -> Result<User, Error>;
+    async fn find_by_id(&self, id: UserId) -> Result<Option<User>, Error>;
+    async fn find_by_token(&self, token: UserToken) -> Result<Option<User>, Error>;
+    async fn find_by_username(&self, username: &str) -> Result<Option<User>, Error>;
+}
+
+pub(crate) struct UserServiceImpl {
+    repository_service: Arc<RepositoryService>,
+}
+
+impl UserServiceImpl {
+    pub(crate) fn new(repository_service: Arc<RepositoryService>) -> Self {
+        Self { repository_service }
+    }
+}
+
+#[async_trait::async_trait]
+impl UserService for UserServiceImpl {
+    #[tracing::instrument(level = "trace", skip(self, user))]
+    async fn add_user(&self, user: NewUser) -> Result<User, Error> {
+        with_transaction!(self, user_repository, |tx| user_repository.add_user(tx, user).await)
+    }
+
+    #[tracing::instrument(level = "trace", skip(self, user))]
+    async fn update_user(&self, user: User) -> Result<User, Error> {
+        with_transaction!(self, user_repository, |tx| user_repository.update_user(tx, user).await)
+    }
+
+    #[tracing::instrument(level = "trace", skip(self))]
+    async fn list_users(&self, start_id: Option<UserId>, page_size: Option<u64>) -> Result<Vec<User>, Error> {
+        with_read_only_transaction!(self, user_repository, |tx| user_repository.list_users(tx, start_id, page_size).await)
+    }
+
+    #[tracing::instrument(level = "trace", skip(self))]
+    async fn delete_user(&self, id: UserId) -> Result<User, Error> {
+        with_transaction!(self, user_repository, |tx| {
+            let user = user_repository
+                .find_by_id(tx, id)
+                .await?
+                .ok_or(Error::RepositoryError(RepositoryError::NotFound))?;
+
+            user_repository.delete_user(tx, user).await
+        })
+    }
+
+    #[tracing::instrument(level = "trace", skip(self))]
+    async fn find_by_id(&self, id: UserId) -> Result<Option<User>, Error> {
+        with_read_only_transaction!(self, user_repository, |tx| user_repository.find_by_id(tx, id).await)
+    }
+
+    #[tracing::instrument(level = "trace", skip(self))]
+    async fn find_by_token(&self, token: UserToken) -> Result<Option<User>, Error> {
+        with_read_only_transaction!(self, user_repository, |tx| user_repository.find_by_id(tx, token.id()).await)
+    }
+
+    #[tracing::instrument(level = "trace", skip(self))]
+    async fn find_by_username(&self, username: &str) -> Result<Option<User>, Error> {
+        let username = username.to_owned();
+        with_read_only_transaction!(self, user_repository, |tx| user_repository.find_by_username(tx, &username).await)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        any::Any,
+        collections::HashSet,
+        sync::{Arc, Mutex},
+    };
+
+    use super::{UserService, UserServiceImpl};
+    use crate::{
+        Error, RepositoryError,
+        repository::{Repository, RepositoryServiceBuilder, Transaction},
+        user::{NewUser, User, UserId, UserToken, repository::UserRepository},
+    };
+
+    // ─── Mock Transaction ────────────────────────────────────────────────────
+
+    struct MockTransaction;
+
+    #[async_trait::async_trait]
+    impl Transaction for MockTransaction {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+
+        async fn commit(self: Box<Self>) -> Result<(), Error> {
+            Ok(())
+        }
+
+        async fn rollback(self: Box<Self>) -> Result<(), Error> {
+            Ok(())
+        }
+    }
+
+    // ─── Mock Repository ─────────────────────────────────────────────────────
+
+    struct MockRepository;
+
+    #[async_trait::async_trait]
+    impl Repository for MockRepository {
+        async fn begin(&self) -> Result<Box<dyn Transaction>, Error> {
+            Ok(Box::new(MockTransaction))
+        }
+
+        async fn begin_read_only(&self) -> Result<Box<dyn Transaction>, Error> {
+            Ok(Box::new(MockTransaction))
+        }
+
+        async fn close(&self) -> Result<(), Error> {
+            Ok(())
+        }
+    }
+
+    // ─── Mock UserRepository ─────────────────────────────────────────────────
+
+    #[derive(Default)]
+    struct MockUserRepository {
+        add_user_result: Mutex<Option<Result<User, Error>>>,
+        update_user_result: Mutex<Option<Result<User, Error>>>,
+        delete_user_result: Mutex<Option<Result<User, Error>>>,
+        find_by_id_result: Mutex<Option<Result<Option<User>, Error>>>,
+        find_by_username_result: Mutex<Option<Result<Option<User>, Error>>>,
+        list_users_result: Mutex<Option<Result<Vec<User>, Error>>>,
+    }
+
+    impl MockUserRepository {
+        fn with_add_user_result(self, result: Result<User, Error>) -> Self {
+            *self.add_user_result.lock().unwrap() = Some(result);
+            self
+        }
+
+        fn with_update_user_result(self, result: Result<User, Error>) -> Self {
+            *self.update_user_result.lock().unwrap() = Some(result);
+            self
+        }
+
+        fn with_delete_user_result(self, result: Result<User, Error>) -> Self {
+            *self.delete_user_result.lock().unwrap() = Some(result);
+            self
+        }
+
+        fn with_find_by_id_result(self, result: Result<Option<User>, Error>) -> Self {
+            *self.find_by_id_result.lock().unwrap() = Some(result);
+            self
+        }
+
+        fn with_find_by_username_result(self, result: Result<Option<User>, Error>) -> Self {
+            *self.find_by_username_result.lock().unwrap() = Some(result);
+            self
+        }
+
+        fn with_list_users_result(self, result: Result<Vec<User>, Error>) -> Self {
+            *self.list_users_result.lock().unwrap() = Some(result);
+            self
+        }
+    }
+
+    #[async_trait::async_trait]
+    impl UserRepository for MockUserRepository {
+        async fn add_user(&self, _tx: &dyn Transaction, _user: NewUser) -> Result<User, Error> {
+            self.add_user_result
+                .lock()
+                .unwrap()
+                .clone()
+                .unwrap_or_else(|| Err(Error::MockNotConfigured("add_user")))
+        }
+
+        async fn update_user(&self, _tx: &dyn Transaction, _user: User) -> Result<User, Error> {
+            self.update_user_result
+                .lock()
+                .unwrap()
+                .clone()
+                .unwrap_or_else(|| Err(Error::MockNotConfigured("update_user")))
+        }
+
+        async fn delete_user(&self, _tx: &dyn Transaction, _user: User) -> Result<User, Error> {
+            self.delete_user_result
+                .lock()
+                .unwrap()
+                .clone()
+                .unwrap_or_else(|| Err(Error::MockNotConfigured("delete_user")))
+        }
+
+        async fn list_users(&self, _tx: &dyn Transaction, _start_id: Option<UserId>, _page_size: Option<u64>) -> Result<Vec<User>, Error> {
+            self.list_users_result
+                .lock()
+                .unwrap()
+                .clone()
+                .unwrap_or_else(|| Err(Error::MockNotConfigured("list_users")))
+        }
+
+        async fn find_by_id(&self, _tx: &dyn Transaction, _id: UserId) -> Result<Option<User>, Error> {
+            self.find_by_id_result
+                .lock()
+                .unwrap()
+                .clone()
+                .unwrap_or_else(|| Err(Error::MockNotConfigured("find_by_id")))
+        }
+
+        async fn find_by_username(&self, _tx: &dyn Transaction, _username: &str) -> Result<Option<User>, Error> {
+            self.find_by_username_result
+                .lock()
+                .unwrap()
+                .clone()
+                .unwrap_or_else(|| Err(Error::MockNotConfigured("find_by_username")))
+        }
+    }
+
+    // ─── Helper ──────────────────────────────────────────────────────────────
+
+    fn create_service(mock: MockUserRepository) -> UserServiceImpl {
+        let repository_service = Arc::new(
+            RepositoryServiceBuilder::default()
+                .repository(Arc::new(MockRepository) as Arc<dyn Repository>)
+                .user_repository(Arc::new(mock) as Arc<dyn UserRepository>)
+                .build()
+                .expect("all fields provided"),
+        );
+        UserServiceImpl::new(repository_service)
+    }
+
+    // ─── add_user ────────────────────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_add_user_success() {
+        let expected = User::fake(1, "alice", "hash", "alice@example.com", HashSet::new());
+        let svc = create_service(MockUserRepository::default().with_add_user_result(Ok(expected)));
+
+        let result = svc.add_user(NewUser::new("alice", "hash", "alice@example.com", HashSet::new()).unwrap()).await;
+
+        assert!(result.is_ok());
+        let user = result.unwrap();
+        assert_eq!(user.id, 1);
+        assert_eq!(user.username, "alice");
+        assert_eq!(user.email_address.as_str(), "alice@example.com");
+    }
+
+    #[tokio::test]
+    async fn test_add_user_propagates_constraint_error() {
+        let svc = create_service(
+            MockUserRepository::default().with_add_user_result(Err(Error::RepositoryError(RepositoryError::Constraint("duplicate email".into())))),
+        );
+
+        let result = svc.add_user(NewUser::new("alice", "hash", "alice@example.com", HashSet::new()).unwrap()).await;
+
+        assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::Constraint(_)))));
+    }
+
+    // ─── update_user ─────────────────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_update_user_success() {
+        let updated = User::fake(1, "alice-updated", "newhash", "new@example.com", HashSet::new());
+        let svc = create_service(MockUserRepository::default().with_update_user_result(Ok(updated)));
+
+        let result = svc.update_user(User::fake(1, "alice", "hash", "alice@example.com", HashSet::new())).await;
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().username, "alice-updated");
+    }
+
+    #[tokio::test]
+    async fn test_update_user_not_found() {
+        let svc = create_service(MockUserRepository::default().with_update_user_result(Err(Error::RepositoryError(RepositoryError::NotFound))));
+
+        let result = svc.update_user(User::fake(999, "ghost", "hash", "ghost@example.com", HashSet::new())).await;
+
+        assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::NotFound))));
+    }
+
+    // ─── list_users ──────────────────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_list_users_returns_all() {
+        let users = vec![
+            User::fake(1, "alice", "h1", "alice@example.com", HashSet::new()),
+            User::fake(2, "bob", "h2", "bob@example.com", HashSet::new()),
+        ];
+        let svc = create_service(MockUserRepository::default().with_list_users_result(Ok(users)));
+
+        let result = svc.list_users(None, None).await;
+
+        assert!(result.is_ok());
+        let list = result.unwrap();
+        assert_eq!(list.len(), 2);
+        assert_eq!(list[0].username, "alice");
+        assert_eq!(list[1].username, "bob");
+    }
+
+    #[tokio::test]
+    async fn test_list_users_empty() {
+        let svc = create_service(MockUserRepository::default().with_list_users_result(Ok(vec![])));
+
+        let result = svc.list_users(None, None).await;
+
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_empty());
+    }
+
+    // ─── delete_user ─────────────────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_delete_user_success() {
+        let user = User::fake(1, "alice", "hash", "alice@example.com", HashSet::new());
+        let svc = create_service(
+            MockUserRepository::default()
+                .with_find_by_id_result(Ok(Some(user.clone())))
+                .with_delete_user_result(Ok(user)),
+        );
+
+        let result = svc.delete_user(1).await;
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().id, 1);
+    }
+
+    #[tokio::test]
+    async fn test_delete_user_not_found() {
+        let svc = create_service(MockUserRepository::default().with_find_by_id_result(Ok(None)));
+
+        let result = svc.delete_user(999).await;
+
+        assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::NotFound))));
+    }
+
+    // ─── find_by_id ──────────────────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_find_by_id_found() {
+        let user = User::fake(1, "alice", "hash", "alice@example.com", HashSet::new());
+        let svc = create_service(MockUserRepository::default().with_find_by_id_result(Ok(Some(user))));
+
+        let result = svc.find_by_id(1).await;
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().unwrap().username, "alice");
+    }
+
+    #[tokio::test]
+    async fn test_find_by_id_not_found() {
+        let svc = create_service(MockUserRepository::default().with_find_by_id_result(Ok(None)));
+
+        let result = svc.find_by_id(999).await;
+
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_none());
+    }
+
+    // ─── find_by_token ───────────────────────────────────────────────────────
+    // The service extracts token.id() and delegates to find_by_id, so we
+    // configure find_by_id rather than a separate token mock.
+
+    #[tokio::test]
+    async fn test_find_by_token_found() {
+        let user = User::fake(1, "alice", "hash", "alice@example.com", HashSet::new());
+        let token = user.token;
+        let svc =
+            create_service(MockUserRepository::default().with_find_by_id_result(Ok(Some(User::fake(1, "alice", "hash", "alice@example.com", HashSet::new())))));
+
+        let result = svc.find_by_token(token).await;
+
+        assert!(result.is_ok());
+        let found = result.unwrap().unwrap();
+        assert_eq!(found.id, 1);
+        assert_eq!(found.username, "alice");
+    }
+
+    #[tokio::test]
+    async fn test_find_by_token_not_found() {
+        let svc = create_service(MockUserRepository::default().with_find_by_id_result(Ok(None)));
+
+        let result = svc.find_by_token(UserToken::generate()).await;
+
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_none());
+    }
+
+    // ─── find_by_username ────────────────────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_find_by_username_found() {
+        let user = User::fake(1, "alice", "hash", "alice@example.com", HashSet::new());
+        let svc = create_service(MockUserRepository::default().with_find_by_username_result(Ok(Some(user))));
+
+        let result = svc.find_by_username("alice").await;
+
+        assert!(result.is_ok());
+        let found = result.unwrap().unwrap();
+        assert_eq!(found.id, 1);
+        assert_eq!(found.username, "alice");
+    }
+
+    #[tokio::test]
+    async fn test_find_by_username_not_found() {
+        let svc = create_service(MockUserRepository::default().with_find_by_username_result(Ok(None)));
+
+        let result = svc.find_by_username("nobody").await;
+
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_none());
+    }
+
+    #[tokio::test]
+    async fn test_find_by_username_propagates_error() {
+        let svc = create_service(MockUserRepository::default().with_find_by_username_result(Err(Error::RepositoryError(RepositoryError::NotFound))));
+
+        let result = svc.find_by_username("alice").await;
+
+        assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::NotFound))));
+    }
+}
