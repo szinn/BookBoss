@@ -7,6 +7,7 @@ use axum::{
 use axum_session::{SessionConfig, SessionLayer, SessionStore};
 use axum_session_auth::{AuthConfig, AuthSessionLayer, HasPermission};
 use bb_core::{CoreServices, user::UserId};
+use chrono::Duration;
 use tower::ServiceBuilder;
 use tower_http::{
     request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer},
@@ -32,6 +33,7 @@ impl HasPermission<BackendSessionPool> for AuthUser {
 }
 
 const REQUEST_ID_HEADER: &str = "x-request-id";
+const DEFAULT_EXPIRATION_DURATION: Duration = Duration::days(7);
 
 pub fn launch_server_frontend(config: &FrontendConfig, core_services: Arc<CoreServices>) -> JoinHandle<usize> {
     let listen_ip = config.listen_ip.clone();
@@ -56,7 +58,7 @@ pub fn launch_server_frontend(config: &FrontendConfig, core_services: Arc<CoreSe
         dioxus::serve(|| {
             let core_services = core_services.clone();
             let backend_pool = BackendSessionPool::new(core_services.clone());
-            let session_config = SessionConfig::default();
+            let session_config = SessionConfig::default().with_lifetime(DEFAULT_EXPIRATION_DURATION);
             let auth_config = AuthConfig::<UserId>::default();
             async move {
                 let x_request_id = HeaderName::from_static(REQUEST_ID_HEADER);
@@ -72,7 +74,7 @@ pub fn launch_server_frontend(config: &FrontendConfig, core_services: Arc<CoreSe
                             .unwrap_or_default();
 
                         tracing::info_span!(
-                            "http",
+                            "",
                             request_id = ?request_id,
                         )
                     }))

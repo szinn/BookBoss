@@ -1,15 +1,12 @@
 use dioxus::prelude::*;
 
 use crate::Route;
+#[cfg(feature = "server")]
+use crate::server::AuthSession;
 
-#[server]
+#[put("/api/v1/logout", auth_session: axum::Extension<AuthSession>)]
+#[tracing::instrument(level = "trace", skip(auth_session))]
 async fn logout() -> Result<(), ServerFnError> {
-    use crate::server::AuthSession;
-
-    let ctx = FullstackContext::current().ok_or_else(|| ServerFnError::new("Not in a server context"))?;
-
-    let auth_session: AuthSession = ctx.extension().ok_or_else(|| ServerFnError::new("AuthSession not available"))?;
-
     auth_session.logout_user();
 
     Ok(())
