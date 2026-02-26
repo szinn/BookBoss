@@ -47,8 +47,9 @@ pub async fn open_database(config: &DatabaseConfig) -> Result<DatabaseConnection
 
 #[tracing::instrument(level = "trace", skip(database))]
 pub async fn create_repository_service(database: DatabaseConnection) -> Result<Arc<RepositoryService>, Error> {
-    tracing::debug!("Running migrations...");
+    let span = tracing::span!(tracing::Level::TRACE, "Migrations").entered();
     Migrator::up(&database, None).await.map_err(handle_dberr)?;
+    span.exit();
 
     let repository_service = RepositoryServiceBuilder::default()
         .repository(Arc::new(RepositoryImpl::new(database)) as Arc<dyn Repository>)

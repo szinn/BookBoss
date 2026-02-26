@@ -51,7 +51,7 @@ pub mod server {
     };
     use axum_session::{DatabaseError, DatabasePool, SessionConfig, SessionLayer, SessionStore};
     use axum_session_auth::{AuthConfig, AuthSessionLayer, Authentication, HasPermission};
-    use bb_core::CoreServices;
+    use bb_core::{CoreServices, auth::NewSession, user::UserId};
     use chrono::DateTime;
     use serde::{Deserialize, Serialize};
     use tower::ServiceBuilder;
@@ -64,7 +64,13 @@ pub mod server {
 
     #[derive(Clone)]
     pub(crate) struct BackendSessionPool {
-        // session_service: Arc<dyn SessionService>,
+        core_services: Arc<CoreServices>,
+    }
+
+    impl BackendSessionPool {
+        fn new(core_services: Arc<CoreServices>) -> Self {
+            Self { core_services }
+        }
     }
 
     impl Debug for BackendSessionPool {
@@ -73,7 +79,7 @@ pub mod server {
         }
     }
 
-    pub(crate) type AuthSession = axum_session_auth::AuthSession<AuthUser, i64, BackendSessionPool, BackendSessionPool>;
+    pub(crate) type AuthSession = axum_session_auth::AuthSession<AuthUser, UserId, BackendSessionPool, BackendSessionPool>;
 
     #[async_trait::async_trait]
     impl DatabasePool for BackendSessionPool {
@@ -84,77 +90,78 @@ pub mod server {
 
         #[tracing::instrument(level = "trace", skip(self))]
         async fn count(&self, _table_name: &str) -> Result<i64, DatabaseError> {
-            Err(DatabaseError::GenericAcquire("Not implemented".to_string()))
-            // self.session_service.count().await.map_err(|e|
-            // DatabaseError::GenericSelectError(e.to_string()))
+            self.core_services
+                .auth_service
+                .count()
+                .await
+                .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
         }
 
         #[tracing::instrument(level = "trace", skip(self))]
         async fn store(&self, id: &str, session: &str, expires: i64, _table_name: &str) -> Result<(), DatabaseError> {
             let expires_at = DateTime::from_timestamp(expires, 0).ok_or_else(|| DatabaseError::GenericInsertError(format!("invalid timestamp: {expires}")))?;
-            // let new_session = NewSession::new(id, session, expires_at).map_err(|e|
-            // DatabaseError::GenericInsertError(e.to_string()))?;
-            // self.session_service
-            //     .store(new_session)
-            //     .await
-            //     .map_err(|e| DatabaseError::GenericInsertError(e.to_string()))?;
-            // Ok(())
-            Err(DatabaseError::GenericAcquire("Not implemented".to_string()))
+            let new_session = NewSession::new(id, session, expires_at).map_err(|e| DatabaseError::GenericInsertError(e.to_string()))?;
+            self.core_services
+                .auth_service
+                .store(new_session)
+                .await
+                .map(|_| ())
+                .map_err(|e| DatabaseError::GenericInsertError(e.to_string()))
         }
 
         #[tracing::instrument(level = "trace", skip(self))]
         async fn load(&self, id: &str, _table_name: &str) -> Result<Option<String>, DatabaseError> {
-            // self.session_service
-            //     .load(id)
-            //     .await
-            //     .map(|opt| opt.map(|s| s.session))
-            //     .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
-            Err(DatabaseError::GenericAcquire("Not implemented".to_string()))
+            self.core_services
+                .auth_service
+                .load(id)
+                .await
+                .map(|opt| opt.map(|s| s.session))
+                .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
         }
 
         #[tracing::instrument(level = "trace", skip(self))]
         async fn delete_one_by_id(&self, id: &str, _table_name: &str) -> Result<(), DatabaseError> {
-            // self.session_service
-            //     .delete_by_id(id)
-            //     .await
-            //     .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
-            Err(DatabaseError::GenericAcquire("Not implemented".to_string()))
+            self.core_services
+                .auth_service
+                .delete_by_id(id)
+                .await
+                .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
         }
 
         #[tracing::instrument(level = "trace", skip(self))]
         async fn exists(&self, id: &str, _table_name: &str) -> Result<bool, DatabaseError> {
-            // self.session_service
-            //     .exists(id)
-            //     .await
-            //     .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
-            Err(DatabaseError::GenericAcquire("Not implemented".to_string()))
+            self.core_services
+                .auth_service
+                .exists(id)
+                .await
+                .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
         }
 
         #[tracing::instrument(level = "trace", skip(self))]
         async fn delete_by_expiry(&self, _table_name: &str) -> Result<Vec<String>, DatabaseError> {
-            // self.session_service
-            //     .delete_by_expiry()
-            //     .await
-            //     .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
-            Err(DatabaseError::GenericAcquire("Not implemented".to_string()))
+            self.core_services
+                .auth_service
+                .delete_by_expiry()
+                .await
+                .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
         }
 
         #[tracing::instrument(level = "trace", skip(self))]
         async fn delete_all(&self, _table_name: &str) -> Result<(), DatabaseError> {
-            // self.session_service
-            //     .delete_all()
-            //     .await
-            //     .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
-            Err(DatabaseError::GenericAcquire("Not implemented".to_string()))
+            self.core_services
+                .auth_service
+                .delete_all()
+                .await
+                .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
         }
 
         #[tracing::instrument(level = "trace", skip(self))]
         async fn get_ids(&self, _table_name: &str) -> Result<Vec<String>, DatabaseError> {
-            // self.session_service
-            //     .get_ids()
-            //     .await
-            //     .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
-            Err(DatabaseError::GenericAcquire("Not implemented".to_string()))
+            self.core_services
+                .auth_service
+                .get_ids()
+                .await
+                .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
         }
 
         #[tracing::instrument(level = "trace", skip(self))]
@@ -163,11 +170,9 @@ pub mod server {
         }
     }
 
-    /// Stub user type for session authentication.
-    /// TODO: Replace with a real user backed by CoreServices.
     #[derive(Clone, Debug, Serialize, Deserialize)]
     pub(crate) struct AuthUser {
-        id: i64,
+        id: UserId,
         anonymous: bool,
         pub username: String,
         pub permissions: HashSet<String>,
@@ -178,26 +183,29 @@ pub mod server {
             Self {
                 id: 1,
                 anonymous: true,
-                username: "1".into(),
+                username: String::new(),
                 permissions: HashSet::new(),
             }
         }
     }
 
     #[async_trait::async_trait]
-    impl Authentication<Self, i64, BackendSessionPool> for AuthUser {
-        #[tracing::instrument(level = "trace", skip(_pool))]
-        async fn load_user(userid: i64, _pool: Option<&BackendSessionPool>) -> Result<Self, anyhow::Error> {
-            let mut permissions = HashSet::new();
-            if userid == 2 {
-                permissions.insert("Admin::View".into());
+    impl Authentication<Self, UserId, BackendSessionPool> for AuthUser {
+        #[tracing::instrument(level = "trace", skip(pool))]
+        async fn load_user(userid: UserId, pool: Option<&BackendSessionPool>) -> Result<Self, anyhow::Error> {
+            let Some(pool) = pool else {
+                return Ok(Self::default());
+            };
+            let user = pool.core_services.user_service.find_by_id(userid).await?;
+            match user {
+                Some(user) => Ok(Self {
+                    id: userid,
+                    anonymous: false,
+                    username: user.username,
+                    permissions: user.capabilities.iter().map(|c| format!("{c:?}")).collect(),
+                }),
+                None => Ok(Self::default()),
             }
-            Ok(Self {
-                id: userid,
-                anonymous: userid == 1,
-                username: format!("{userid}"),
-                permissions,
-            })
         }
 
         #[tracing::instrument(level = "trace")]
@@ -246,14 +254,12 @@ pub mod server {
             tracing::info!("Frontend started on {effective_ip}:{effective_port}");
             dioxus::serve(|| {
                 let core_services = core_services.clone();
-                // let backend_pool = BackendSessionPool {
-                //     // session_service: core_services.session_service.clone(),
-                // };
-                // let session_config = SessionConfig::default();
-                // let auth_config =
-                // AuthConfig::<i64>::default().with_anonymous_user_id(Some(1));
+                let backend_pool = BackendSessionPool::new(core_services.clone());
+                let session_config = SessionConfig::default();
+                let auth_config = AuthConfig::<UserId>::default().with_anonymous_user_id(Some(1));
                 async move {
                     let x_request_id = HeaderName::from_static(REQUEST_ID_HEADER);
+                    let session_store = SessionStore::<BackendSessionPool>::new(Some(backend_pool.clone()), session_config).await?;
 
                     let middleware = ServiceBuilder::new()
                         .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid))
@@ -270,11 +276,8 @@ pub mod server {
                             )
                         }))
                         .layer(PropagateRequestIdLayer::new(x_request_id))
-                        // .layer(SessionLayer::new(
-                        //     SessionStore::<BackendSessionPool>::new(Some(backend_pool.clone()), session_config).await?,
-                        // ))
-                        // .layer(AuthSessionLayer::<AuthUser, i64, BackendSessionPool, BackendSessionPool>::new(Some(backend_pool)).with_config(auth_config))
-                    ;
+                        .layer(SessionLayer::new(session_store))
+                        .layer(AuthSessionLayer::<AuthUser, UserId, BackendSessionPool, BackendSessionPool>::new(Some(backend_pool)).with_config(auth_config));
 
                     let router = dioxus::server::router(BookBossFrontend).layer(Extension(core_services)).layer(middleware);
                     Ok(router)
