@@ -6,6 +6,7 @@
       "Bash(gh api:*)",
       "Bash(jj desc:*)",
       "Bash(jj describe:*)",
+      "Bash(jj diff:*)",
       "Bash(jj log:*)",
       "Bash(jj new:*)",
       "Bash(jj show:*)",

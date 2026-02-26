@@ -425,6 +425,42 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_delete_by_expiry_empty_table() {
+        let svc = setup().await;
+        let tx = svc.repository().begin().await.unwrap();
+
+        let result = svc.session_repository().delete_by_expiry(&*tx).await;
+
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_store_preserves_created_at_on_upsert() {
+        let svc = setup().await;
+        let tx = svc.repository().begin().await.unwrap();
+
+        let original = svc
+            .session_repository()
+            .store(&*tx, NewSession::new("sess-1", "original", Utc::now() + Duration::hours(1)).unwrap())
+            .await
+            .unwrap();
+
+        let updated = svc
+            .session_repository()
+            .store(&*tx, NewSession::new("sess-1", "updated", Utc::now() + Duration::hours(2)).unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(updated.session, "updated");
+        assert_eq!(
+            updated.created_at.timestamp(),
+            original.created_at.timestamp(),
+            "created_at should not change on upsert"
+        );
+    }
+
+    #[tokio::test]
     async fn test_delete_by_expiry_none_expired() {
         let svc = setup().await;
         let tx = svc.repository().begin().await.unwrap();

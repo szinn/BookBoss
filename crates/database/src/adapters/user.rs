@@ -190,6 +190,7 @@ mod tests {
     use bb_core::{
         Error, RepositoryError,
         repository::RepositoryService,
+        types::Capability,
         user::{NewUser, User},
     };
     use sea_orm::Database;
@@ -236,6 +237,54 @@ mod tests {
             .await;
 
         assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::Constraint(_)))));
+    }
+
+    #[tokio::test]
+    async fn test_add_user_duplicate_email_fails() {
+        let svc = setup().await;
+        let tx = svc.repository().begin().await.unwrap();
+
+        svc.user_repository()
+            .add_user(&*tx, NewUser::new("alice", "hash", "shared@example.com", HashSet::new()).unwrap())
+            .await
+            .unwrap();
+
+        let result = svc
+            .user_repository()
+            .add_user(&*tx, NewUser::new("bob", "hash2", "shared@example.com", HashSet::new()).unwrap())
+            .await;
+
+        assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::Constraint(_)))));
+    }
+
+    #[tokio::test]
+    async fn test_add_user_capabilities_round_trip() {
+        let svc = setup().await;
+        let tx = svc.repository().begin().await.unwrap();
+
+        let caps = HashSet::from([Capability::Admin, Capability::EditBook]);
+        let user = svc
+            .user_repository()
+            .add_user(&*tx, NewUser::new("alice", "hash", "alice@example.com", caps.clone()).unwrap())
+            .await
+            .unwrap();
+
+        let found = svc.user_repository().find_by_id(&*tx, user.id).await.unwrap().unwrap();
+        assert_eq!(found.capabilities, caps);
+    }
+
+    #[tokio::test]
+    async fn test_add_user_token_id_consistency() {
+        let svc = setup().await;
+        let tx = svc.repository().begin().await.unwrap();
+
+        let user = svc
+            .user_repository()
+            .add_user(&*tx, NewUser::new("alice", "hash", "alice@example.com", HashSet::new()).unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(user.token.id(), user.id);
     }
 
     // ─── find_by_id ──────────────────────────────────────────────────────────
@@ -397,6 +446,24 @@ mod tests {
 
         assert!(result.is_ok());
         assert_eq!(result.unwrap().username, "alice-updated");
+    }
+
+    #[tokio::test]
+    async fn test_update_user_increments_version() {
+        let svc = setup().await;
+        let tx = svc.repository().begin().await.unwrap();
+
+        let mut user = svc
+            .user_repository()
+            .add_user(&*tx, NewUser::new("alice", "hash", "alice@example.com", HashSet::new()).unwrap())
+            .await
+            .unwrap();
+
+        let version_before = user.version;
+        user.username = "alice-updated".to_string();
+        let updated = svc.user_repository().update_user(&*tx, user).await.unwrap();
+
+        assert_eq!(updated.version, version_before + 1);
     }
 
     #[tokio::test]

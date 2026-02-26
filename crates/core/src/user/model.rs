@@ -10,7 +10,7 @@ use derive_builder::Builder;
 
 use crate::{
     Error,
-    types::{Capabilities, EmailAddress},
+    types::{Capabilities, Capability, EmailAddress},
 };
 
 define_token_prefix!(UserTokenPrefix, "U_");
@@ -88,6 +88,10 @@ impl User {
             return false;
         };
         Argon2::default().verify_password(password.as_bytes(), &parsed_hash).is_ok()
+    }
+
+    pub fn has_capability(&self, capability: Capability) -> bool {
+        self.capabilities.contains(&capability)
     }
 }
 
@@ -171,5 +175,207 @@ impl PartialUserUpdate {
     /// Returns true if all fields are None.
     pub fn is_empty(&self) -> bool {
         self.password_hash.is_none() && self.email_address.is_none() && self.capabilities.is_none()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use super::*;
+    use crate::types::Capability;
+
+    // ─── User::has_capability ────────────────────────────────────────────────
+
+    #[test]
+    fn test_has_capability_present() {
+        let user = User::fake(1, "alice", "hash", "alice@example.com", HashSet::from([Capability::Admin]));
+        assert!(user.has_capability(Capability::Admin));
+    }
+
+    #[test]
+    fn test_has_capability_absent() {
+        let user = User::fake(1, "alice", "hash", "alice@example.com", HashSet::new());
+        assert!(!user.has_capability(Capability::Admin));
+    }
+
+    #[test]
+    fn test_has_capability_other_not_matched() {
+        let user = User::fake(1, "alice", "hash", "alice@example.com", HashSet::from([Capability::EditBook]));
+        assert!(!user.has_capability(Capability::Admin));
+        assert!(user.has_capability(Capability::EditBook));
+    }
+
+    // ─── User::encrypt_password + check_password ─────────────────────────────
+
+    #[test]
+    fn test_encrypt_and_check_password_round_trip() {
+        let hash = User::encrypt_password("correct-horse-battery-staple").unwrap();
+        let user = User::fake(1, "alice", hash, "alice@example.com", HashSet::new());
+        assert!(user.check_password("correct-horse-battery-staple"));
+    }
+
+    #[test]
+    fn test_check_password_wrong_password_returns_false() {
+        let hash = User::encrypt_password("correct").unwrap();
+        let user = User::fake(1, "alice", hash, "alice@example.com", HashSet::new());
+        assert!(!user.check_password("wrong"));
+    }
+
+    #[test]
+    fn test_check_password_invalid_hash_returns_false() {
+        let user = User::fake(1, "alice", "not-a-valid-hash", "alice@example.com", HashSet::new());
+        assert!(!user.check_password("anything"));
+    }
+
+    #[test]
+    fn test_check_password_empty_hash_returns_false() {
+        let user = User::fake(1, "alice", "", "alice@example.com", HashSet::new());
+        assert!(!user.check_password("password"));
+    }
+
+    // ─── NewUser::new ────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_new_user_invalid_email_returns_error() {
+        let result = NewUser::new("alice", "password", "not-an-email", HashSet::new());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_new_user_valid_fields_succeed() {
+        let result = NewUser::new("alice", "password", "alice@example.com", HashSet::new());
+        assert!(result.is_ok());
+        let user = result.unwrap();
+        assert_eq!(user.username, "alice");
+        assert_eq!(user.email_address.as_str(), "alice@example.com");
+    }
+
+    #[test]
+    fn test_new_user_password_is_hashed() {
+        let result = NewUser::new("alice", "plaintext", "alice@example.com", HashSet::new());
+        assert!(result.is_ok());
+        assert_ne!(result.unwrap().password_hash, "plaintext");
+    }
+
+    // ─── PartialUserUpdate::is_empty ─────────────────────────────────────────
+
+    #[test]
+    fn test_partial_update_is_empty_all_none() {
+        let update = PartialUserUpdate::default();
+        assert!(update.is_empty());
+    }
+
+    #[test]
+    fn test_partial_update_is_empty_password_some() {
+        let update = PartialUserUpdate {
+            password_hash: Some("hash".into()),
+            ..Default::default()
+        };
+        assert!(!update.is_empty());
+    }
+
+    #[test]
+    fn test_partial_update_is_empty_email_some() {
+        let update = PartialUserUpdate {
+            email_address: Some(EmailAddress::new("a@b.com").unwrap()),
+            ..Default::default()
+        };
+        assert!(!update.is_empty());
+    }
+
+    #[test]
+    fn test_partial_update_is_empty_capabilities_some() {
+        let update = PartialUserUpdate {
+            capabilities: Some(HashSet::new()),
+            ..Default::default()
+        };
+        assert!(!update.is_empty());
+    }
+
+    // ─── PartialUserUpdate::new ──────────────────────────────────────────────
+
+    #[test]
+    fn test_partial_update_new_invalid_email_returns_error() {
+        let result = PartialUserUpdate::new(None::<String>, Some("bad-email"), None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_partial_update_new_all_none_succeeds() {
+        let result = PartialUserUpdate::new(None::<String>, None::<String>, None);
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_empty());
+    }
+
+    #[test]
+    fn test_partial_update_new_valid_email_succeeds() {
+        let result = PartialUserUpdate::new(None::<String>, Some("new@example.com"), None);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().email_address.unwrap().as_str(), "new@example.com");
+    }
+
+    // ─── PartialUserUpdate::apply_to ─────────────────────────────────────────
+
+    #[test]
+    fn test_apply_to_empty_is_noop() {
+        let mut user = User::fake(1, "alice", "oldhash", "old@example.com", HashSet::from([Capability::Admin]));
+        let update = PartialUserUpdate::default();
+        update.apply_to(&mut user);
+        assert_eq!(user.username, "alice");
+        assert_eq!(user.password_hash, "oldhash");
+        assert_eq!(user.email_address.as_str(), "old@example.com");
+        assert!(user.has_capability(Capability::Admin));
+    }
+
+    #[test]
+    fn test_apply_to_updates_password() {
+        let mut user = User::fake(1, "alice", "oldhash", "old@example.com", HashSet::new());
+        let update = PartialUserUpdate {
+            password_hash: Some("newhash".into()),
+            ..Default::default()
+        };
+        update.apply_to(&mut user);
+        assert_eq!(user.password_hash, "newhash");
+        assert_eq!(user.email_address.as_str(), "old@example.com");
+    }
+
+    #[test]
+    fn test_apply_to_updates_email() {
+        let mut user = User::fake(1, "alice", "hash", "old@example.com", HashSet::new());
+        let update = PartialUserUpdate {
+            email_address: Some(EmailAddress::new("new@example.com").unwrap()),
+            ..Default::default()
+        };
+        update.apply_to(&mut user);
+        assert_eq!(user.email_address.as_str(), "new@example.com");
+        assert_eq!(user.password_hash, "hash");
+    }
+
+    #[test]
+    fn test_apply_to_updates_capabilities() {
+        let mut user = User::fake(1, "alice", "hash", "alice@example.com", HashSet::new());
+        let new_caps = HashSet::from([Capability::Admin, Capability::EditBook]);
+        let update = PartialUserUpdate {
+            capabilities: Some(new_caps.clone()),
+            ..Default::default()
+        };
+        update.apply_to(&mut user);
+        assert_eq!(user.capabilities, new_caps);
+    }
+
+    #[test]
+    fn test_apply_to_updates_all_fields() {
+        let mut user = User::fake(1, "alice", "oldhash", "old@example.com", HashSet::new());
+        let new_caps = HashSet::from([Capability::Admin]);
+        let update = PartialUserUpdate {
+            password_hash: Some("newhash".into()),
+            email_address: Some(EmailAddress::new("new@example.com").unwrap()),
+            capabilities: Some(new_caps.clone()),
+        };
+        update.apply_to(&mut user);
+        assert_eq!(user.password_hash, "newhash");
+        assert_eq!(user.email_address.as_str(), "new@example.com");
+        assert_eq!(user.capabilities, new_caps);
     }
 }
