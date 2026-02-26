@@ -1,5 +1,9 @@
 use std::collections::HashSet;
 
+use argon2::{
+    Argon2,
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
+};
 use bb_utils::{define_token_prefix, token::Token};
 use chrono::{DateTime, Utc};
 use derive_builder::Builder;
@@ -62,6 +66,29 @@ impl User {
             .build()
             .expect("test user should build successfully")
     }
+
+    /// Hashes a plaintext password using Argon2, returning a PHC-format string.
+    ///
+    /// # Errors
+    ///
+    /// Returns `Error::CryptoError` if hashing fails.
+    pub fn encrypt_password(password: impl Into<String>) -> Result<String, Error> {
+        let password = password.into();
+        let salt = SaltString::generate(&mut OsRng);
+        let hash = Argon2::default()
+            .hash_password(password.as_bytes(), &salt)
+            .map_err(|e| Error::CryptoError(e.to_string()))?;
+        Ok(hash.to_string())
+    }
+
+    /// Verifies a plaintext password against this user's stored password hash.
+    pub fn check_password(&self, password: impl Into<String>) -> bool {
+        let password = password.into();
+        let Ok(parsed_hash) = PasswordHash::new(&self.password_hash) else {
+            return false;
+        };
+        Argon2::default().verify_password(password.as_bytes(), &parsed_hash).is_ok()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -78,15 +105,12 @@ impl NewUser {
     /// # Errors
     ///
     /// Returns `Error::Validation` if email is invalid.
-    pub fn new(
-        username: impl Into<String>,
-        password_hash: impl Into<String>,
-        email_address: impl Into<String>,
-        capabilities: Capabilities,
-    ) -> Result<Self, Error> {
+    pub fn new(username: impl Into<String>, password: impl Into<String>, email_address: impl Into<String>, capabilities: Capabilities) -> Result<Self, Error> {
+        let password_hash = User::encrypt_password(password)?;
+
         Ok(Self {
             username: username.into(),
-            password_hash: password_hash.into(),
+            password_hash,
             email_address: EmailAddress::new(email_address)?,
             capabilities,
         })

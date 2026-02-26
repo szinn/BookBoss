@@ -15,8 +15,10 @@ test-support = []
 [dependencies]
 bb-utils.workspace = true
 
+argon2.workspace = true
 async-trait.workspace = true
 chrono.workspace = true
+tokio.workspace = true
 derive_builder.workspace = true
 serde.workspace = true
 thiserror.workspace = true

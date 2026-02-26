@@ -4,10 +4,7 @@
       "Bash(cargo check:*)",
       "Bash(curl:*)",
       "Bash(gh api:*)",
-      "Bash(jj desc:*)",
-      "Bash(jj describe:*)",
-      "Bash(jj log:*)",
-      "Bash(jj show:*)",
+      "Bash(jj *)",
       "Bash(just *)",
       "WebFetch(domain:booklore.org)",
       "WebFetch(domain:en.wikipedia.org)",
@@ -24,5 +21,6 @@
       "WebFetch(domain:www.w3.org)",
       "WebSearch"
     ]
-  }
+  },
+  "enabledMcpjsonServers": ["github", "mermaid"]
 }

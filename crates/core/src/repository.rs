@@ -2,12 +2,13 @@ use std::{any::Any, future::Future, pin::Pin, sync::Arc};
 
 use derive_builder::Builder;
 
-use crate::{Error, user::UserRepository};
+use crate::{Error, auth::SessionRepository, user::UserRepository};
 
 #[derive(Builder)]
 #[builder(pattern = "owned")]
 pub struct RepositoryService {
     repository: Arc<dyn Repository>,
+    session_repository: Arc<dyn SessionRepository>,
     user_repository: Arc<dyn UserRepository>,
 }
 
@@ -15,6 +16,11 @@ impl RepositoryService {
     /// Returns a reference to the main repository for transaction management.
     pub fn repository(&self) -> &Arc<dyn Repository> {
         &self.repository
+    }
+
+    /// Returns a reference to the session repository.
+    pub fn session_repository(&self) -> &Arc<dyn SessionRepository> {
+        &self.session_repository
     }
 
     /// Returns a reference to the user repository.

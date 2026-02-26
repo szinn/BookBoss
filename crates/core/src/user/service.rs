@@ -85,6 +85,7 @@ mod tests {
     use super::{UserService, UserServiceImpl};
     use crate::{
         Error, RepositoryError,
+        auth::{NewSession, Session, repository::SessionRepository},
         repository::{Repository, RepositoryServiceBuilder, Transaction},
         user::{NewUser, User, UserId, UserToken, repository::UserRepository},
     };
@@ -105,6 +106,38 @@ mod tests {
 
         async fn rollback(self: Box<Self>) -> Result<(), Error> {
             Ok(())
+        }
+    }
+
+    // ─── Mock SessionRepository ──────────────────────────────────────────────
+
+    struct MockSessionRepository;
+
+    #[async_trait::async_trait]
+    impl SessionRepository for MockSessionRepository {
+        async fn count(&self, _tx: &dyn Transaction) -> Result<i64, Error> {
+            unimplemented!()
+        }
+        async fn store(&self, _tx: &dyn Transaction, _session: NewSession) -> Result<Session, Error> {
+            unimplemented!()
+        }
+        async fn load(&self, _tx: &dyn Transaction, _id: &str) -> Result<Option<Session>, Error> {
+            unimplemented!()
+        }
+        async fn delete_by_id(&self, _tx: &dyn Transaction, _id: &str) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn exists(&self, _tx: &dyn Transaction, _id: &str) -> Result<bool, Error> {
+            unimplemented!()
+        }
+        async fn delete_by_expiry(&self, _tx: &dyn Transaction) -> Result<Vec<String>, Error> {
+            unimplemented!()
+        }
+        async fn delete_all(&self, _tx: &dyn Transaction) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn get_ids(&self, _tx: &dyn Transaction) -> Result<Vec<String>, Error> {
+            unimplemented!()
         }
     }
 
@@ -228,6 +261,7 @@ mod tests {
         let repository_service = Arc::new(
             RepositoryServiceBuilder::default()
                 .repository(Arc::new(MockRepository) as Arc<dyn Repository>)
+                .session_repository(Arc::new(MockSessionRepository) as Arc<dyn SessionRepository>)
                 .user_repository(Arc::new(mock) as Arc<dyn UserRepository>)
                 .build()
                 .expect("all fields provided"),

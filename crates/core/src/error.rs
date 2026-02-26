@@ -36,6 +36,9 @@ pub enum Error {
     #[error("Frontend error: {0}")]
     FrontendError(String),
 
+    #[error("Crypto error: {0}")]
+    CryptoError(String),
+
     #[error(transparent)]
     RepositoryError(#[from] RepositoryError),
 
@@ -50,7 +53,7 @@ impl Error {
         match self {
             Error::InvalidId(_) | Error::InvalidPageSize(_) | Error::InvalidToken(_) => ErrorKind::BadRequest,
             Error::Validation(_) => ErrorKind::InvalidInput,
-            Error::InvalidTransactionType | Error::Infrastructure(_) => ErrorKind::Internal,
+            Error::InvalidTransactionType | Error::Infrastructure(_) | Error::CryptoError(_) => ErrorKind::Internal,
             Error::RepositoryError(e) => e.kind(),
             Error::FrontendError(_) => ErrorKind::Internal,
             #[cfg(any(test, feature = "test-support"))]

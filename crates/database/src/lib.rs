@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use bb_core::{
     Error,
+    auth::SessionRepository,
     repository::{Repository, RepositoryService, RepositoryServiceBuilder},
     user::UserRepository,
 };
@@ -19,7 +20,12 @@ mod migrations;
 mod repository;
 mod transaction;
 
-use crate::{adapters::user::UserRepositoryAdapter, migrations::Migrator, repository::RepositoryImpl, transaction::*};
+use crate::{
+    adapters::{session::SessionRepositoryAdapter, user::UserRepositoryAdapter},
+    migrations::Migrator,
+    repository::RepositoryImpl,
+    transaction::*,
+};
 
 #[derive(Debug, Deserialize)]
 pub struct DatabaseConfig {
@@ -46,6 +52,7 @@ pub async fn create_repository_service(database: DatabaseConnection) -> Result<A
 
     let repository_service = RepositoryServiceBuilder::default()
         .repository(Arc::new(RepositoryImpl::new(database)) as Arc<dyn Repository>)
+        .session_repository(Arc::new(SessionRepositoryAdapter::new()) as Arc<dyn SessionRepository>)
         .user_repository(Arc::new(UserRepositoryAdapter::new()) as Arc<dyn UserRepository>)
         .build()
         .map_err(|e| Error::Infrastructure(e.to_string()))?;
