@@ -66,7 +66,7 @@ pub(crate) fn LoginForm() -> Element {
                     input {
                         id: "login-username",
                         r#type: "text",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
                         placeholder: "Enter your username",
                         value: username,
                         oninput: move |e| username.set(e.value()),
@@ -84,7 +84,7 @@ pub(crate) fn LoginForm() -> Element {
                     input {
                         id: "login-password",
                         r#type: "password",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
                         placeholder: "Enter your password",
                         value: password,
                         oninput: move |e| password.set(e.value()),

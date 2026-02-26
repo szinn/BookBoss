@@ -116,7 +116,7 @@ pub(crate) fn RegisterAdminForm() -> Element {
                     input {
                         id: "reg-username",
                         r#type: "text",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
                         placeholder: "Choose a username",
                         value: username,
                         oninput: move |e| username.set(e.value()),
@@ -134,7 +134,7 @@ pub(crate) fn RegisterAdminForm() -> Element {
                     input {
                         id: "reg-password",
                         r#type: "password",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
                         placeholder: "Choose a strong password",
                         value: password,
                         oninput: move |e| password.set(e.value()),
@@ -162,7 +162,7 @@ pub(crate) fn RegisterAdminForm() -> Element {
                     input {
                         id: "reg-confirm-password",
                         r#type: "password",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
                         placeholder: "Re-enter your password",
                         value: confirm_password,
                         oninput: move |e| confirm_password.set(e.value()),
@@ -186,7 +186,7 @@ pub(crate) fn RegisterAdminForm() -> Element {
                     input {
                         id: "reg-email",
                         r#type: "email",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500",
                         placeholder: "admin@example.com",
                         value: email,
                         oninput: move |e| email.set(e.value()),
