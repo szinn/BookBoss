@@ -41,7 +41,7 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn store(&self, id: &str, session: &str, expires: i64, _table_name: &str) -> Result<(), DatabaseError> {
         let expires_at = DateTime::from_timestamp(expires, 0).ok_or_else(|| DatabaseError::GenericInsertError(format!("invalid timestamp: {expires}")))?;
         let new_session = NewSession::new(id, session, expires_at).map_err(|e| DatabaseError::GenericInsertError(e.to_string()))?;
@@ -53,7 +53,7 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericInsertError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn load(&self, id: &str, _table_name: &str) -> Result<Option<String>, DatabaseError> {
         self.core_services
             .auth_service
@@ -63,7 +63,7 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn delete_one_by_id(&self, id: &str, _table_name: &str) -> Result<(), DatabaseError> {
         self.core_services
             .auth_service
@@ -72,7 +72,7 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn exists(&self, id: &str, _table_name: &str) -> Result<bool, DatabaseError> {
         self.core_services
             .auth_service
@@ -81,7 +81,7 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn delete_by_expiry(&self, _table_name: &str) -> Result<Vec<String>, DatabaseError> {
         self.core_services
             .auth_service
@@ -90,7 +90,7 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn delete_all(&self, _table_name: &str) -> Result<(), DatabaseError> {
         self.core_services
             .auth_service
@@ -99,7 +99,7 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn get_ids(&self, _table_name: &str) -> Result<Vec<String>, DatabaseError> {
         self.core_services
             .auth_service
