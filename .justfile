@@ -37,6 +37,7 @@ build:
 
 [doc('Run BookBoss')]
 run:
+    just tailwindcss
     dx serve --web --package bookboss --args server
 
 [doc('Run Clippy on codebase for linting')]

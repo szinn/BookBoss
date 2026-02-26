@@ -45,12 +45,14 @@ pub use error::FrontendError;
 pub mod server;
 
 use components::AppLayout;
-use routes::BooksPage;
+use routes::{BooksPage, LandingPage};
 use serde::Deserialize;
 
 #[derive(Routable, Clone, PartialEq)]
 #[rustfmt::skip]
 enum Route {
+    #[route("/")]
+    LandingPage {},
     #[layout(AppLayout)]
         #[route("/books")]
         BooksPage {},

@@ -15,14 +15,14 @@ pub(crate) mod system_proto {
 
 pub(crate) struct GrpcSubsystem {
     config: ApiConfig,
-    core_services: Arc<CoreServices>,
+    // core_services: Arc<CoreServices>,
 }
 
 impl GrpcSubsystem {
-    pub(crate) fn new(config: &ApiConfig, core_services: Arc<CoreServices>) -> Self {
+    pub(crate) fn new(config: &ApiConfig, _core_services: Arc<CoreServices>) -> Self {
         Self {
             config: config.to_owned(),
-            core_services,
+            // core_services,
         }
     }
 }

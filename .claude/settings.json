@@ -2,6 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(cargo check:*)",
+      "Bash(cargo doc:*)",
+      "Bash(cargo metadata:*)",
+      "Bash(cargo tree:*)",
       "Bash(curl:*)",
       "Bash(gh api:*)",
       "Bash(jj desc:*)",
@@ -12,6 +15,7 @@
       "Bash(jj show:*)",
       "Bash(jj status:*)",
       "Bash(just *)",
+      "Bash(ls:*)",
       "WebFetch(domain:booklore.org)",
       "WebFetch(domain:en.wikipedia.org)",
       "WebFetch(domain:github.com)",
