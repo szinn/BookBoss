@@ -17,6 +17,7 @@ bb-core = { path = "crates/core" }
 bb-database = { path = "crates/database" }
 bb-formats = { path = "crates/formats" }
 bb-frontend = { path = "crates/frontend" }
+bb-metadata = { path = "crates/metadata" }
 bb-utils = { path = "crates/utils" }
 
 testcontainers = "0.27.1"
