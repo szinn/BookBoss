@@ -1,25 +1,19 @@
 use dioxus::prelude::*;
 
-use crate::{Route, routes::landing_page::register_admin};
+use crate::{
+    Route,
+    routes::landing_page::{MIN_PASSWORD_LEN, register_admin},
+};
 
 const SPECIAL_CHARS: &str = "!@#$%^&*()_+-=[]{}|;:,.<>?";
 
-fn password_requirements(pw: &str) -> Vec<(&'static str, bool)> {
+fn password_requirements(pw: &str) -> Vec<(String, bool)> {
     vec![
-        ("At least 12 characters", pw.len() >= 12),
-        (
-            "One uppercase letter (A–Z)",
-            pw.chars().any(|c| c.is_uppercase()),
-        ),
-        (
-            "One lowercase letter (a–z)",
-            pw.chars().any(|c| c.is_lowercase()),
-        ),
-        ("One digit (0–9)", pw.chars().any(|c| c.is_ascii_digit())),
-        (
-            "One special character (!@#$%^&*…)",
-            pw.chars().any(|c| SPECIAL_CHARS.contains(c)),
-        ),
+        (format!("At least {MIN_PASSWORD_LEN} characters"), pw.len() >= MIN_PASSWORD_LEN),
+        ("One uppercase letter (A–Z)".to_string(), pw.chars().any(|c| c.is_uppercase())),
+        ("One lowercase letter (a–z)".to_string(), pw.chars().any(|c| c.is_lowercase())),
+        ("One digit (0–9)".to_string(), pw.chars().any(|c| c.is_ascii_digit())),
+        ("One special character (!@#$%^&*…)".to_string(), pw.chars().any(|c| SPECIAL_CHARS.contains(c))),
     ]
 }
 

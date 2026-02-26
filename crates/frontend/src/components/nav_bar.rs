@@ -6,12 +6,9 @@ use crate::Route;
 async fn logout() -> Result<(), ServerFnError> {
     use crate::server::AuthSession;
 
-    let ctx = FullstackContext::current()
-        .ok_or_else(|| ServerFnError::new("Not in a server context"))?;
+    let ctx = FullstackContext::current().ok_or_else(|| ServerFnError::new("Not in a server context"))?;
 
-    let auth_session: AuthSession = ctx
-        .extension()
-        .ok_or_else(|| ServerFnError::new("AuthSession not available"))?;
+    let auth_session: AuthSession = ctx.extension().ok_or_else(|| ServerFnError::new("AuthSession not available"))?;
 
     auth_session.logout_user();
 

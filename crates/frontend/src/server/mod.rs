@@ -57,7 +57,7 @@ pub fn launch_server_frontend(config: &FrontendConfig, core_services: Arc<CoreSe
             let core_services = core_services.clone();
             let backend_pool = BackendSessionPool::new(core_services.clone());
             let session_config = SessionConfig::default();
-            let auth_config = AuthConfig::<UserId>::default().with_anonymous_user_id(Some(1));
+            let auth_config = AuthConfig::<UserId>::default();
             async move {
                 let x_request_id = HeaderName::from_static(REQUEST_ID_HEADER);
                 let session_store = SessionStore::<BackendSessionPool>::new(Some(backend_pool.clone()), session_config).await?;

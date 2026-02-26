@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -12,30 +14,15 @@ pub(crate) struct LandingState {
     pub has_users: bool,
 }
 
-#[server]
+pub(crate) const MIN_PASSWORD_LEN: usize = 12;
+
+#[cfg(feature = "server")]
+use {crate::server::AuthSession, bb_core::CoreServices};
+
+#[get("/api/v1/get_landing_state", core_services: axum::Extension<Arc<CoreServices>>, auth_session: axum::Extension<AuthSession>)]
+#[tracing::instrument(level = "trace", skip(core_services, auth_session))]
 async fn get_landing_state() -> Result<LandingState, ServerFnError> {
-    use std::sync::Arc;
-
-    use bb_core::CoreServices;
-
-    use crate::server::AuthSession;
-
-    let ctx = FullstackContext::current()
-        .ok_or_else(|| ServerFnError::new("Not in a server context"))?;
-
-    let core_services: Arc<CoreServices> = ctx
-        .extension()
-        .ok_or_else(|| ServerFnError::new("CoreServices not available"))?;
-
-    let auth_session: AuthSession = ctx
-        .extension()
-        .ok_or_else(|| ServerFnError::new("AuthSession not available"))?;
-
-    let is_authenticated = auth_session
-        .current_user
-        .as_ref()
-        .map(|u| !u.username.is_empty())
-        .unwrap_or(false);
+    let is_authenticated = auth_session.current_user.as_ref().map(|u| !u.username.is_empty()).unwrap_or(false);
 
     let users = core_services
         .user_service
@@ -49,28 +36,9 @@ async fn get_landing_state() -> Result<LandingState, ServerFnError> {
     })
 }
 
-#[server]
-pub(crate) async fn perform_login(
-    username: String,
-    password: String,
-) -> Result<(), ServerFnError> {
-    use std::sync::Arc;
-
-    use bb_core::CoreServices;
-
-    use crate::server::AuthSession;
-
-    let ctx = FullstackContext::current()
-        .ok_or_else(|| ServerFnError::new("Not in a server context"))?;
-
-    let core_services: Arc<CoreServices> = ctx
-        .extension()
-        .ok_or_else(|| ServerFnError::new("CoreServices not available"))?;
-
-    let auth_session: AuthSession = ctx
-        .extension()
-        .ok_or_else(|| ServerFnError::new("AuthSession not available"))?;
-
+#[put("/api/v1/login", core_services: axum::Extension<Arc<CoreServices>>, auth_session: axum::Extension<AuthSession>)]
+#[tracing::instrument(level = "trace", skip(core_services, auth_session))]
+pub(crate) async fn perform_login(username: String, password: String) -> Result<(), ServerFnError> {
     match core_services
         .auth_service
         .is_valid_login(&username, &password)
@@ -85,55 +53,29 @@ pub(crate) async fn perform_login(
     }
 }
 
-#[server]
-pub(crate) async fn register_admin(
-    username: String,
-    password: String,
-    email: String,
-) -> Result<(), ServerFnError> {
+#[put("/api/v1/register_admin", core_services: axum::Extension<Arc<CoreServices>>, auth_session: axum::Extension<AuthSession>)]
+#[tracing::instrument(level = "trace", skip(core_services, auth_session))]
+pub(crate) async fn register_admin(username: String, password: String, email: String) -> Result<(), ServerFnError> {
     use std::collections::HashSet;
-    use std::sync::Arc;
 
-    use bb_core::{CoreServices, types::Capability, user::NewUser};
-
-    use crate::server::AuthSession;
+    use bb_core::{types::Capability, user::NewUser};
 
     // Server-side password strength validation
-    if password.len() < 12 {
+    if password.len() < MIN_PASSWORD_LEN {
         return Err(ServerFnError::new("Password must be at least 12 characters"));
     }
     if !password.chars().any(|c| c.is_uppercase()) {
-        return Err(ServerFnError::new(
-            "Password must contain at least one uppercase letter",
-        ));
+        return Err(ServerFnError::new("Password must contain at least one uppercase letter"));
     }
     if !password.chars().any(|c| c.is_lowercase()) {
-        return Err(ServerFnError::new(
-            "Password must contain at least one lowercase letter",
-        ));
+        return Err(ServerFnError::new("Password must contain at least one lowercase letter"));
     }
     if !password.chars().any(|c| c.is_ascii_digit()) {
         return Err(ServerFnError::new("Password must contain at least one digit"));
     }
-    if !password
-        .chars()
-        .any(|c| "!@#$%^&*()_+-=[]{}|;:,.<>?".contains(c))
-    {
-        return Err(ServerFnError::new(
-            "Password must contain at least one special character",
-        ));
+    if !password.chars().any(|c| "!@#$%^&*()_+-=[]{}|;:,.<>?".contains(c)) {
+        return Err(ServerFnError::new("Password must contain at least one special character"));
     }
-
-    let ctx = FullstackContext::current()
-        .ok_or_else(|| ServerFnError::new("Not in a server context"))?;
-
-    let core_services: Arc<CoreServices> = ctx
-        .extension()
-        .ok_or_else(|| ServerFnError::new("CoreServices not available"))?;
-
-    let auth_session: AuthSession = ctx
-        .extension()
-        .ok_or_else(|| ServerFnError::new("AuthSession not available"))?;
 
     // Safety check: ensure no users exist yet
     let existing = core_services
@@ -146,9 +88,7 @@ pub(crate) async fn register_admin(
         return Err(ServerFnError::new("An admin user already exists"));
     }
 
-    let new_user =
-        NewUser::new(username, password, email, HashSet::from([Capability::Admin]))
-            .map_err(|e| ServerFnError::new(e.to_string()))?;
+    let new_user = NewUser::new(username, password, email, HashSet::from([Capability::Admin])).map_err(|e| ServerFnError::new(e.to_string()))?;
 
     let user = core_services
         .user_service
