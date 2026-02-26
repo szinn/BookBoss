@@ -54,7 +54,7 @@ enum Route {
     #[route("/")]
     LandingPage {},
     #[layout(AppLayout)]
-        #[route("/books")]
+        #[route("/library")]
         BooksPage {},
 }
 
