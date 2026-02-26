@@ -1,6 +1,7 @@
 use std::{fmt::Debug, sync::Arc};
 
 use axum_session::{DatabaseError, DatabasePool};
+use axum_session_auth::HasPermission;
 use bb_core::{CoreServices, auth::NewSession, user::UserId};
 use chrono::DateTime;
 
@@ -111,5 +112,13 @@ impl DatabasePool for BackendSessionPool {
     #[tracing::instrument(level = "trace", skip(self))]
     fn auto_handles_expiry(&self) -> bool {
         false
+    }
+}
+
+#[async_trait::async_trait]
+impl HasPermission<BackendSessionPool> for AuthUser {
+    #[tracing::instrument(level = "trace", skip(self, _pool))]
+    async fn has(&self, perm: &str, _pool: &Option<&BackendSessionPool>) -> bool {
+        self.permissions.contains(perm)
     }
 }

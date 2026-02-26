@@ -11,3 +11,14 @@ pub enum Capability {
     DeleteBook,
     EditBook,
 }
+
+impl Capability {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Admin => "Admin",
+            Self::ConvertBook => "ConvertBook",
+            Self::DeleteBook => "DeleteBook",
+            Self::EditBook => "EditBook",
+        }
+    }
+}

@@ -5,7 +5,7 @@ use axum::{
     http::{HeaderName, Request},
 };
 use axum_session::{SessionConfig, SessionLayer, SessionStore};
-use axum_session_auth::{AuthConfig, AuthSessionLayer, HasPermission};
+use axum_session_auth::{AuthConfig, AuthSessionLayer};
 use bb_core::{CoreServices, user::UserId};
 use chrono::Duration;
 use tower::ServiceBuilder;
@@ -23,14 +23,6 @@ pub(crate) use session_pool::{AuthSession, BackendSessionPool};
 pub(crate) mod auth_user;
 
 pub(crate) use auth_user::AuthUser;
-
-#[async_trait::async_trait]
-impl HasPermission<BackendSessionPool> for AuthUser {
-    #[tracing::instrument(level = "trace", skip(self, _pool))]
-    async fn has(&self, perm: &str, _pool: &Option<&BackendSessionPool>) -> bool {
-        self.permissions.contains(perm)
-    }
-}
 
 const REQUEST_ID_HEADER: &str = "x-request-id";
 const DEFAULT_EXPIRATION_DURATION: Duration = Duration::days(7);
