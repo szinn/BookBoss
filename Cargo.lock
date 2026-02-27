@@ -615,7 +615,7 @@ checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
 
 [[package]]
 name = "bb-api"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "async-trait",
  "axum",
@@ -641,7 +641,7 @@ dependencies = [
 
 [[package]]
 name = "bb-core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "argon2",
  "async-trait",
@@ -657,7 +657,7 @@ dependencies = [
 
 [[package]]
 name = "bb-database"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "async-trait",
  "bb-core",
@@ -672,7 +672,7 @@ dependencies = [
 
 [[package]]
 name = "bb-formats"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "async-trait",
  "bb-core",
@@ -683,7 +683,7 @@ dependencies = [
 
 [[package]]
 name = "bb-frontend"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -702,7 +702,7 @@ dependencies = [
 
 [[package]]
 name = "bb-utils"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "rand 0.10.0",
  "serde",
@@ -839,7 +839,7 @@ dependencies = [
 
 [[package]]
 name = "bookboss"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "bb-api",
@@ -3197,7 +3197,7 @@ dependencies = [
 
 [[package]]
 name = "integration-tests"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "bb-core",
  "bb-database",
@@ -4854,9 +4854,9 @@ dependencies = [
 
 [[package]]
 name = "sea-orm"
-version = "2.0.0-rc.34"
+version = "2.0.0-rc.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "462d18bd437d2ca0c363403dca347c540acc81dd61754dd951651b900234878b"
+checksum = "41c847ddcc05ba1c4a8ad6bf781ac8d3750123f6e95642c2268b0551101931de"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -4898,9 +4898,9 @@ dependencies = [
 
 [[package]]
 name = "sea-orm-cli"
-version = "2.0.0-rc.34"
+version = "2.0.0-rc.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d5c818d3681f7b31a22e1c92d49d2a5440216cca0b2e53fabf47545d9e8accf"
+checksum = "19cac0ea172be551704a2c1dba1bea5a3057b2ed70b8a2819f965c501d1ffc07"
 dependencies = [
  "chrono",
  "clap",
@@ -4918,9 +4918,9 @@ dependencies = [
 
 [[package]]
 name = "sea-orm-macros"
-version = "2.0.0-rc.34"
+version = "2.0.0-rc.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42f1d4fdbacfae22398d78de1a217048524ef7ea8c8d122c330144a98c5e685d"
+checksum = "a172f9ceaceafa0fe40f6f15df0231750755284c80bd8ba98d10d5ae611ecaf0"
 dependencies = [
  "heck 0.5.0",
  "itertools",
@@ -4934,9 +4934,9 @@ dependencies = [
 
 [[package]]
 name = "sea-orm-migration"
-version = "2.0.0-rc.34"
+version = "2.0.0-rc.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c0d747466c5b66f8e6dc088cdaae12875dccd2d15892f72126690ea3aaff32b"
+checksum = "c011930d0cd0d0157d93ef9ad1fdd7a4002f28c082d0c49fabc5f0f445c8e925"
 dependencies = [
  "async-trait",
  "clap",
