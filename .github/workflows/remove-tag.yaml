@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Remove Docker Tag
-        uses: rafalkk/remove-dockertag-action@v1
+        uses: rafalkk/remove-dockertag-action@581f14f26a4a127cbe4145f7584975483a58b4e8 # v1
         with:
           tag_name: v0.10.0
           github_token: ${{ secrets.GHCR_TOKEN }}
