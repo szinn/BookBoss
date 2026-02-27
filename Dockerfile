@@ -1,4 +1,4 @@
-FROM rust:1 AS chef
+FROM rust:1@sha256:51c04d7a2b38418ba23ecbfb373c40d3bd493dec1ddfae00ab5669527320195e AS chef
 
 ARG TARGETPLATFORM
 ARG TARGETARCH
@@ -37,18 +37,18 @@ RUN addgroup --gid 1000 bookboss && useradd -g 1000 -M -u 1000 -s /usr/sbin/nolo
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 RUN update-ca-certificates
 
-# FROM chef AS runtime
-FROM scratch
+FROM chef AS runtime
+# FROM scratch
 COPY --from=ubuntu /etc/passwd /etc/passwd
 COPY --from=ubuntu /etc/group /etc/group
 COPY --from=ubuntu /etc/ssl/ /etc/ssl/
-COPY --from=builder /app/target/dx/bookboss/release/web/ /usr/local/app
+COPY --from=builder /app/target/dx/bookboss/release/web/ /app
 
 ENV PORT=8080
 ENV IP=0.0.0.0
 EXPOSE 8080
 
-WORKDIR /usr/local/app
+WORKDIR /app
 VOLUME [ /library ]
 USER bookboss
-ENTRYPOINT [ "/usr/local/app/server", "server" ]
+ENTRYPOINT [ "/app/bookboss", "server" ]
