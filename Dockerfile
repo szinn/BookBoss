@@ -44,10 +44,6 @@ COPY --from=ubuntu /etc/group /etc/group
 COPY --from=ubuntu /etc/ssl/ /etc/ssl/
 COPY --from=builder /app/target/dx/bookboss/release/web/ /app
 
-ENV PORT=8080
-ENV IP=0.0.0.0
-EXPOSE 8080
-
 WORKDIR /app
 VOLUME [ /library ]
 USER bookboss
