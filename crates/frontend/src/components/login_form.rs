@@ -14,7 +14,7 @@ pub(crate) fn LoginForm() -> Element {
         div { class: "bg-white rounded-2xl shadow-lg w-full max-w-md",
             div { class: "flex justify-center pt-8 pb-2",
                 img {
-                    src: asset!("/assets/BookBoss Banner.png"),
+                    src: asset!("/assets/BookBoss-Banner.png"),
                     alt: "BookBoss",
                     class: "w-[33vw] max-w-full h-auto",
                 }
