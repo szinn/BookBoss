@@ -28,6 +28,11 @@ pub(crate) fn NavBar() -> Element {
     rsx! {
         nav { class: "bg-indigo-700 text-white px-6 py-3 flex items-center justify-between shadow-sm",
             div { class: "flex items-center gap-6",
+                img {
+                    src: asset!("/assets/BookBoss-Title.png"),
+                    alt: "BookBoss",
+                    class: "h-8 w-auto",
+                }
                 Link { to: Route::BooksPage {}, class: "text-sm hover:text-indigo-200",
                     "Library"
                 }
