@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 #[cfg(not(feature = "server"))]
 fn main() {
     bb_frontend::web::launch_web_frontend();
@@ -42,6 +40,8 @@ async fn main() -> anyhow::Result<()> {
 
             #[cfg(feature = "grpc")]
             let server = {
+                use std::time::Duration;
+
                 let api_subsystem = create_api_subsystem(&config.api, services.clone());
 
                 Toplevel::new(async |s: &mut SubsystemHandle| {

@@ -1,0 +1,16 @@
+# Exclude the entire Rust build output directory.
+# This is crucial as it can be several gigabytes in size.
+target/
+
+# Exclude source control files and directories
+.git
+.gitignore
+
+# Exclude common development environment files
+.DS_Store
+Thumbs.db
+*.log
+*.md
+docker-compose*.yml
+.env*
+

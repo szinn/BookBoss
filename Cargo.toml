@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/bookboss", "crates/integration-tests"]
 
 [workspace.package]
-version = "0.1.2"
+version = "0.1.7"
 edition = "2024"
 rust-version = "1.85"
 description = "Take control of your digital library"
