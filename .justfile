@@ -27,6 +27,7 @@ fmt:
 
 [doc('Update CHANGELOG.md')]
 changelog:
+    jj sync
     RUST_LOG= git-cliff --config .config/cliff.toml > CHANGELOG.md
     just fmt
 

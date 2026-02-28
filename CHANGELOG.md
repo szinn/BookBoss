@@ -29,7 +29,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Testing
 
 - _(core, database)_ Add unit and component tests for User model and adapters - ([c0a1e48](https://github.com/szinn/BookBoss/commit/c0a1e4828978446aa64a840f16374610a6448548))
-
-### Miscellaneous Tasks
-
-- _(config)_ Migrate Renovate config ([#9](https://github.com/szinn/BookBoss/issues/9)) - ([6b45463](https://github.com/szinn/BookBoss/commit/6b45463eb5935949334d756c1dfecdf24de1f643))

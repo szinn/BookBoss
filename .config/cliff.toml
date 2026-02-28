@@ -87,7 +87,7 @@ commit_parsers = [
     { message = "^fix!?\\(deps\\)", skip = true },
     { message = "^chore!?\\(deps\\)", skip = true },
     { message = "^ci!?\\(renovate\\)", skip = true },
-    { message = "^ci!?\\(ignore\\)", skip = true },
+    { message = "^.*\\(ignore\\)", skip = true },
     { message = "^ignore", skip = true },
     { message = "^feat", group = "<!-- 0 -->Features" },
     { message = "^fix", group = "<!-- 1 -->Bug Fixes" },
