@@ -96,7 +96,10 @@ mod tests {
         Error, RepositoryError,
         auth::{NewSession, Session, SessionBuilder, repository::SessionRepository},
         repository::{Repository, RepositoryServiceBuilder, Transaction},
-        user::{NewUser, User, UserId, repository::UserRepository},
+        user::{
+            NewUser, NewUserSetting, User, UserId, UserSetting,
+            repository::{UserRepository, UserSettingRepository},
+        },
     };
 
     // ─── Mock Transaction ────────────────────────────────────────────────────
@@ -179,6 +182,26 @@ mod tests {
                 .unwrap()
                 .clone()
                 .unwrap_or_else(|| Err(Error::MockNotConfigured("find_by_username")))
+        }
+    }
+
+    // ─── Mock UserSettingRepository ──────────────────────────────────────────
+
+    struct MockUserSettingRepository;
+
+    #[async_trait::async_trait]
+    impl UserSettingRepository for MockUserSettingRepository {
+        async fn get(&self, _tx: &dyn Transaction, _user_id: UserId, _key: &str) -> Result<Option<UserSetting>, Error> {
+            unimplemented!()
+        }
+        async fn set(&self, _tx: &dyn Transaction, _setting: NewUserSetting) -> Result<UserSetting, Error> {
+            unimplemented!()
+        }
+        async fn delete(&self, _tx: &dyn Transaction, _user_id: UserId, _key: &str) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn list_by_user(&self, _tx: &dyn Transaction, _user_id: UserId) -> Result<Vec<UserSetting>, Error> {
+            unimplemented!()
         }
     }
 
@@ -313,6 +336,7 @@ mod tests {
                 .repository(Arc::new(MockRepository) as Arc<dyn Repository>)
                 .session_repository(Arc::new(mock) as Arc<dyn SessionRepository>)
                 .user_repository(Arc::new(MockUserRepository::default()) as Arc<dyn UserRepository>)
+                .user_setting_repository(Arc::new(MockUserSettingRepository) as Arc<dyn UserSettingRepository>)
                 .build()
                 .expect("all fields provided"),
         );
@@ -325,6 +349,7 @@ mod tests {
                 .repository(Arc::new(MockRepository) as Arc<dyn Repository>)
                 .session_repository(Arc::new(MockSessionRepository::default()) as Arc<dyn SessionRepository>)
                 .user_repository(Arc::new(user_mock) as Arc<dyn UserRepository>)
+                .user_setting_repository(Arc::new(MockUserSettingRepository) as Arc<dyn UserSettingRepository>)
                 .build()
                 .expect("all fields provided"),
         );

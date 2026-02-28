@@ -2,7 +2,11 @@ use std::{any::Any, future::Future, pin::Pin, sync::Arc};
 
 use derive_builder::Builder;
 
-use crate::{Error, auth::SessionRepository, user::UserRepository};
+use crate::{
+    Error,
+    auth::SessionRepository,
+    user::{UserRepository, UserSettingRepository},
+};
 
 #[derive(Builder)]
 #[builder(pattern = "owned")]
@@ -10,6 +14,7 @@ pub struct RepositoryService {
     repository: Arc<dyn Repository>,
     session_repository: Arc<dyn SessionRepository>,
     user_repository: Arc<dyn UserRepository>,
+    user_setting_repository: Arc<dyn UserSettingRepository>,
 }
 
 impl RepositoryService {
@@ -26,6 +31,11 @@ impl RepositoryService {
     /// Returns a reference to the user repository.
     pub fn user_repository(&self) -> &Arc<dyn UserRepository> {
         &self.user_repository
+    }
+
+    /// Returns a reference to the user setting repository.
+    pub fn user_setting_repository(&self) -> &Arc<dyn UserSettingRepository> {
+        &self.user_setting_repository
     }
 }
 

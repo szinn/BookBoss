@@ -11,7 +11,7 @@ pub use error::{Error, ErrorKind, RepositoryError};
 use crate::{
     auth::{AuthService, AuthServiceImpl},
     repository::RepositoryService,
-    user::{UserService, UserServiceImpl},
+    user::{UserService, UserServiceImpl, UserSettingService, UserSettingServiceImpl},
 };
 
 #[cfg(feature = "test-support")]
@@ -20,6 +20,7 @@ pub mod test_support;
 pub struct CoreServices {
     pub auth_service: Arc<dyn AuthService>,
     pub user_service: Arc<dyn UserService>,
+    pub user_setting_service: Arc<dyn UserSettingService>,
 }
 
 impl CoreServices {
@@ -28,6 +29,7 @@ impl CoreServices {
         Self {
             auth_service: Arc::new(AuthServiceImpl::new(repository_service.clone())),
             user_service: Arc::new(UserServiceImpl::new(repository_service.clone())),
+            user_setting_service: Arc::new(UserSettingServiceImpl::new(repository_service.clone())),
         }
     }
 }
