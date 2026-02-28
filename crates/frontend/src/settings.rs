@@ -4,14 +4,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub(crate) enum BookDisplayView {
     #[default]
-    IconView,
+    GridView,
     TableView,
 }
 
 impl std::fmt::Display for BookDisplayView {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::IconView => write!(f, "icon_view"),
+            Self::GridView => write!(f, "grid_view"),
             Self::TableView => write!(f, "table_view"),
         }
     }
@@ -22,7 +22,7 @@ impl std::str::FromStr for BookDisplayView {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "icon_view" => Ok(Self::IconView),
+            "grid_view" => Ok(Self::GridView),
             "table_view" => Ok(Self::TableView),
             _ => Err(()),
         }
@@ -53,19 +53,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn book_display_view_default_is_icon_view() {
-        assert_eq!(BookDisplayView::default(), BookDisplayView::IconView);
+    fn book_display_view_default_is_grid_view() {
+        assert_eq!(BookDisplayView::default(), BookDisplayView::GridView);
     }
 
     #[test]
     fn book_display_view_display() {
-        assert_eq!(BookDisplayView::IconView.to_string(), "icon_view");
+        assert_eq!(BookDisplayView::GridView.to_string(), "grid_view");
         assert_eq!(BookDisplayView::TableView.to_string(), "table_view");
     }
 
     #[test]
     fn book_display_view_from_str() {
-        assert_eq!("icon_view".parse::<BookDisplayView>(), Ok(BookDisplayView::IconView));
+        assert_eq!("grid_view".parse::<BookDisplayView>(), Ok(BookDisplayView::GridView));
         assert_eq!("table_view".parse::<BookDisplayView>(), Ok(BookDisplayView::TableView));
         assert_eq!("unknown".parse::<BookDisplayView>(), Err(()));
         assert_eq!("".parse::<BookDisplayView>(), Err(()));
@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn book_display_view_round_trip() {
-        for variant in [BookDisplayView::IconView, BookDisplayView::TableView] {
+        for variant in [BookDisplayView::GridView, BookDisplayView::TableView] {
             let serialized = variant.to_string();
             let parsed: BookDisplayView = serialized.parse().expect("round-trip parse failed");
             assert_eq!(parsed, variant);
