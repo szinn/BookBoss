@@ -1,10 +1,13 @@
 use std::collections::HashSet;
 
 use axum_session_auth::Authentication;
-use bb_core::{types::Capability, user::UserId};
+use bb_core::{CoreServices, types::Capability, user::UserId};
 use serde::{Deserialize, Serialize};
 
-use crate::server::BackendSessionPool;
+use crate::{
+    server::BackendSessionPool,
+    settings::{BookDisplayView, FrontendSettings},
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct AuthUser {
@@ -58,5 +61,46 @@ impl Authentication<Self, UserId, BackendSessionPool> for AuthUser {
     #[tracing::instrument(level = "trace")]
     fn is_anonymous(&self) -> bool {
         self.anonymous
+    }
+}
+
+impl AuthUser {
+    pub(crate) async fn get_book_display_view(&self, core: &CoreServices) -> BookDisplayView {
+        if self.anonymous {
+            return BookDisplayView::default();
+        }
+        core.user_setting_service
+            .get(self.id, FrontendSettings::BookDisplayView.key())
+            .await
+            .inspect_err(|e| tracing::warn!("Failed to load book_display_view for user {}: {e}", self.id))
+            .ok()
+            .flatten()
+            .and_then(|s| s.value.parse().ok())
+            .unwrap_or_default()
+    }
+
+    pub(crate) async fn set_book_display_view(&self, view: BookDisplayView, core: &CoreServices) -> Result<(), bb_core::Error> {
+        core.user_setting_service
+            .set(self.id, FrontendSettings::BookDisplayView.key(), &view.to_string())
+            .await
+            .map(|_| ())
+    }
+
+    pub(crate) async fn get_api_key(&self, core: &CoreServices) -> String {
+        if self.anonymous {
+            return String::new();
+        }
+        core.user_setting_service
+            .get(self.id, FrontendSettings::ApiKey.key())
+            .await
+            .inspect_err(|e| tracing::warn!("Failed to load api_key for user {}: {e}", self.id))
+            .ok()
+            .flatten()
+            .map(|s| s.value)
+            .unwrap_or_default()
+    }
+
+    pub(crate) async fn set_api_key(&self, key: &str, core: &CoreServices) -> Result<(), bb_core::Error> {
+        core.user_setting_service.set(self.id, FrontendSettings::ApiKey.key(), key).await.map(|_| ())
     }
 }

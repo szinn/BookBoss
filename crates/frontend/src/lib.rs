@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 
 mod components;
 pub(crate) mod routes;
+pub(crate) mod settings;
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]
