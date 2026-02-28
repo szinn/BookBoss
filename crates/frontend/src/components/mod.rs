@@ -1,4 +1,5 @@
 mod app_layout;
+mod book_grid;
 mod book_table;
 mod detail_panel;
 mod login_form;
@@ -7,6 +8,7 @@ mod register_admin_form;
 mod tree_explorer;
 
 pub(crate) use app_layout::AppLayout;
+pub(crate) use book_grid::BookGrid;
 pub(crate) use book_table::BookTable;
 pub(crate) use detail_panel::DetailPanel;
 pub(crate) use login_form::LoginForm;
