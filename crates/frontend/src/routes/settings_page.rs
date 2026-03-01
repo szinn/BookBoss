@@ -1,8 +1,8 @@
+#[cfg(feature = "server")]
+use bb_core::CoreServices;
 use dioxus::prelude::*;
 #[cfg(feature = "server")]
 use {crate::server::AuthSession, std::sync::Arc};
-#[cfg(feature = "server")]
-use bb_core::CoreServices;
 
 use crate::Route;
 
@@ -33,10 +33,7 @@ async fn get_library_stats() -> Result<LibraryStats, ServerFnError> {
         .filter(|u| !u.username.is_empty())
         .ok_or_else(|| ServerFnError::new("Not authenticated"))?;
 
-    Ok(LibraryStats {
-        books: 0,
-        authors: 0,
-    })
+    Ok(LibraryStats { books: 0, authors: 0 })
 }
 
 // ---------------------------------------------------------------------------
@@ -93,10 +90,7 @@ pub(crate) fn SettingsPage() -> Element {
     // TODO: Fetch user capabilities from a server function when sections that
     // require specific capabilities are added. For now, all sections are
     // visible (About requires none).
-    let visible_sections: Vec<&SettingSection> = SettingSection::all()
-        .iter()
-        .filter(|s| s.required_capability().is_none())
-        .collect();
+    let visible_sections: Vec<&SettingSection> = SettingSection::all().iter().filter(|s| s.required_capability().is_none()).collect();
 
     rsx! {
         div { class: "flex h-full flex-1",
