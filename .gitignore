@@ -20,6 +20,9 @@ mise.local.toml
 # Generated Tailwind CSS
 # crates/frontend/assets/tailwind.css
 
+# Generated mdbook site
+docs/book/
+
 # Editor specific ignores
 .idea
 .vscode

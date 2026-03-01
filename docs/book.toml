@@ -1,0 +1,8 @@
+[book]
+title = "BookBoss"
+authors = ["Scotte Zinn"]
+language = "en"
+src = "src"
+
+[output.html]
+git-repository-url = "https://github.com/szinn/BookBoss"

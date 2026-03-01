@@ -32,8 +32,6 @@ just install-tools
 - Create changelog: `just changelog`
 - Database admin: `just database`
 - Create database: `just create-database`
-- Redo all migrations: `just migrations`
-- Extract database entities: `just entities`
 - Start colima for integration tests or all tests: `colima start`
 - Stop colima: `colima stop`
 

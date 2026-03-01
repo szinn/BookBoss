@@ -14,7 +14,7 @@ install-tools:
     rustup toolchain add nightly
     rustup target add wasm32-unknown-unknown
 
-[doc('Edit configuration')]
+[doc('Edit encrypted configuration')]
 config:
     sops -d -i config.sops.env
     nvim config.sops.env
@@ -89,6 +89,14 @@ sqlite-integration-tests:
 [doc('Run MySQL integration tests')]
 mysql-integration-tests:
     cargo nextest run --no-default-features --features mysql --package integration-tests
+
+[doc('Serve documentation locally with live reload')]
+docs-serve:
+    cd docs && mdbook serve
+
+[doc('Build documentation as static site')]
+docs-build:
+    cd docs && mdbook build
 
 [doc('Clean project workspace')]
 clean:
