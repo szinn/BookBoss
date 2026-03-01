@@ -114,7 +114,10 @@ pub(crate) fn NavBar() -> Element {
                         },
                     }
                 }
-                button { class: "flex items-center hover:text-indigo-200 ml-4", title: "Settings",
+                button {
+                    class: "flex items-center hover:text-indigo-200 ml-4 cursor-pointer",
+                    title: "Settings",
+                    onclick: move |_| { navigator.push(Route::SettingsPage {}); },
                     svg {
                         class: "w-5 h-5",
                         fill: "none",
