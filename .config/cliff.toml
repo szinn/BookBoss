@@ -96,7 +96,7 @@ commit_parsers = [
     { message = "^refactor", group = "<!-- 2 -->Refactor" },
     { message = "^style", group = "<!-- 5 -->Stying" },
     { message = "^test", group = "<!-- 6 -->Testing" },
-    { message = "^chore\\(release\\): prepare for", skip = true },
+    { message = "^chore\\(release\\)", skip = true },
     { message = "^feat!?\\(deps\\)", skip = true },
     { message = "^chore\\(pr\\)", skip = true },
     { message = "^chore\\(pull\\)", skip = true },

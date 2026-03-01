@@ -20,10 +20,8 @@ jobs:
   build:
     name: Build BookBoss
     runs-on: ubuntu-latest
-    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
-    # (required)
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - name: Setup Tools
@@ -49,11 +47,11 @@ jobs:
         shell: bash
         run: |
           if test "$GITHUB_EVENT_NAME" == "workflow_dispatch"; then
-            echo "::set-output name=version::${{ inputs.version }}"
-            echo "::set-output name=tag_version::bookboss:${{ inputs.version }}"
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+            echo "tag_version=bookboss:${{ inputs.version }}" >> "$GITHUB_OUTPUT"
           else
-            echo "::set-output name=version::$(echo $GITHUB_REF | cut -d / -f 3)"
-            echo "::set-output name=tag_version::bookboss:$(echo $GITHUB_REF | cut -d / -f 3)"
+            echo "version=$(echo $GITHUB_REF | cut -d / -f 3)" >> "$GITHUB_OUTPUT"
+            echo "tag_version=bookboss:$(echo $GITHUB_REF | cut -d / -f 3)" >> "$GITHUB_OUTPUT"
           fi
 
       # - name: Setup QEMU
@@ -75,3 +73,25 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/${{ steps.vars.outputs.tag_version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Extract release notes
+        id: release_notes
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          BARE_VERSION="$(echo '${{ steps.vars.outputs.version }}' | sed 's/^v//')"
+          awk -v ver="$BARE_VERSION" '
+            BEGIN { pat = "^## \\[" ver "\\]" }
+            $0 ~ pat { found = 1; next }
+            /^## \[/ { if (found) exit }
+            found { print }
+          ' CHANGELOG.md > release_notes.md
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.vars.outputs.version }}" \
+            --title "BookBoss ${{ steps.vars.outputs.version }}" \
+            --notes-file release_notes.md
