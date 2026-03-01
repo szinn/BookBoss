@@ -147,7 +147,10 @@ fn AboutSection(stats: Option<LibraryStats>) -> Element {
             img {
                 src: asset!("/assets/BookBoss-Banner.png"),
                 alt: "BookBoss",
-                class: "w-full mb-8",
+                class: "w-full mb-2",
+            }
+            p { class: "text-sm text-gray-500 mb-6 text-center",
+                { format!("Version: {}", clap::crate_version!()) }
             }
             h2 { class: "text-lg font-semibold text-gray-900 mb-4", "Library Statistics" }
             dl { class: "divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white",

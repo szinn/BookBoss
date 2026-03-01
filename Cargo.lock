@@ -692,6 +692,7 @@ dependencies = [
  "axum_session_auth",
  "bb-core",
  "chrono",
+ "clap",
  "dioxus",
  "serde",
  "thiserror 2.0.18",

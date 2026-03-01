@@ -18,6 +18,7 @@ axum = { workspace = true, optional = true }
 axum_session = { workspace = true, optional = true }
 axum_session_auth = { workspace = true, optional = true }
 chrono = { workspace = true }
+clap.workspace = true
 dioxus.workspace = true
 serde = { workspace = true }
 thiserror = { workspace = true, optional = true }

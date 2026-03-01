@@ -91,7 +91,9 @@ impl User {
     }
 
     pub fn has_capability(&self, capability: Capability) -> bool {
-        self.capabilities.contains(&capability) || self.capabilities.contains(&Capability::Admin)
+        self.capabilities.contains(&capability)
+            || self.capabilities.contains(&Capability::SuperAdmin)
+            || (capability != Capability::SuperAdmin && self.capabilities.contains(&Capability::Admin))
     }
 }
 

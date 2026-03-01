@@ -88,7 +88,7 @@ pub(crate) async fn register_admin(username: String, password: String, email: St
         return Err(ServerFnError::new("An admin user already exists"));
     }
 
-    let new_user = NewUser::new(username, password, email, HashSet::from([Capability::Admin])).map_err(|e| ServerFnError::new(e.to_string()))?;
+    let new_user = NewUser::new(username, password, email, HashSet::from([Capability::SuperAdmin])).map_err(|e| ServerFnError::new(e.to_string()))?;
 
     let user = core_services
         .user_service
