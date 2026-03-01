@@ -41,6 +41,10 @@ run:
     just tailwindcss
     dx serve --web --package bookboss --args server
 
+[doc('Create a release')]
+release VERSION:
+    ./scripts/release.sh {{ VERSION }}
+
 [doc('Run Clippy on codebase for linting')]
 clippy:
     cargo +nightly clippy --workspace --all-targets --all-features

@@ -40,21 +40,26 @@ awk -v ver="$BARE_VERSION" '
 echo "    Updating Cargo.lock..."
 cargo fetch --quiet
 
-# Generate the changelog now that the tag is in place
-echo "    Generating CHANGELOG.md..."
-just changelog
-
 # Set the jj commit description before tagging
 echo "    Setting commit description..."
 jj desc -m "chore(release): Preparing for version $VERSION"
-jj new
 
 # Tag the current change — git-cliff reads this tag when generating the changelog
 echo "    Tagging $VERSION..."
 jj tag set -r @ "$VERSION"
 
+# Generate the changelog now that the tag is in place
+echo "    Generating CHANGELOG.md..."
+just changelog
+
+# Advance change
+jj new
+jj tug
+
 # Finalize the change and push to GitHub (triggers the release workflow)
 echo "    Pushing..."
-jj gp --all
+jj gp
+jj sync
+git push --tags
 
 echo "==> Release $VERSION pushed. Monitor the GitHub Actions workflow for progress."

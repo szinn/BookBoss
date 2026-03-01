@@ -5,6 +5,8 @@
 - Rust (nightly toolchain for formatting and clippy; `rust-version = "1.85"` edition 2024)
 - [mise](https://mise.jdx.dev) — tool version manager
 - [just](https://just.systems) — command runner
+- [direnv](https://direnv.net/) — environment setup
+- sops — secrets for environment
 
 ## One-time Setup
 
@@ -28,7 +30,7 @@ just build
 just run
 ```
 
-## Configuration
+## Secrets Configuration
 
 ```bash
 just config

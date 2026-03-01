@@ -40,9 +40,7 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        manager
-            .drop_index(Index::drop().name("idx_user_settings_key").to_owned())
-            .await?;
+        manager.drop_index(Index::drop().name("idx_user_settings_key").to_owned()).await?;
         manager.drop_table(Table::drop().table(UserSettings::Table).to_owned()).await
     }
 }
