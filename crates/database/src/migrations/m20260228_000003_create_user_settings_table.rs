@@ -26,10 +26,23 @@ impl MigrationTrait for Migration {
                     )
                     .to_owned(),
             )
+            .await?;
+
+        manager
+            .create_index(
+                Index::create()
+                    .name("idx_user_settings_key")
+                    .table(UserSettings::Table)
+                    .col(UserSettings::Key)
+                    .to_owned(),
+            )
             .await
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .drop_index(Index::drop().name("idx_user_settings_key").to_owned())
+            .await?;
         manager.drop_table(Table::drop().table(UserSettings::Table).to_owned()).await
     }
 }
