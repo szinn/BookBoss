@@ -1,5 +1,9 @@
 use bb_utils::{define_token_prefix, token::Token};
 
+define_token_prefix!(BookTokenPrefix, "BK_");
+pub type BookId = u64;
+pub type BookToken = Token<BookTokenPrefix, BookId, { i64::MAX as u128 }>;
+
 define_token_prefix!(AuthorTokenPrefix, "A_");
 pub type AuthorId = u64;
 pub type AuthorToken = Token<AuthorTokenPrefix, AuthorId, { i64::MAX as u128 }>;

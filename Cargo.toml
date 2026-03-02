@@ -76,6 +76,10 @@ features = ["tokio", "server-auto", "http1"]
 version = "1.46.3"
 features = ["filters"]
 
+[workspace.dependencies.rust_decimal]
+version = "1"
+features = ["serde-str"]
+
 [workspace.dependencies.sea-orm]
 version = "2.0.0-rc.35"
 features = [
@@ -87,6 +91,7 @@ features = [
     "sqlx-mysql",
     "with-chrono",
     "with-json",
+    "with-rust_decimal",
     "with-uuid",
 ]
 
@@ -99,6 +104,7 @@ features = [
     "runtime-tokio-rustls",
     "with-chrono",
     "with-json",
+    "with-rust_decimal",
     "with-uuid",
 ]
 

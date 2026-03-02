@@ -3,6 +3,12 @@
 pub(crate) mod prelude;
 
 pub(crate) mod authors;
+pub(crate) mod book_authors;
+pub(crate) mod book_files;
+pub(crate) mod book_genres;
+pub(crate) mod book_identifiers;
+pub(crate) mod book_tags;
+pub(crate) mod books;
 pub(crate) mod genres;
 pub(crate) mod publishers;
 pub(crate) mod series;

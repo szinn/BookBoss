@@ -8,6 +8,12 @@ mod m20260302_000005_create_series_table;
 mod m20260302_000006_create_publishers_table;
 mod m20260302_000007_create_genres_table;
 mod m20260302_000008_create_tags_table;
+mod m20260302_000009_create_books_table;
+mod m20260302_000010_create_book_authors_table;
+mod m20260302_000011_create_book_genres_table;
+mod m20260302_000012_create_book_tags_table;
+mod m20260302_000013_create_book_identifiers_table;
+mod m20260302_000014_create_book_files_table;
 
 pub struct Migrator;
 
@@ -23,6 +29,12 @@ impl MigratorTrait for Migrator {
             Box::new(m20260302_000006_create_publishers_table::Migration),
             Box::new(m20260302_000007_create_genres_table::Migration),
             Box::new(m20260302_000008_create_tags_table::Migration),
+            Box::new(m20260302_000009_create_books_table::Migration),
+            Box::new(m20260302_000010_create_book_authors_table::Migration),
+            Box::new(m20260302_000011_create_book_genres_table::Migration),
+            Box::new(m20260302_000012_create_book_tags_table::Migration),
+            Box::new(m20260302_000013_create_book_identifiers_table::Migration),
+            Box::new(m20260302_000014_create_book_files_table::Migration),
         ]
     }
 }

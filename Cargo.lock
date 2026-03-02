@@ -662,6 +662,7 @@ dependencies = [
  "async-trait",
  "bb-core",
  "chrono",
+ "rust_decimal",
  "sea-orm",
  "sea-orm-migration",
  "serde",
