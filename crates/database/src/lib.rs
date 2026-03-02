@@ -3,6 +3,7 @@ use std::sync::Arc;
 use bb_core::{
     Error,
     auth::SessionRepository,
+    book::{AuthorRepository, GenreRepository, PublisherRepository, SeriesRepository, TagRepository},
     repository::{Repository, RepositoryService, RepositoryServiceBuilder},
     user::{UserRepository, UserSettingRepository},
 };
@@ -21,7 +22,10 @@ mod repository;
 mod transaction;
 
 use crate::{
-    adapters::{session::SessionRepositoryAdapter, user::UserRepositoryAdapter, user_settings::UserSettingRepositoryAdapter},
+    adapters::{
+        author::AuthorRepositoryAdapter, genre::GenreRepositoryAdapter, publisher::PublisherRepositoryAdapter, series::SeriesRepositoryAdapter,
+        session::SessionRepositoryAdapter, tag::TagRepositoryAdapter, user::UserRepositoryAdapter, user_settings::UserSettingRepositoryAdapter,
+    },
     migrations::Migrator,
     repository::RepositoryImpl,
     transaction::*,
@@ -56,6 +60,11 @@ pub async fn create_repository_service(database: DatabaseConnection) -> Result<A
         .session_repository(Arc::new(SessionRepositoryAdapter::new()) as Arc<dyn SessionRepository>)
         .user_repository(Arc::new(UserRepositoryAdapter::new()) as Arc<dyn UserRepository>)
         .user_setting_repository(Arc::new(UserSettingRepositoryAdapter::new()) as Arc<dyn UserSettingRepository>)
+        .author_repository(Arc::new(AuthorRepositoryAdapter::new()) as Arc<dyn AuthorRepository>)
+        .series_repository(Arc::new(SeriesRepositoryAdapter::new()) as Arc<dyn SeriesRepository>)
+        .publisher_repository(Arc::new(PublisherRepositoryAdapter::new()) as Arc<dyn PublisherRepository>)
+        .genre_repository(Arc::new(GenreRepositoryAdapter::new()) as Arc<dyn GenreRepository>)
+        .tag_repository(Arc::new(TagRepositoryAdapter::new()) as Arc<dyn TagRepository>)
         .build()
         .map_err(|e| Error::Infrastructure(e.to_string()))?;
 

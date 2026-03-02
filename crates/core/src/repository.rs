@@ -5,6 +5,7 @@ use derive_builder::Builder;
 use crate::{
     Error,
     auth::SessionRepository,
+    book::{AuthorRepository, GenreRepository, PublisherRepository, SeriesRepository, TagRepository},
     user::{UserRepository, UserSettingRepository},
 };
 
@@ -15,6 +16,11 @@ pub struct RepositoryService {
     session_repository: Arc<dyn SessionRepository>,
     user_repository: Arc<dyn UserRepository>,
     user_setting_repository: Arc<dyn UserSettingRepository>,
+    author_repository: Arc<dyn AuthorRepository>,
+    series_repository: Arc<dyn SeriesRepository>,
+    publisher_repository: Arc<dyn PublisherRepository>,
+    genre_repository: Arc<dyn GenreRepository>,
+    tag_repository: Arc<dyn TagRepository>,
 }
 
 impl RepositoryService {
@@ -36,6 +42,31 @@ impl RepositoryService {
     /// Returns a reference to the user setting repository.
     pub fn user_setting_repository(&self) -> &Arc<dyn UserSettingRepository> {
         &self.user_setting_repository
+    }
+
+    /// Returns a reference to the author repository.
+    pub fn author_repository(&self) -> &Arc<dyn AuthorRepository> {
+        &self.author_repository
+    }
+
+    /// Returns a reference to the series repository.
+    pub fn series_repository(&self) -> &Arc<dyn SeriesRepository> {
+        &self.series_repository
+    }
+
+    /// Returns a reference to the publisher repository.
+    pub fn publisher_repository(&self) -> &Arc<dyn PublisherRepository> {
+        &self.publisher_repository
+    }
+
+    /// Returns a reference to the genre repository.
+    pub fn genre_repository(&self) -> &Arc<dyn GenreRepository> {
+        &self.genre_repository
+    }
+
+    /// Returns a reference to the tag repository.
+    pub fn tag_repository(&self) -> &Arc<dyn TagRepository> {
+        &self.tag_repository
     }
 }
 

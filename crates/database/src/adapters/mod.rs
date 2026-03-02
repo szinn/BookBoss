@@ -1,3 +1,8 @@
+pub(crate) mod author;
+pub(crate) mod genre;
+pub(crate) mod publisher;
+pub(crate) mod series;
 pub(crate) mod session;
+pub(crate) mod tag;
 pub(crate) mod user;
 pub(crate) mod user_settings;
