@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod book;
+pub mod device;
 pub mod error;
 pub mod repository;
 pub mod types;

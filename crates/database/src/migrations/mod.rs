@@ -14,6 +14,10 @@ mod m20260302_000011_create_book_genres_table;
 mod m20260302_000012_create_book_tags_table;
 mod m20260302_000013_create_book_identifiers_table;
 mod m20260302_000014_create_book_files_table;
+mod m20260302_000015_create_user_book_metadata_table;
+mod m20260302_000016_create_devices_table;
+mod m20260302_000017_create_device_books_table;
+mod m20260302_000018_create_device_sync_log_table;
 
 pub struct Migrator;
 
@@ -35,6 +39,10 @@ impl MigratorTrait for Migrator {
             Box::new(m20260302_000012_create_book_tags_table::Migration),
             Box::new(m20260302_000013_create_book_identifiers_table::Migration),
             Box::new(m20260302_000014_create_book_files_table::Migration),
+            Box::new(m20260302_000015_create_user_book_metadata_table::Migration),
+            Box::new(m20260302_000016_create_devices_table::Migration),
+            Box::new(m20260302_000017_create_device_books_table::Migration),
+            Box::new(m20260302_000018_create_device_sync_log_table::Migration),
         ]
     }
 }

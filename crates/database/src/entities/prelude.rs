@@ -2,7 +2,8 @@
 
 pub(crate) use super::{
     authors::Entity as Authors, book_authors::Entity as BookAuthors, book_files::Entity as BookFiles, book_genres::Entity as BookGenres,
-    book_identifiers::Entity as BookIdentifiers, book_tags::Entity as BookTags, books::Entity as Books, genres::Entity as Genres,
-    publishers::Entity as Publishers, series::Entity as Series, sessions::Entity as Sessions, tags::Entity as Tags, user_settings::Entity as UserSettings,
+    book_identifiers::Entity as BookIdentifiers, book_tags::Entity as BookTags, books::Entity as Books, device_books::Entity as DeviceBooks,
+    device_sync_log::Entity as DeviceSyncLog, devices::Entity as Devices, genres::Entity as Genres, publishers::Entity as Publishers, series::Entity as Series,
+    sessions::Entity as Sessions, tags::Entity as Tags, user_book_metadata::Entity as UserBookMetadata, user_settings::Entity as UserSettings,
     users::Entity as Users,
 };
