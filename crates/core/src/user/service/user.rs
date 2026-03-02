@@ -88,6 +88,7 @@ mod tests {
         auth::{NewSession, Session, repository::SessionRepository},
         book::{
             Author, AuthorId, AuthorToken, AuthorRepository, NewAuthor,
+            Book, BookAuthor, BookFile, BookFilter, BookId, BookIdentifier, BookRepository, BookToken, NewBook,
             Genre, GenreId, GenreToken, GenreRepository, NewGenre,
             Publisher, PublisherId, PublisherToken, PublisherRepository, NewPublisher,
             Series, SeriesId, SeriesToken, SeriesRepository, NewSeries,
@@ -339,6 +340,19 @@ mod tests {
         async fn list_tags(&self, _: &dyn Transaction, _: Option<TagId>, _: Option<u64>) -> Result<Vec<Tag>, Error> { unimplemented!() }
     }
 
+    struct MockBookRepository;
+    #[async_trait::async_trait]
+    impl BookRepository for MockBookRepository {
+        async fn add_book(&self, _: &dyn Transaction, _: NewBook) -> Result<Book, Error> { unimplemented!() }
+        async fn update_book(&self, _: &dyn Transaction, _: Book) -> Result<Book, Error> { unimplemented!() }
+        async fn find_by_id(&self, _: &dyn Transaction, _: BookId) -> Result<Option<Book>, Error> { unimplemented!() }
+        async fn find_by_token(&self, _: &dyn Transaction, _: &BookToken) -> Result<Option<Book>, Error> { unimplemented!() }
+        async fn list_books(&self, _: &dyn Transaction, _: &BookFilter, _: Option<BookId>, _: Option<u64>) -> Result<Vec<Book>, Error> { unimplemented!() }
+        async fn authors_for_book(&self, _: &dyn Transaction, _: BookId) -> Result<Vec<BookAuthor>, Error> { unimplemented!() }
+        async fn files_for_book(&self, _: &dyn Transaction, _: BookId) -> Result<Vec<BookFile>, Error> { unimplemented!() }
+        async fn identifiers_for_book(&self, _: &dyn Transaction, _: BookId) -> Result<Vec<BookIdentifier>, Error> { unimplemented!() }
+    }
+
     // ─── Helper ──────────────────────────────────────────────────────────────
 
     fn create_service(mock: MockUserRepository) -> UserServiceImpl {
@@ -353,6 +367,7 @@ mod tests {
                 .publisher_repository(Arc::new(MockPublisherRepository) as Arc<dyn PublisherRepository>)
                 .genre_repository(Arc::new(MockGenreRepository) as Arc<dyn GenreRepository>)
                 .tag_repository(Arc::new(MockTagRepository) as Arc<dyn TagRepository>)
+                .book_repository(Arc::new(MockBookRepository) as Arc<dyn BookRepository>)
                 .build()
                 .expect("all fields provided"),
         );

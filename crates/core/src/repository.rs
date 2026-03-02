@@ -5,7 +5,7 @@ use derive_builder::Builder;
 use crate::{
     Error,
     auth::SessionRepository,
-    book::{AuthorRepository, GenreRepository, PublisherRepository, SeriesRepository, TagRepository},
+    book::{AuthorRepository, BookRepository, GenreRepository, PublisherRepository, SeriesRepository, TagRepository},
     user::{UserRepository, UserSettingRepository},
 };
 
@@ -21,6 +21,7 @@ pub struct RepositoryService {
     publisher_repository: Arc<dyn PublisherRepository>,
     genre_repository: Arc<dyn GenreRepository>,
     tag_repository: Arc<dyn TagRepository>,
+    book_repository: Arc<dyn BookRepository>,
 }
 
 impl RepositoryService {
@@ -67,6 +68,11 @@ impl RepositoryService {
     /// Returns a reference to the tag repository.
     pub fn tag_repository(&self) -> &Arc<dyn TagRepository> {
         &self.tag_repository
+    }
+
+    /// Returns a reference to the book repository.
+    pub fn book_repository(&self) -> &Arc<dyn BookRepository> {
+        &self.book_repository
     }
 }
 

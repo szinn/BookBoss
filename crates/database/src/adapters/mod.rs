@@ -1,4 +1,5 @@
 pub(crate) mod author;
+pub(crate) mod book;
 pub(crate) mod genre;
 pub(crate) mod publisher;
 pub(crate) mod series;
