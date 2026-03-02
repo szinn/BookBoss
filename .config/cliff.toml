@@ -9,7 +9,7 @@
 # changelog header
 header = """
 # BookBoss - Take Control Of Your Digital Library\n
-All notable changes to this project will be documented in this file.\n
+All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -30,17 +30,18 @@ body = """
         ([{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }}))\
 {% endmacro -%}
 
-{% if version %}\
-    {% if previous.version %}\
-        ## [{{ version | trim_start_matches(pat="v") }}]({{ self::remote_url() }}/compare/{{ previous.version }}..{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
-    {% else %}\
-        ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
-    {% endif %}\
-{% else %}\
-    ## [unreleased]
-{% endif %}\
+{% if version %}
+    {% if previous.version %}
+        ## [{{ version | trim_start_matches(pat="v") }}]({{ self::remote_url() }}/compare/{{ previous.version }}..{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}\
+    {% else %}
+        ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}\
+    {% endif %}
+{% else %}
+    ## [unreleased]\
+{% endif %}
 
 {%- for group, commits in commits | group_by(attribute="group") %}
+
     ### {{ group | striptags | trim | upper_first }}
     {%- for commit in commits | filter(attribute="scope") | sort(attribute="scope") %}
         {{ self::print_commit(commit=commit) }}

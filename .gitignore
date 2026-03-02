@@ -27,3 +27,6 @@ docs/book/
 .idea
 .vscode
 .zed
+
+# Scratchpad
+.scratchpad/

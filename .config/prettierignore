@@ -3,4 +3,4 @@
 .venv
 .vscode
 *.sops.*
-crates/frontend/assets/tailwind.css
+../crates/frontend/assets/tailwind.css
