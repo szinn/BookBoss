@@ -34,3 +34,25 @@ pub struct UserBookMetadata {
     pub last_opened_at: Option<DateTime<Utc>>,
     pub notes: Option<String>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn read_status_serde_round_trip() {
+        for status in [ReadStatus::Unread, ReadStatus::Reading, ReadStatus::Read, ReadStatus::Dnf] {
+            let json = serde_json::to_string(&status).expect("serialise");
+            let back: ReadStatus = serde_json::from_str(&json).expect("deserialise");
+            assert_eq!(status, back);
+        }
+    }
+
+    #[test]
+    fn read_status_serialises_to_expected_strings() {
+        assert_eq!(serde_json::to_string(&ReadStatus::Unread).unwrap(), r#""Unread""#);
+        assert_eq!(serde_json::to_string(&ReadStatus::Reading).unwrap(), r#""Reading""#);
+        assert_eq!(serde_json::to_string(&ReadStatus::Read).unwrap(), r#""Read""#);
+        assert_eq!(serde_json::to_string(&ReadStatus::Dnf).unwrap(), r#""Dnf""#);
+    }
+}
