@@ -1,5 +1,5 @@
-use bb_utils::{define_token_prefix, token::Token};
+pub mod model;
+pub mod repository;
 
-define_token_prefix!(ShelfTokenPrefix, "SH_");
-pub type ShelfId = u64;
-pub type ShelfToken = Token<ShelfTokenPrefix, ShelfId, { i64::MAX as u128 }>;
+pub use model::{BookShelf, NewShelf, Shelf, ShelfFilter, ShelfId, ShelfToken, ShelfType, ShelfVisibility};
+pub use repository::ShelfRepository;
