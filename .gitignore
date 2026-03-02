@@ -18,7 +18,7 @@ bacon-ls.log
 mise.local.toml
 
 # Generated Tailwind CSS
-# crates/frontend/assets/tailwind.css
+crates/frontend/assets/tailwind.css
 
 # Generated mdbook site
 docs/book/

@@ -17,6 +17,10 @@ RUN apt-get update && \
 
 RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/DioxusLabs/dioxus/refs/heads/main/.github/install.sh | bash
 
+RUN curl -fsSL -o /usr/local/bin/tailwindcss \
+    https://github.com/tailwindlabs/tailwindcss/releases/download/v4.2.1/tailwindcss-linux-x64 && \
+    chmod +x /usr/local/bin/tailwindcss
+
 WORKDIR /app
 
 FROM chef AS planner
@@ -30,6 +34,8 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path recipe.json
 
 COPY . .
+
+RUN tailwindcss -i ./crates/frontend/assets/input.css -o ./crates/frontend/assets/tailwind.css
 
 # Build actual binary
 RUN /usr/local/cargo/bin/dx bundle --web --package bookboss --release
