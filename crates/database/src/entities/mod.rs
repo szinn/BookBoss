@@ -2,6 +2,11 @@
 
 pub(crate) mod prelude;
 
+pub(crate) mod authors;
+pub(crate) mod genres;
+pub(crate) mod publishers;
+pub(crate) mod series;
 pub(crate) mod sessions;
+pub(crate) mod tags;
 pub(crate) mod user_settings;
 pub(crate) mod users;
