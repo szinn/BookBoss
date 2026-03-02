@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use derive_builder::Builder;
 use rust_decimal::Decimal;
 
-use crate::book::{AuthorId, GenreId, SeriesId, TagId};
+use crate::book::{AuthorId, GenreId, MetadataSource, SeriesId, TagId};
 
 define_token_prefix!(BookTokenPrefix, "BK_");
 pub type BookId = u64;
@@ -52,7 +52,7 @@ pub struct Book {
     #[builder(default)]
     pub rating: Option<i16>,
     #[builder(default)]
-    pub metadata_source: Option<String>,
+    pub metadata_source: Option<MetadataSource>,
     #[builder(default)]
     pub cover_path: Option<String>,
     #[builder(default = "Utc::now()")]
@@ -73,6 +73,6 @@ pub struct NewBook {
     pub publisher_id: Option<crate::book::PublisherId>,
     pub page_count: Option<i32>,
     pub rating: Option<i16>,
-    pub metadata_source: Option<String>,
+    pub metadata_source: Option<MetadataSource>,
     pub cover_path: Option<String>,
 }
