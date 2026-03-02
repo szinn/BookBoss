@@ -3,6 +3,7 @@ pub mod book;
 pub mod device;
 pub mod error;
 pub mod import;
+pub mod reading;
 pub mod repository;
 pub mod shelf;
 pub mod types;

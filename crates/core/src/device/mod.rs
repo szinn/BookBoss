@@ -1,5 +1,5 @@
-use bb_utils::{define_token_prefix, token::Token};
+pub mod model;
+pub mod repository;
 
-define_token_prefix!(DeviceTokenPrefix, "DV_");
-pub type DeviceId = u64;
-pub type DeviceToken = Token<DeviceTokenPrefix, DeviceId, { i64::MAX as u128 }>;
+pub use model::{Device, DeviceBook, DeviceId, DeviceSyncLog, DeviceToken, NewDevice, NewDeviceSyncLog, OnRemovalAction, SyncStatus};
+pub use repository::DeviceRepository;
