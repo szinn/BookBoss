@@ -18,6 +18,9 @@ mod m20260302_000015_create_user_book_metadata_table;
 mod m20260302_000016_create_devices_table;
 mod m20260302_000017_create_device_books_table;
 mod m20260302_000018_create_device_sync_log_table;
+mod m20260303_000019_create_shelves_table;
+mod m20260303_000020_create_book_shelves_table;
+mod m20260303_000021_create_import_jobs_table;
 
 pub struct Migrator;
 
@@ -43,6 +46,9 @@ impl MigratorTrait for Migrator {
             Box::new(m20260302_000016_create_devices_table::Migration),
             Box::new(m20260302_000017_create_device_books_table::Migration),
             Box::new(m20260302_000018_create_device_sync_log_table::Migration),
+            Box::new(m20260303_000019_create_shelves_table::Migration),
+            Box::new(m20260303_000020_create_book_shelves_table::Migration),
+            Box::new(m20260303_000021_create_import_jobs_table::Migration),
         ]
     }
 }

@@ -2,7 +2,9 @@ pub mod auth;
 pub mod book;
 pub mod device;
 pub mod error;
+pub mod import;
 pub mod repository;
+pub mod shelf;
 pub mod types;
 pub mod user;
 
