@@ -20,6 +20,7 @@ async-trait.workspace = true
 chrono.workspace = true
 tokio.workspace = true
 derive_builder.workspace = true
+rust_decimal.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 tracing.workspace = true

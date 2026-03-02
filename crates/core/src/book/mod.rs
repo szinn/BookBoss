@@ -1,25 +1,9 @@
-use bb_utils::{define_token_prefix, token::Token};
+pub mod model;
+pub mod repository;
 
-define_token_prefix!(BookTokenPrefix, "BK_");
-pub type BookId = u64;
-pub type BookToken = Token<BookTokenPrefix, BookId, { i64::MAX as u128 }>;
-
-define_token_prefix!(AuthorTokenPrefix, "A_");
-pub type AuthorId = u64;
-pub type AuthorToken = Token<AuthorTokenPrefix, AuthorId, { i64::MAX as u128 }>;
-
-define_token_prefix!(SeriesTokenPrefix, "SR_");
-pub type SeriesId = u64;
-pub type SeriesToken = Token<SeriesTokenPrefix, SeriesId, { i64::MAX as u128 }>;
-
-define_token_prefix!(PublisherTokenPrefix, "P_");
-pub type PublisherId = u64;
-pub type PublisherToken = Token<PublisherTokenPrefix, PublisherId, { i64::MAX as u128 }>;
-
-define_token_prefix!(GenreTokenPrefix, "G_");
-pub type GenreId = u64;
-pub type GenreToken = Token<GenreTokenPrefix, GenreId, { i64::MAX as u128 }>;
-
-define_token_prefix!(TagTokenPrefix, "T_");
-pub type TagId = u64;
-pub type TagToken = Token<TagTokenPrefix, TagId, { i64::MAX as u128 }>;
+pub use model::{
+    Author, AuthorId, AuthorRole, AuthorToken, Book, BookAuthor, BookFile, BookFilter, BookId, BookIdentifier, BookStatus, BookToken, FileFormat, Genre,
+    GenreId, GenreToken, IdentifierType, NewAuthor, NewBook, NewGenre, NewPublisher, NewSeries, NewTag, Publisher, PublisherId, PublisherToken, Series,
+    SeriesId, SeriesToken, Tag, TagId, TagToken,
+};
+pub use repository::{AuthorRepository, BookRepository, GenreRepository, PublisherRepository, SeriesRepository, TagRepository};

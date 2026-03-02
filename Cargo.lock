@@ -648,6 +648,7 @@ dependencies = [
  "bb-utils",
  "chrono",
  "derive_builder",
+ "rust_decimal",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
