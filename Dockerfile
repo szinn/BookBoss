@@ -1,8 +1,8 @@
 FROM rust:1@sha256:51c04d7a2b38418ba23ecbfb373c40d3bd493dec1ddfae00ab5669527320195e AS chef
 
-ARG TARGETPLATFORM
-ARG TARGETARCH
-ARG TARGETOS
+# ARG TARGETPLATFORM
+# ARG TARGETARCH
+# ARG TARGETOS
 
 RUN apt-get update && apt-get install -y --no-install-recommends musl-tools pkg-config && rm -rf /var/lib/apt/lists/*
 
@@ -70,9 +70,9 @@ COPY --from=builder-web /app/target/dx/bookboss/release/web/public /app/public
 COPY --from=builder-web /app/target/dx/bookboss/release/web/.manifest.json /app
 COPY --from=builder-server /app/target/dx/bookboss/release/web/bookboss /app
 
-LABEL tech.zinn.image.target_platform=$TARGETPLATFORM
-LABEL tech.zinn.image.target_architecture=$TARGETARCH
-LABEL tech.zinn.image.target_os=$TARGETOS
+# LABEL tech.zinn.image.target_platform=$TARGETPLATFORM
+# LABEL tech.zinn.image.target_architecture=$TARGETARCH
+# LABEL tech.zinn.image.target_os=$TARGETOS
 
 LABEL org.opencontainers.image.source="https://github.com/szinn/BookBoss"
 LABEL org.opencontainers.image.description="Take Control Of Your Digital Library"
