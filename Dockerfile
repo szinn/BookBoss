@@ -49,6 +49,8 @@ RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path r
 
 COPY . .
 
+RUN tailwindcss -i ./crates/frontend/assets/input.css -o ./crates/frontend/assets/tailwind.css
+
 # Build actual binary
 RUN /usr/local/cargo/bin/dx bundle --server --package bookboss --release --target x86_64-unknown-linux-musl
 RUN ls -laR target/dx/bookboss/release/web
