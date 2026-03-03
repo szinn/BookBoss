@@ -9,7 +9,7 @@ define_token_prefix!(BookTokenPrefix, "BK_");
 pub type BookId = u64;
 pub type BookToken = Token<BookTokenPrefix, BookId, { i64::MAX as u128 }>;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum BookStatus {
     Incoming,
     Available,

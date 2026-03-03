@@ -6,6 +6,7 @@ pub mod import;
 pub mod reading;
 pub mod repository;
 pub mod shelf;
+pub mod storage;
 pub mod types;
 pub mod user;
 
@@ -17,6 +18,7 @@ use crate::{
     auth::{AuthService, AuthServiceImpl},
     book::{BookService, BookServiceImpl},
     repository::RepositoryService,
+    storage::LibraryStore,
     user::{UserService, UserServiceImpl, UserSettingService, UserSettingServiceImpl},
 };
 
@@ -28,22 +30,22 @@ pub struct CoreServices {
     pub user_service: Arc<dyn UserService>,
     pub user_setting_service: Arc<dyn UserSettingService>,
     pub book_service: Arc<dyn BookService>,
+    pub library_store: Arc<dyn LibraryStore>,
 }
 
 impl CoreServices {
-    #[tracing::instrument(level = "trace", skip(repository_service))]
-    pub(crate) fn new(repository_service: Arc<RepositoryService>) -> Self {
+    #[tracing::instrument(level = "trace", skip(repository_service, library_store))]
+    pub(crate) fn new(repository_service: Arc<RepositoryService>, library_store: Arc<dyn LibraryStore>) -> Self {
         Self {
             auth_service: Arc::new(AuthServiceImpl::new(repository_service.clone())),
             user_service: Arc::new(UserServiceImpl::new(repository_service.clone())),
             user_setting_service: Arc::new(UserSettingServiceImpl::new(repository_service.clone())),
             book_service: Arc::new(BookServiceImpl::new(repository_service.clone())),
+            library_store,
         }
     }
 }
 
-pub fn create_services(repository_service: Arc<RepositoryService>) -> Result<Arc<CoreServices>, Error> {
-    let core_services = CoreServices::new(repository_service);
-
-    Ok(Arc::new(core_services))
+pub fn create_services(repository_service: Arc<RepositoryService>, library_store: Arc<dyn LibraryStore>) -> Result<Arc<CoreServices>, Error> {
+    Ok(Arc::new(CoreServices::new(repository_service, library_store)))
 }

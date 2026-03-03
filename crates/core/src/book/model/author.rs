@@ -58,7 +58,7 @@ pub struct NewAuthor {
     pub bio: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum AuthorRole {
     Author,
     Editor,

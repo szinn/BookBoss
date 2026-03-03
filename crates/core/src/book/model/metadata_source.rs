@@ -3,7 +3,7 @@
 ///
 /// Distinct from `import::ImportSource`, which records which provider
 /// was used during the import pipeline.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum MetadataSource {
     Hardcover,
     OpenLibrary,

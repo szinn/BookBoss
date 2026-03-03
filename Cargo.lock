@@ -845,6 +845,7 @@ name = "bookboss"
 version = "0.1.9"
 dependencies = [
  "anyhow",
+ "async-trait",
  "bb-api",
  "bb-core",
  "bb-database",

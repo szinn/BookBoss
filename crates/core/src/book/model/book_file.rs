@@ -1,6 +1,6 @@
 use crate::book::BookId;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum FileFormat {
     Epub,
     Mobi,

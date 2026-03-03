@@ -21,6 +21,7 @@ path = "src/bin/bookboss.rs"
 [features]
 server = [
     "dioxus/server",
+    "dep:async-trait",
     "dep:bb-api",
     "dep:bb-core",
     "dep:bb-database",
@@ -44,6 +45,7 @@ web = ["dioxus/web", "dep:bb-frontend", "bb-frontend?/web"]
 grpc = []
 
 [dependencies]
+async-trait = { workspace = true, optional = true }
 bb-api = { workspace = true, optional = true }
 bb-core = { workspace = true, optional = true }
 bb-database = { workspace = true, optional = true }
