@@ -24,6 +24,10 @@ fi
 
 echo "==> Preparing release $VERSION"
 
+# Generate the changelog now that the tag is in place
+echo "    Generating CHANGELOG.md..."
+git-cliff --config .config/cliff.toml -t "${VERSION}" >CHANGELOG.md
+
 # Update version in [workspace.package] section of Cargo.toml
 echo "    Updating Cargo.toml..."
 awk -v ver="$BARE_VERSION" '
@@ -44,17 +48,11 @@ cargo fetch --quiet
 echo "    Setting commit description..."
 jj desc -m "chore(release): Preparing for version $VERSION"
 jj new
+jj tug
 
 # Tag the current change — git-cliff reads this tag when generating the changelog
 echo "    Tagging $VERSION..."
 jj tag set -r @- "$VERSION"
-
-# Generate the changelog now that the tag is in place
-echo "    Generating CHANGELOG.md..."
-jj bookmark set main -r @-
-just changelog
-jj squash --ignore-immutable --into @-
-jj tag set -r @- "$VERSION" --allow-move
 
 # Finalize the change and push to GitHub (triggers the release workflow)
 echo "    Pushing..."
