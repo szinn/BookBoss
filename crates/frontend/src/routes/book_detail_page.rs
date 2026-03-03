@@ -46,7 +46,7 @@ use {
     std::sync::Arc,
 };
 
-#[get("/api/v1/book", auth_session: axum::Extension<AuthSession>, core_services: axum::Extension<Arc<CoreServices>>)]
+#[post("/api/v1/book", auth_session: axum::Extension<AuthSession>, core_services: axum::Extension<Arc<CoreServices>>)]
 #[tracing::instrument(level = "trace", skip(auth_session, core_services))]
 async fn get_book(token: String) -> Result<BookDetail, ServerFnError> {
     auth_session
