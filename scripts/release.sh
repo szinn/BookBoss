@@ -43,18 +43,18 @@ cargo fetch --quiet
 # Set the jj commit description before tagging
 echo "    Setting commit description..."
 jj desc -m "chore(release): Preparing for version $VERSION"
+jj new
 
 # Tag the current change — git-cliff reads this tag when generating the changelog
 echo "    Tagging $VERSION..."
-jj tag set -r @ "$VERSION"
+jj tag set -r @- "$VERSION"
 
 # Generate the changelog now that the tag is in place
 echo "    Generating CHANGELOG.md..."
+jj bookmark set main -r @-
 just changelog
-
-# Advance change
-jj new
-jj tug
+jj squash --ignore-immutable --into @-
+jj tag set -r @- "$VERSION" --allow-move
 
 # Finalize the change and push to GitHub (triggers the release workflow)
 echo "    Pushing..."
