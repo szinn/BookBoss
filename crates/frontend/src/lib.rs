@@ -46,7 +46,7 @@ pub use error::FrontendError;
 pub mod server;
 
 use components::AppLayout;
-use routes::{BookDetailPage, BooksPage, LandingPage, SettingsPage};
+use routes::{AuthorDetailPage, BookDetailPage, BooksPage, LandingPage, SettingsPage};
 use serde::Deserialize;
 
 #[derive(Routable, Clone, PartialEq)]
@@ -59,6 +59,8 @@ enum Route {
         BooksPage {},
         #[route("/library/books/:token")]
         BookDetailPage { token: String },
+        #[route("/library/authors/:token")]
+        AuthorDetailPage { token: String },
         #[route("/settings")]
         SettingsPage {},
 }

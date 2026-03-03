@@ -5,6 +5,7 @@ use crate::Route;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub(crate) struct AuthorDetail {
+    pub token: String,
     pub name: String,
     pub role: String,
 }
@@ -74,16 +75,16 @@ async fn get_book(token: String) -> Result<BookDetail, ServerFnError> {
         .await
         .map_err(|e| ServerFnError::new(e.to_string()))?;
 
-    // Fetch unique author names
-    let mut author_name_map = std::collections::HashMap::new();
+    // Fetch unique authors (token + name)
+    let mut author_map: std::collections::HashMap<u64, (String, String)> = std::collections::HashMap::new();
     for ba in &book_author_links {
-        if !author_name_map.contains_key(&ba.author_id) {
+        if !author_map.contains_key(&ba.author_id) {
             if let Some(author) = book_service
                 .find_author_by_token(&AuthorToken::new(ba.author_id))
                 .await
                 .map_err(|e| ServerFnError::new(e.to_string()))?
             {
-                author_name_map.insert(ba.author_id, author.name);
+                author_map.insert(ba.author_id, (author.token.to_string(), author.name));
             }
         }
     }
@@ -94,7 +95,8 @@ async fn get_book(token: String) -> Result<BookDetail, ServerFnError> {
     let authors: Vec<AuthorDetail> = sorted_authors
         .iter()
         .filter_map(|ba| {
-            author_name_map.get(&ba.author_id).map(|name| AuthorDetail {
+            author_map.get(&ba.author_id).map(|(token, name)| AuthorDetail {
+                token: token.clone(),
                 name: name.clone(),
                 role: match &ba.role {
                     AuthorRole::Author => "Author",
@@ -232,7 +234,11 @@ pub(crate) fn BookDetailPage(token: String) -> Element {
                                 div { class: "flex flex-wrap gap-2 mb-3",
                                     for author in &book.authors {
                                         span { class: "text-sm text-gray-700",
-                                            "{author.name}"
+                                            Link {
+                                                to: Route::AuthorDetailPage { token: author.token.clone() },
+                                                class: "text-indigo-600 hover:text-indigo-800",
+                                                "{author.name}"
+                                            }
                                             if author.role != "Author" {
                                                 span { class: "text-gray-400 ml-1", "({author.role})" }
                                             }
