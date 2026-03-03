@@ -1,10 +1,10 @@
 use dioxus::prelude::*;
 
-use crate::routes::books_page::BookSummary;
+use crate::{Route, routes::books_page::BookSummary};
 
 #[component]
 pub(crate) fn BookTable(books: Vec<BookSummary>) -> Element {
-    let mut selected: Signal<Option<BookSummary>> = use_context();
+    let navigator = use_navigator();
 
     rsx! {
         div { class: "flex-1 overflow-auto",
@@ -19,8 +19,7 @@ pub(crate) fn BookTable(books: Vec<BookSummary>) -> Element {
                 tbody {
                     for book in &books {
                         {
-                            let is_selected = selected().as_ref().is_some_and(|s| s.token == book.token);
-                            let book_clone = book.clone();
+                            let token = book.token.clone();
                             let author_str = book.author_names.join(", ");
                             let series_str = match (&book.series_name, &book.series_number) {
                                 (Some(name), Some(num)) => format!("{name} #{num}"),
@@ -29,8 +28,8 @@ pub(crate) fn BookTable(books: Vec<BookSummary>) -> Element {
                             };
                             rsx! {
                                 tr {
-                                    class: if is_selected { "bg-indigo-100 cursor-pointer" } else { "hover:bg-gray-50 cursor-pointer" },
-                                    onclick: move |_| selected.set(Some(book_clone.clone())),
+                                    class: "hover:bg-gray-50 cursor-pointer",
+                                    onclick: move |_| { navigator.push(Route::BookDetailPage { token: token.clone() }); },
                                     td { class: "px-4 py-2 font-medium text-gray-900", "{book.title}" }
                                     td { class: "px-4 py-2 text-gray-600", "{author_str}" }
                                     td { class: "px-4 py-2 text-gray-600", "{series_str}" }

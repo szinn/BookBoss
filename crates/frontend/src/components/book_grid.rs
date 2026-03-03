@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::routes::books_page::BookSummary;
+use crate::{Route, routes::books_page::BookSummary};
 
 #[component]
 pub(crate) fn BookGrid(books: Vec<BookSummary>) -> Element {
@@ -18,6 +18,8 @@ pub(crate) fn BookGrid(books: Vec<BookSummary>) -> Element {
 
 #[component]
 fn BookCard(book: BookSummary) -> Element {
+    let navigator = use_navigator();
+    let token = book.token.clone();
     let author_str = book.author_names.join(", ");
     let series_line = match (&book.series_name, &book.series_number) {
         (Some(name), Some(num)) => Some(format!("{name} #{num}")),
@@ -26,7 +28,9 @@ fn BookCard(book: BookSummary) -> Element {
     };
 
     rsx! {
-        div { class: "flex flex-col",
+        div {
+            class: "flex flex-col cursor-pointer",
+            onclick: move |_| { navigator.push(Route::BookDetailPage { token: token.clone() }); },
             match book.cover_path {
                 Some(ref path) => rsx! {
                     img {

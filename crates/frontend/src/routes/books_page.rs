@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    components::{BookGrid, BookTable, DetailPanel, TreeExplorer},
+    components::{BookGrid, BookTable, TreeExplorer},
     settings::BookDisplayView,
 };
 
@@ -42,9 +42,9 @@ fn sample_categories() -> Vec<TreeCategory> {
 #[cfg(feature = "server")]
 use {
     crate::server::AuthSession,
-    std::sync::Arc,
     bb_core::CoreServices,
     bb_core::book::{AuthorToken, BookFilter, BookStatus, SeriesToken},
+    std::sync::Arc,
 };
 
 #[get("/api/v1/books", auth_session: axum::Extension<AuthSession>, core_services: axum::Extension<Arc<CoreServices>>)]
@@ -130,9 +130,6 @@ async fn list_books() -> Result<Vec<BookSummary>, ServerFnError> {
 
 #[component]
 pub(crate) fn BooksPage() -> Element {
-    let selected_book: Signal<Option<BookSummary>> = use_signal(|| None);
-    use_context_provider(|| selected_book);
-
     let view: Signal<BookDisplayView> = use_context();
     let books = use_server_future(list_books)?;
     let categories = sample_categories();
@@ -157,7 +154,6 @@ pub(crate) fn BooksPage() -> Element {
                     BookDisplayView::TableView => rsx! {
                         TreeExplorer { categories }
                         BookTable { books }
-                        DetailPanel {}
                     },
                 }
             },
