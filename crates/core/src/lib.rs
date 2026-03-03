@@ -18,6 +18,7 @@ pub use error::{Error, ErrorKind, RepositoryError};
 use crate::{
     auth::{AuthService, AuthServiceImpl},
     book::{BookService, BookServiceImpl},
+    import::{ImportJobService, service::ImportJobServiceImpl},
     repository::RepositoryService,
     storage::LibraryStore,
     user::{UserService, UserServiceImpl, UserSettingService, UserSettingServiceImpl},
@@ -31,6 +32,7 @@ pub struct CoreServices {
     pub user_service: Arc<dyn UserService>,
     pub user_setting_service: Arc<dyn UserSettingService>,
     pub book_service: Arc<dyn BookService>,
+    pub import_job_service: Arc<dyn ImportJobService>,
     pub library_store: Arc<dyn LibraryStore>,
 }
 
@@ -42,6 +44,7 @@ impl CoreServices {
             user_service: Arc::new(UserServiceImpl::new(repository_service.clone())),
             user_setting_service: Arc::new(UserSettingServiceImpl::new(repository_service.clone())),
             book_service: Arc::new(BookServiceImpl::new(repository_service.clone())),
+            import_job_service: Arc::new(ImportJobServiceImpl::new(repository_service.clone())),
             library_store,
         }
     }
