@@ -6,6 +6,7 @@ use crate::{
     Error,
     auth::SessionRepository,
     book::{AuthorRepository, BookRepository, GenreRepository, PublisherRepository, SeriesRepository, TagRepository},
+    import::ImportJobRepository,
     user::{UserRepository, UserSettingRepository},
 };
 
@@ -22,6 +23,7 @@ pub struct RepositoryService {
     genre_repository: Arc<dyn GenreRepository>,
     tag_repository: Arc<dyn TagRepository>,
     book_repository: Arc<dyn BookRepository>,
+    import_job_repository: Arc<dyn ImportJobRepository>,
 }
 
 impl RepositoryService {
@@ -73,6 +75,11 @@ impl RepositoryService {
     /// Returns a reference to the book repository.
     pub fn book_repository(&self) -> &Arc<dyn BookRepository> {
         &self.book_repository
+    }
+
+    /// Returns a reference to the import job repository.
+    pub fn import_job_repository(&self) -> &Arc<dyn ImportJobRepository> {
+        &self.import_job_repository
     }
 }
 

@@ -71,6 +71,7 @@ mod tests {
             GenreId, GenreRepository, GenreToken, NewAuthor, NewBook, NewGenre, NewPublisher, NewSeries, NewTag, Publisher, PublisherId, PublisherRepository,
             PublisherToken, Series, SeriesId, SeriesRepository, SeriesToken, Tag, TagId, TagRepository, TagToken,
         },
+        import::{ImportJob, ImportJobId, ImportJobRepository, ImportJobToken, ImportStatus, NewImportJob},
         repository::{Repository, RepositoryServiceBuilder, Transaction},
         user::{
             NewUser, NewUserSetting, User, UserId, UserSetting,
@@ -370,6 +371,29 @@ mod tests {
         }
     }
 
+    struct MockImportJobRepository;
+    #[async_trait::async_trait]
+    impl ImportJobRepository for MockImportJobRepository {
+        async fn add_job(&self, _: &dyn Transaction, _: NewImportJob) -> Result<ImportJob, Error> {
+            unimplemented!()
+        }
+        async fn update_job(&self, _: &dyn Transaction, _: ImportJob) -> Result<ImportJob, Error> {
+            unimplemented!()
+        }
+        async fn find_by_id(&self, _: &dyn Transaction, _: ImportJobId) -> Result<Option<ImportJob>, Error> {
+            unimplemented!()
+        }
+        async fn find_by_token(&self, _: &dyn Transaction, _: &ImportJobToken) -> Result<Option<ImportJob>, Error> {
+            unimplemented!()
+        }
+        async fn find_by_hash(&self, _: &dyn Transaction, _: &str) -> Result<Option<ImportJob>, Error> {
+            unimplemented!()
+        }
+        async fn list_by_status(&self, _: &dyn Transaction, _: ImportStatus, _: Option<ImportJobId>, _: Option<u64>) -> Result<Vec<ImportJob>, Error> {
+            unimplemented!()
+        }
+    }
+
     // ─── Helper ──────────────────────────────────────────────────────────────
 
     fn fake_setting(user_id: UserId, key: &str, value: &str) -> UserSetting {
@@ -393,6 +417,7 @@ mod tests {
                 .genre_repository(Arc::new(MockGenreRepository) as Arc<dyn GenreRepository>)
                 .tag_repository(Arc::new(MockTagRepository) as Arc<dyn TagRepository>)
                 .book_repository(Arc::new(MockBookRepository) as Arc<dyn BookRepository>)
+                .import_job_repository(Arc::new(MockImportJobRepository) as Arc<dyn ImportJobRepository>)
                 .build()
                 .expect("all fields provided"),
         );
