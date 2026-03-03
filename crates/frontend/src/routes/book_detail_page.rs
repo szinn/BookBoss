@@ -31,6 +31,7 @@ pub(crate) struct BookDetail {
     pub language: Option<String>,
     pub page_count: Option<i32>,
     pub cover_path: Option<String>,
+    pub series_token: Option<String>,
     pub series_name: Option<String>,
     pub series_number: Option<String>,
     pub authors: Vec<AuthorDetail>,
@@ -109,15 +110,18 @@ async fn get_book(token: String) -> Result<BookDetail, ServerFnError> {
         })
         .collect();
 
-    // Fetch series name if needed
-    let series_name = if let Some(series_id) = book.series_id {
-        book_service
+    // Fetch series name and token if needed
+    let (series_token, series_name) = if let Some(series_id) = book.series_id {
+        let series = book_service
             .find_series_by_token(&SeriesToken::new(series_id))
             .await
-            .map_err(|e| ServerFnError::new(e.to_string()))?
-            .map(|s| s.name)
+            .map_err(|e| ServerFnError::new(e.to_string()))?;
+        match series {
+            Some(s) => (Some(s.token.to_string()), Some(s.name)),
+            None => (None, None),
+        }
     } else {
-        None
+        (None, None)
     };
 
     let files: Vec<FileDetail> = book_files
@@ -159,6 +163,7 @@ async fn get_book(token: String) -> Result<BookDetail, ServerFnError> {
         language: book.language.clone(),
         page_count: book.page_count,
         cover_path: book.cover_path.clone(),
+        series_token,
         series_name,
         series_number: book.series_number.as_ref().map(|n| n.to_string()),
         authors,
@@ -248,11 +253,15 @@ pub(crate) fn BookDetailPage(token: String) -> Element {
                             }
 
                             // Series
-                            if let Some(ref series_name) = book.series_name {
-                                p { class: "text-sm text-indigo-600 mb-3",
-                                    match &book.series_number {
-                                        Some(num) => rsx! { "{series_name} #{num}" },
-                                        None => rsx! { "{series_name}" },
+                            if let (Some(series_name), Some(series_token)) = (&book.series_name, &book.series_token) {
+                                p { class: "text-sm mb-3",
+                                    Link {
+                                        to: Route::SeriesDetailPage { token: series_token.clone() },
+                                        class: "text-indigo-600 hover:text-indigo-800",
+                                        match &book.series_number {
+                                            Some(num) => rsx! { "{series_name} #{num}" },
+                                            None => rsx! { "{series_name}" },
+                                        }
                                     }
                                 }
                             }
