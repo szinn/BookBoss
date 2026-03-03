@@ -41,15 +41,22 @@ fn sample_categories() -> Vec<TreeCategory> {
 
 #[cfg(feature = "server")]
 use {
+    crate::server::AuthSession,
+    std::sync::Arc,
     bb_core::CoreServices,
     bb_core::book::{AuthorToken, BookFilter, BookStatus, SeriesToken},
-    std::sync::Arc,
 };
 
-#[get("/api/v1/books", core_services: axum::Extension<Arc<CoreServices>>)]
-#[tracing::instrument(level = "trace", skip(core_services))]
+#[get("/api/v1/books", auth_session: axum::Extension<AuthSession>, core_services: axum::Extension<Arc<CoreServices>>)]
+#[tracing::instrument(level = "trace", skip(auth_session, core_services))]
 async fn list_books() -> Result<Vec<BookSummary>, ServerFnError> {
     use std::collections::{HashMap, HashSet};
+
+    auth_session
+        .current_user
+        .as_ref()
+        .filter(|u| !u.username.is_empty())
+        .ok_or_else(|| ServerFnError::new("Not authenticated"))?;
 
     let book_service = &core_services.book_service;
 
