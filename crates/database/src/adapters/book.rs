@@ -321,7 +321,6 @@ impl BookRepository for BookRepositoryAdapter {
                 Ok(BookFile {
                     book_id: m.book_id as u64,
                     format: str_to_file_format(&m.format)?,
-                    file_path: m.file_path,
                     file_size: m.file_size,
                     file_hash: m.file_hash,
                 })
@@ -921,7 +920,6 @@ mod tests {
         book_files::ActiveModel {
             book_id: Set(book.id as i64),
             format: Set("epub".to_owned()),
-            file_path: Set("/books/dune.epub".to_owned()),
             file_size: Set(1_024_000),
             file_hash: Set("abc123".to_owned()),
         }
@@ -933,7 +931,6 @@ mod tests {
 
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].format, FileFormat::Epub);
-        assert_eq!(results[0].file_path, "/books/dune.epub");
         assert_eq!(results[0].file_size, 1_024_000);
     }
 
