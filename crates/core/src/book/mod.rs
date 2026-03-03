@@ -1,5 +1,6 @@
 pub mod model;
 pub mod repository;
+pub mod service;
 
 pub use model::{
     Author, AuthorId, AuthorRole, AuthorToken, Book, BookAuthor, BookFile, BookFilter, BookId, BookIdentifier, BookStatus, BookToken, FileFormat, Genre,
@@ -7,3 +8,5 @@ pub use model::{
     Series, SeriesId, SeriesToken, Tag, TagId, TagToken,
 };
 pub use repository::{AuthorRepository, BookRepository, GenreRepository, PublisherRepository, SeriesRepository, TagRepository};
+pub use service::BookService;
+pub(crate) use service::BookServiceImpl;

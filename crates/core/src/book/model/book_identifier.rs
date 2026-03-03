@@ -16,3 +16,22 @@ pub struct BookIdentifier {
     pub identifier_type: IdentifierType,
     pub value: String,
 }
+
+impl BookIdentifier {
+    #[cfg(any(test, feature = "test-support"))]
+    pub fn fake(book_id: BookId, identifier_type: &str, value: impl Into<String>) -> Self {
+        let identifier_type = match identifier_type {
+            "isbn10" => IdentifierType::Isbn10,
+            "asin" => IdentifierType::Asin,
+            "google_books" => IdentifierType::GoogleBooks,
+            "open_library" => IdentifierType::OpenLibrary,
+            "hardcover" => IdentifierType::Hardcover,
+            _ => IdentifierType::Isbn13,
+        };
+        Self {
+            book_id,
+            identifier_type,
+            value: value.into(),
+        }
+    }
+}

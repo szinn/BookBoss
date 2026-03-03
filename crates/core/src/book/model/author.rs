@@ -18,6 +18,40 @@ pub struct Author {
     pub updated_at: DateTime<Utc>,
 }
 
+impl Author {
+    #[cfg(any(test, feature = "test-support"))]
+    pub fn fake(id: AuthorId, name: impl Into<String>) -> Self {
+        use chrono::Utc;
+        Self {
+            id,
+            version: 1,
+            token: AuthorToken::new(id),
+            name: name.into(),
+            bio: None,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+        }
+    }
+}
+
+impl BookAuthor {
+    #[cfg(any(test, feature = "test-support"))]
+    pub fn fake(book_id: BookId, author_id: AuthorId, role: &str, sort_order: i32) -> Self {
+        let role = match role {
+            "editor" => AuthorRole::Editor,
+            "translator" => AuthorRole::Translator,
+            "illustrator" => AuthorRole::Illustrator,
+            _ => AuthorRole::Author,
+        };
+        Self {
+            book_id,
+            author_id,
+            role,
+            sort_order,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct NewAuthor {
     pub name: String,

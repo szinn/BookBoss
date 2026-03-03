@@ -61,6 +61,20 @@ pub struct Book {
     pub updated_at: DateTime<Utc>,
 }
 
+impl Book {
+    #[cfg(any(test, feature = "test-support"))]
+    pub fn fake(id: BookId, title: impl Into<String>, status: BookStatus) -> Self {
+        BookBuilder::default()
+            .id(id)
+            .version(1)
+            .token(BookToken::new(id))
+            .title(title.into())
+            .status(status)
+            .build()
+            .expect("fake book should build successfully")
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct NewBook {
     pub title: String,

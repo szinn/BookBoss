@@ -87,12 +87,9 @@ mod tests {
         Error, RepositoryError,
         auth::{NewSession, Session, repository::SessionRepository},
         book::{
-            Author, AuthorId, AuthorToken, AuthorRepository, NewAuthor,
-            Book, BookAuthor, BookFile, BookFilter, BookId, BookIdentifier, BookRepository, BookToken, NewBook,
-            Genre, GenreId, GenreToken, GenreRepository, NewGenre,
-            Publisher, PublisherId, PublisherToken, PublisherRepository, NewPublisher,
-            Series, SeriesId, SeriesToken, SeriesRepository, NewSeries,
-            Tag, TagId, TagToken, TagRepository, NewTag,
+            Author, AuthorId, AuthorRepository, AuthorToken, Book, BookAuthor, BookFile, BookFilter, BookId, BookIdentifier, BookRepository, BookToken, Genre,
+            GenreId, GenreRepository, GenreToken, NewAuthor, NewBook, NewGenre, NewPublisher, NewSeries, NewTag, Publisher, PublisherId, PublisherRepository,
+            PublisherToken, Series, SeriesId, SeriesRepository, SeriesToken, Tag, TagId, TagRepository, TagToken,
         },
         repository::{Repository, RepositoryServiceBuilder, Transaction},
         user::{
@@ -291,66 +288,136 @@ mod tests {
     struct MockAuthorRepository;
     #[async_trait::async_trait]
     impl AuthorRepository for MockAuthorRepository {
-        async fn add_author(&self, _: &dyn Transaction, _: NewAuthor) -> Result<Author, Error> { unimplemented!() }
-        async fn update_author(&self, _: &dyn Transaction, _: Author) -> Result<Author, Error> { unimplemented!() }
-        async fn find_by_id(&self, _: &dyn Transaction, _: AuthorId) -> Result<Option<Author>, Error> { unimplemented!() }
-        async fn find_by_token(&self, _: &dyn Transaction, _: &AuthorToken) -> Result<Option<Author>, Error> { unimplemented!() }
-        async fn list_authors(&self, _: &dyn Transaction, _: Option<AuthorId>, _: Option<u64>) -> Result<Vec<Author>, Error> { unimplemented!() }
+        async fn add_author(&self, _: &dyn Transaction, _: NewAuthor) -> Result<Author, Error> {
+            unimplemented!()
+        }
+        async fn update_author(&self, _: &dyn Transaction, _: Author) -> Result<Author, Error> {
+            unimplemented!()
+        }
+        async fn find_by_id(&self, _: &dyn Transaction, _: AuthorId) -> Result<Option<Author>, Error> {
+            unimplemented!()
+        }
+        async fn find_by_token(&self, _: &dyn Transaction, _: &AuthorToken) -> Result<Option<Author>, Error> {
+            unimplemented!()
+        }
+        async fn list_authors(&self, _: &dyn Transaction, _: Option<AuthorId>, _: Option<u64>) -> Result<Vec<Author>, Error> {
+            unimplemented!()
+        }
     }
 
     struct MockSeriesRepository;
     #[async_trait::async_trait]
     impl SeriesRepository for MockSeriesRepository {
-        async fn add_series(&self, _: &dyn Transaction, _: NewSeries) -> Result<Series, Error> { unimplemented!() }
-        async fn update_series(&self, _: &dyn Transaction, _: Series) -> Result<Series, Error> { unimplemented!() }
-        async fn find_by_id(&self, _: &dyn Transaction, _: SeriesId) -> Result<Option<Series>, Error> { unimplemented!() }
-        async fn find_by_token(&self, _: &dyn Transaction, _: &SeriesToken) -> Result<Option<Series>, Error> { unimplemented!() }
-        async fn list_series(&self, _: &dyn Transaction, _: Option<SeriesId>, _: Option<u64>) -> Result<Vec<Series>, Error> { unimplemented!() }
+        async fn add_series(&self, _: &dyn Transaction, _: NewSeries) -> Result<Series, Error> {
+            unimplemented!()
+        }
+        async fn update_series(&self, _: &dyn Transaction, _: Series) -> Result<Series, Error> {
+            unimplemented!()
+        }
+        async fn find_by_id(&self, _: &dyn Transaction, _: SeriesId) -> Result<Option<Series>, Error> {
+            unimplemented!()
+        }
+        async fn find_by_token(&self, _: &dyn Transaction, _: &SeriesToken) -> Result<Option<Series>, Error> {
+            unimplemented!()
+        }
+        async fn list_series(&self, _: &dyn Transaction, _: Option<SeriesId>, _: Option<u64>) -> Result<Vec<Series>, Error> {
+            unimplemented!()
+        }
     }
 
     struct MockPublisherRepository;
     #[async_trait::async_trait]
     impl PublisherRepository for MockPublisherRepository {
-        async fn add_publisher(&self, _: &dyn Transaction, _: NewPublisher) -> Result<Publisher, Error> { unimplemented!() }
-        async fn update_publisher(&self, _: &dyn Transaction, _: Publisher) -> Result<Publisher, Error> { unimplemented!() }
-        async fn find_by_id(&self, _: &dyn Transaction, _: PublisherId) -> Result<Option<Publisher>, Error> { unimplemented!() }
-        async fn find_by_token(&self, _: &dyn Transaction, _: &PublisherToken) -> Result<Option<Publisher>, Error> { unimplemented!() }
-        async fn list_publishers(&self, _: &dyn Transaction, _: Option<PublisherId>, _: Option<u64>) -> Result<Vec<Publisher>, Error> { unimplemented!() }
+        async fn add_publisher(&self, _: &dyn Transaction, _: NewPublisher) -> Result<Publisher, Error> {
+            unimplemented!()
+        }
+        async fn update_publisher(&self, _: &dyn Transaction, _: Publisher) -> Result<Publisher, Error> {
+            unimplemented!()
+        }
+        async fn find_by_id(&self, _: &dyn Transaction, _: PublisherId) -> Result<Option<Publisher>, Error> {
+            unimplemented!()
+        }
+        async fn find_by_token(&self, _: &dyn Transaction, _: &PublisherToken) -> Result<Option<Publisher>, Error> {
+            unimplemented!()
+        }
+        async fn list_publishers(&self, _: &dyn Transaction, _: Option<PublisherId>, _: Option<u64>) -> Result<Vec<Publisher>, Error> {
+            unimplemented!()
+        }
     }
 
     struct MockGenreRepository;
     #[async_trait::async_trait]
     impl GenreRepository for MockGenreRepository {
-        async fn add_genre(&self, _: &dyn Transaction, _: NewGenre) -> Result<Genre, Error> { unimplemented!() }
-        async fn update_genre(&self, _: &dyn Transaction, _: Genre) -> Result<Genre, Error> { unimplemented!() }
-        async fn find_by_id(&self, _: &dyn Transaction, _: GenreId) -> Result<Option<Genre>, Error> { unimplemented!() }
-        async fn find_by_token(&self, _: &dyn Transaction, _: &GenreToken) -> Result<Option<Genre>, Error> { unimplemented!() }
-        async fn find_by_name(&self, _: &dyn Transaction, _: &str) -> Result<Option<Genre>, Error> { unimplemented!() }
-        async fn list_genres(&self, _: &dyn Transaction, _: Option<GenreId>, _: Option<u64>) -> Result<Vec<Genre>, Error> { unimplemented!() }
+        async fn add_genre(&self, _: &dyn Transaction, _: NewGenre) -> Result<Genre, Error> {
+            unimplemented!()
+        }
+        async fn update_genre(&self, _: &dyn Transaction, _: Genre) -> Result<Genre, Error> {
+            unimplemented!()
+        }
+        async fn find_by_id(&self, _: &dyn Transaction, _: GenreId) -> Result<Option<Genre>, Error> {
+            unimplemented!()
+        }
+        async fn find_by_token(&self, _: &dyn Transaction, _: &GenreToken) -> Result<Option<Genre>, Error> {
+            unimplemented!()
+        }
+        async fn find_by_name(&self, _: &dyn Transaction, _: &str) -> Result<Option<Genre>, Error> {
+            unimplemented!()
+        }
+        async fn list_genres(&self, _: &dyn Transaction, _: Option<GenreId>, _: Option<u64>) -> Result<Vec<Genre>, Error> {
+            unimplemented!()
+        }
     }
 
     struct MockTagRepository;
     #[async_trait::async_trait]
     impl TagRepository for MockTagRepository {
-        async fn add_tag(&self, _: &dyn Transaction, _: NewTag) -> Result<Tag, Error> { unimplemented!() }
-        async fn update_tag(&self, _: &dyn Transaction, _: Tag) -> Result<Tag, Error> { unimplemented!() }
-        async fn find_by_id(&self, _: &dyn Transaction, _: TagId) -> Result<Option<Tag>, Error> { unimplemented!() }
-        async fn find_by_token(&self, _: &dyn Transaction, _: &TagToken) -> Result<Option<Tag>, Error> { unimplemented!() }
-        async fn find_by_name(&self, _: &dyn Transaction, _: &str) -> Result<Option<Tag>, Error> { unimplemented!() }
-        async fn list_tags(&self, _: &dyn Transaction, _: Option<TagId>, _: Option<u64>) -> Result<Vec<Tag>, Error> { unimplemented!() }
+        async fn add_tag(&self, _: &dyn Transaction, _: NewTag) -> Result<Tag, Error> {
+            unimplemented!()
+        }
+        async fn update_tag(&self, _: &dyn Transaction, _: Tag) -> Result<Tag, Error> {
+            unimplemented!()
+        }
+        async fn find_by_id(&self, _: &dyn Transaction, _: TagId) -> Result<Option<Tag>, Error> {
+            unimplemented!()
+        }
+        async fn find_by_token(&self, _: &dyn Transaction, _: &TagToken) -> Result<Option<Tag>, Error> {
+            unimplemented!()
+        }
+        async fn find_by_name(&self, _: &dyn Transaction, _: &str) -> Result<Option<Tag>, Error> {
+            unimplemented!()
+        }
+        async fn list_tags(&self, _: &dyn Transaction, _: Option<TagId>, _: Option<u64>) -> Result<Vec<Tag>, Error> {
+            unimplemented!()
+        }
     }
 
     struct MockBookRepository;
     #[async_trait::async_trait]
     impl BookRepository for MockBookRepository {
-        async fn add_book(&self, _: &dyn Transaction, _: NewBook) -> Result<Book, Error> { unimplemented!() }
-        async fn update_book(&self, _: &dyn Transaction, _: Book) -> Result<Book, Error> { unimplemented!() }
-        async fn find_by_id(&self, _: &dyn Transaction, _: BookId) -> Result<Option<Book>, Error> { unimplemented!() }
-        async fn find_by_token(&self, _: &dyn Transaction, _: &BookToken) -> Result<Option<Book>, Error> { unimplemented!() }
-        async fn list_books(&self, _: &dyn Transaction, _: &BookFilter, _: Option<BookId>, _: Option<u64>) -> Result<Vec<Book>, Error> { unimplemented!() }
-        async fn authors_for_book(&self, _: &dyn Transaction, _: BookId) -> Result<Vec<BookAuthor>, Error> { unimplemented!() }
-        async fn files_for_book(&self, _: &dyn Transaction, _: BookId) -> Result<Vec<BookFile>, Error> { unimplemented!() }
-        async fn identifiers_for_book(&self, _: &dyn Transaction, _: BookId) -> Result<Vec<BookIdentifier>, Error> { unimplemented!() }
+        async fn add_book(&self, _: &dyn Transaction, _: NewBook) -> Result<Book, Error> {
+            unimplemented!()
+        }
+        async fn update_book(&self, _: &dyn Transaction, _: Book) -> Result<Book, Error> {
+            unimplemented!()
+        }
+        async fn find_by_id(&self, _: &dyn Transaction, _: BookId) -> Result<Option<Book>, Error> {
+            unimplemented!()
+        }
+        async fn find_by_token(&self, _: &dyn Transaction, _: &BookToken) -> Result<Option<Book>, Error> {
+            unimplemented!()
+        }
+        async fn list_books(&self, _: &dyn Transaction, _: &BookFilter, _: Option<BookId>, _: Option<u64>) -> Result<Vec<Book>, Error> {
+            unimplemented!()
+        }
+        async fn authors_for_book(&self, _: &dyn Transaction, _: BookId) -> Result<Vec<BookAuthor>, Error> {
+            unimplemented!()
+        }
+        async fn files_for_book(&self, _: &dyn Transaction, _: BookId) -> Result<Vec<BookFile>, Error> {
+            unimplemented!()
+        }
+        async fn identifiers_for_book(&self, _: &dyn Transaction, _: BookId) -> Result<Vec<BookIdentifier>, Error> {
+            unimplemented!()
+        }
     }
 
     // ─── Helper ──────────────────────────────────────────────────────────────

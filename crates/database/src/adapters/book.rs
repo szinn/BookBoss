@@ -1,14 +1,13 @@
 use bb_core::{
     Error, RepositoryError,
     book::{
-        AuthorRole, Book, BookAuthor, BookFile, BookFilter, BookId, BookIdentifier,
-        BookRepository, BookStatus, BookToken, FileFormat, IdentifierType, MetadataSource, NewBook,
+        AuthorRole, Book, BookAuthor, BookFile, BookFilter, BookId, BookIdentifier, BookRepository, BookStatus, BookToken, FileFormat, IdentifierType,
+        MetadataSource, NewBook,
     },
     repository::Transaction,
 };
 use chrono::Utc;
-use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
-use sea_orm::sea_query::Query;
+use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect, sea_query::Query};
 
 use crate::{
     entities::{book_authors, book_files, book_genres, book_identifiers, book_tags, books, prelude},
@@ -362,8 +361,8 @@ mod tests {
     use bb_core::{
         Error, RepositoryError,
         book::{
-            AuthorRole, Book, BookFilter, BookRepository, BookStatus, BookToken, FileFormat,
-            IdentifierType, MetadataSource, NewAuthor, NewBook, NewGenre, NewSeries, NewTag,
+            AuthorRole, Book, BookFilter, BookRepository, BookStatus, BookToken, FileFormat, IdentifierType, MetadataSource, NewAuthor, NewBook, NewGenre,
+            NewSeries, NewTag,
         },
         repository::RepositoryService,
     };
@@ -606,7 +605,13 @@ mod tests {
         let svc = setup().await;
         let tx = svc.repository().begin().await.unwrap();
 
-        assert!(svc.book_repository().list_books(&*tx, &BookFilter::default(), None, None).await.unwrap().is_empty());
+        assert!(
+            svc.book_repository()
+                .list_books(&*tx, &BookFilter::default(), None, None)
+                .await
+                .unwrap()
+                .is_empty()
+        );
     }
 
     #[tokio::test]
@@ -617,7 +622,10 @@ mod tests {
         svc.book_repository().add_book(&*tx, new_book("Book A")).await.unwrap();
         svc.book_repository().add_book(&*tx, new_book("Book B")).await.unwrap();
 
-        assert_eq!(svc.book_repository().list_books(&*tx, &BookFilter::default(), None, None).await.unwrap().len(), 2);
+        assert_eq!(
+            svc.book_repository().list_books(&*tx, &BookFilter::default(), None, None).await.unwrap().len(),
+            2
+        );
     }
 
     #[tokio::test]
@@ -627,11 +635,20 @@ mod tests {
 
         svc.book_repository().add_book(&*tx, new_book("Available")).await.unwrap();
         svc.book_repository()
-            .add_book(&*tx, NewBook { status: BookStatus::Incoming, ..new_book("Incoming") })
+            .add_book(
+                &*tx,
+                NewBook {
+                    status: BookStatus::Incoming,
+                    ..new_book("Incoming")
+                },
+            )
             .await
             .unwrap();
 
-        let filter = BookFilter { status: Some(BookStatus::Available), ..Default::default() };
+        let filter = BookFilter {
+            status: Some(BookStatus::Available),
+            ..Default::default()
+        };
         let results = svc.book_repository().list_books(&*tx, &filter, None, None).await.unwrap();
 
         assert_eq!(results.len(), 1);
@@ -645,17 +662,32 @@ mod tests {
 
         let series = svc
             .series_repository()
-            .add_series(&*tx, NewSeries { name: "Dune".into(), description: None })
+            .add_series(
+                &*tx,
+                NewSeries {
+                    name: "Dune".into(),
+                    description: None,
+                },
+            )
             .await
             .unwrap();
         let b1 = svc
             .book_repository()
-            .add_book(&*tx, NewBook { series_id: Some(series.id), ..new_book("Dune 1") })
+            .add_book(
+                &*tx,
+                NewBook {
+                    series_id: Some(series.id),
+                    ..new_book("Dune 1")
+                },
+            )
             .await
             .unwrap();
         svc.book_repository().add_book(&*tx, new_book("Other")).await.unwrap();
 
-        let filter = BookFilter { series_id: Some(series.id), ..Default::default() };
+        let filter = BookFilter {
+            series_id: Some(series.id),
+            ..Default::default()
+        };
         let results = svc.book_repository().list_books(&*tx, &filter, None, None).await.unwrap();
 
         assert_eq!(results.len(), 1);
@@ -667,7 +699,17 @@ mod tests {
         let svc = setup().await;
         let tx = svc.repository().begin().await.unwrap();
 
-        let author = svc.author_repository().add_author(&*tx, NewAuthor { name: "Herbert".into(), bio: None }).await.unwrap();
+        let author = svc
+            .author_repository()
+            .add_author(
+                &*tx,
+                NewAuthor {
+                    name: "Herbert".into(),
+                    bio: None,
+                },
+            )
+            .await
+            .unwrap();
         let book = svc.book_repository().add_book(&*tx, new_book("Dune")).await.unwrap();
         svc.book_repository().add_book(&*tx, new_book("Other")).await.unwrap();
 
@@ -682,7 +724,10 @@ mod tests {
         .await
         .unwrap();
 
-        let filter = BookFilter { author_id: Some(author.id), ..Default::default() };
+        let filter = BookFilter {
+            author_id: Some(author.id),
+            ..Default::default()
+        };
         let results = svc.book_repository().list_books(&*tx, &filter, None, None).await.unwrap();
 
         assert_eq!(results.len(), 1);
@@ -707,7 +752,10 @@ mod tests {
         .await
         .unwrap();
 
-        let filter = BookFilter { genre_id: Some(genre.id), ..Default::default() };
+        let filter = BookFilter {
+            genre_id: Some(genre.id),
+            ..Default::default()
+        };
         let results = svc.book_repository().list_books(&*tx, &filter, None, None).await.unwrap();
 
         assert_eq!(results.len(), 1);
@@ -732,7 +780,10 @@ mod tests {
         .await
         .unwrap();
 
-        let filter = BookFilter { tag_id: Some(tag.id), ..Default::default() };
+        let filter = BookFilter {
+            tag_id: Some(tag.id),
+            ..Default::default()
+        };
         let results = svc.book_repository().list_books(&*tx, &filter, None, None).await.unwrap();
 
         assert_eq!(results.len(), 1);
@@ -748,7 +799,11 @@ mod tests {
         svc.book_repository().add_book(&*tx, new_book("Book B")).await.unwrap();
 
         let all = svc.book_repository().list_books(&*tx, &BookFilter::default(), None, None).await.unwrap();
-        let result = svc.book_repository().list_books(&*tx, &BookFilter::default(), Some(all[1].id), None).await.unwrap();
+        let result = svc
+            .book_repository()
+            .list_books(&*tx, &BookFilter::default(), Some(all[1].id), None)
+            .await
+            .unwrap();
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].id, all[1].id);
@@ -783,18 +838,48 @@ mod tests {
         let tx = svc.repository().begin().await.unwrap();
 
         let book = svc.book_repository().add_book(&*tx, new_book("Dune")).await.unwrap();
-        let a1 = svc.author_repository().add_author(&*tx, NewAuthor { name: "Author A".into(), bio: None }).await.unwrap();
-        let a2 = svc.author_repository().add_author(&*tx, NewAuthor { name: "Author B".into(), bio: None }).await.unwrap();
+        let a1 = svc
+            .author_repository()
+            .add_author(
+                &*tx,
+                NewAuthor {
+                    name: "Author A".into(),
+                    bio: None,
+                },
+            )
+            .await
+            .unwrap();
+        let a2 = svc
+            .author_repository()
+            .add_author(
+                &*tx,
+                NewAuthor {
+                    name: "Author B".into(),
+                    bio: None,
+                },
+            )
+            .await
+            .unwrap();
 
         let db_tx = TransactionImpl::get_db_transaction(&*tx).unwrap();
-        book_authors::ActiveModel { book_id: Set(book.id as i64), author_id: Set(a1.id as i64), role: Set("author".to_owned()), sort_order: Set(2) }
-            .insert(db_tx)
-            .await
-            .unwrap();
-        book_authors::ActiveModel { book_id: Set(book.id as i64), author_id: Set(a2.id as i64), role: Set("editor".to_owned()), sort_order: Set(1) }
-            .insert(db_tx)
-            .await
-            .unwrap();
+        book_authors::ActiveModel {
+            book_id: Set(book.id as i64),
+            author_id: Set(a1.id as i64),
+            role: Set("author".to_owned()),
+            sort_order: Set(2),
+        }
+        .insert(db_tx)
+        .await
+        .unwrap();
+        book_authors::ActiveModel {
+            book_id: Set(book.id as i64),
+            author_id: Set(a2.id as i64),
+            role: Set("editor".to_owned()),
+            sort_order: Set(1),
+        }
+        .insert(db_tx)
+        .await
+        .unwrap();
 
         let results = svc.book_repository().authors_for_book(&*tx, book.id).await.unwrap();
 
