@@ -21,7 +21,6 @@ mod m20260302_000018_create_device_sync_log_table;
 mod m20260303_000019_create_shelves_table;
 mod m20260303_000020_create_book_shelves_table;
 mod m20260303_000021_create_import_jobs_table;
-mod m20260303_000022_drop_file_path_from_book_files;
 
 pub struct Migrator;
 
@@ -50,7 +49,6 @@ impl MigratorTrait for Migrator {
             Box::new(m20260303_000019_create_shelves_table::Migration),
             Box::new(m20260303_000020_create_book_shelves_table::Migration),
             Box::new(m20260303_000021_create_import_jobs_table::Migration),
-            Box::new(m20260303_000022_drop_file_path_from_book_files::Migration),
         ]
     }
 }

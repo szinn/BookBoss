@@ -13,7 +13,6 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(big_integer(BookFiles::BookId).not_null())
                     .col(string(BookFiles::Format).not_null())
-                    .col(string(BookFiles::FilePath))
                     .col(big_integer(BookFiles::FileSize))
                     .col(string(BookFiles::FileHash))
                     .primary_key(Index::create().col(BookFiles::BookId).col(BookFiles::Format))
@@ -39,7 +38,6 @@ enum BookFiles {
     Table,
     BookId,
     Format,
-    FilePath,
     FileSize,
     FileHash,
 }
