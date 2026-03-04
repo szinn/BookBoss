@@ -42,6 +42,7 @@ crates/core/src/
 ```
 
 Each domain module typically contains:
+
 - `mod.rs` — re-exports
 - `model.rs` (or `model/`) — domain types (`Foo`, `NewFoo`, `FooId`, `FooToken`)
 - `repository.rs` (or `repository/`) — `FooRepository` trait (port)
