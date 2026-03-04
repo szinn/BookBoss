@@ -9,8 +9,10 @@ crates/
 ├── api/            # Adapter: gRPC interface, calls into core ports
 ├── core/           # Domain layer: business logic, models, port traits
 ├── database/       # Adapter: persistence (SeaORM — Postgres, MySQL, SQLite)
-├── formats/        # Adapter: e-book file format support
+├── formats/        # Adapter: e-book file format support (EPUB, OPF)
 ├── frontend/       # Adapter: Dioxus web UI, calls into core ports
+├── metadata/       # Adapter: external metadata providers (Open Library, etc.)
+├── utils/          # Shared utilities (token encoding, etc.)
 ├── bookboss/       # Entry point: wires adapters to ports
 └── integration-tests/
 ```
@@ -26,18 +28,24 @@ crates/core/src/
 ├── lib.rs              # CoreServices composition root, create_services()
 ├── error.rs            # Error, ErrorKind, RepositoryError
 ├── types.rs            # Shared newtypes (Email, Age)
-├── repository.rs       # Repository, Transaction traits; transaction macros
-├── user/
-│   ├── mod.rs          # Re-exports
-│   ├── model.rs        # User, NewUser, PartialUserUpdate, UserId, UserToken
-│   ├── repository.rs   # UserRepository trait (port)
-│   └── service.rs      # UserService trait + UserServiceImpl
-└── session/
-    ├── mod.rs
-    ├── model.rs        # Session, NewSession, SessionBuilder
-    ├── repository.rs   # SessionRepository trait (port)
-    └── service.rs      # SessionService trait + SessionServiceImpl
+├── repository.rs       # Repository, Transaction traits; RepositoryService; transaction macros
+├── test_support.rs     # Mock implementations (behind "test-support" feature)
+├── auth/               # Session auth: Session, AuthService, SessionRepository
+├── book/               # Books, authors, series, publishers, genres, tags, files
+├── device/             # Device sync: Device, DeviceBook, DeviceSyncLog
+├── import/             # Acquisition pipeline: ImportJob, ImportJobService
+├── pipeline/           # Port traits: MetadataExtractor, MetadataProvider
+├── reading/            # Per-user reading state: UserBookMetadata, ReadStatus
+├── shelf/              # Shelves (manual + smart): Shelf, ShelfFilter
+├── storage/            # LibraryStore port trait + BookSidecar struct
+└── user/               # Users and settings: User, UserService, UserSettingService
 ```
+
+Each domain module typically contains:
+- `mod.rs` — re-exports
+- `model.rs` (or `model/`) — domain types (`Foo`, `NewFoo`, `FooId`, `FooToken`)
+- `repository.rs` (or `repository/`) — `FooRepository` trait (port)
+- `service.rs` — `FooService` trait + `FooServiceImpl`
 
 ## Adding a New Domain
 

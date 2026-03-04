@@ -67,16 +67,15 @@ crates/core/src/
 ├── repository.rs       # Shared infrastructure: Repository, Transaction traits,
 │                       #   RepositoryService, and transaction macros
 ├── test_support.rs     # Mock implementations (behind "test-support" feature)
-├── user/
-│   ├── mod.rs          # Re-exports: User, UserService, UserRepository, etc.
-│   ├── model.rs        # User, NewUser, PartialUserUpdate, UserId, UserToken
-│   ├── repository.rs   # UserRepository trait (port)
-│   └── service.rs      # UserService trait + UserServiceImpl
-└── session/
-    ├── mod.rs          # Re-exports: Session, SessionService, SessionRepository, etc.
-    ├── model.rs        # Session, NewSession, SessionBuilder
-    ├── repository.rs   # SessionRepository trait (port)
-    └── service.rs      # SessionService trait + SessionServiceImpl
+├── auth/               # Session auth: Session, AuthService, SessionRepository
+├── book/               # Books, authors, series, publishers, genres, tags, files
+├── device/             # Device sync: Device, DeviceBook, DeviceSyncLog
+├── import/             # Acquisition pipeline: ImportJob, ImportJobService
+├── pipeline/           # Port traits: MetadataExtractor, MetadataProvider
+├── reading/            # Per-user reading state: UserBookMetadata, ReadStatus
+├── shelf/              # Shelves (manual + smart): Shelf, ShelfFilter
+├── storage/            # LibraryStore port trait + BookSidecar struct
+└── user/               # Users and settings: User, UserService, UserSettingService
 ```
 
 **Adding a new domain:** Create a new directory (e.g. `order/`) with `mod.rs`, `model.rs`,
@@ -115,13 +114,16 @@ Secrets should be encrypted with `sops` and never committed.
 
 ## Workflows
 
-**After completing work:**
+**After completing each task (end-of-task routine — run these as separate commands):**
 
-- Use component tests to make sure everything passes: `just component-tests`
+1. `just fmt` — format code
+2. `just clippy` — lint (run separately from fmt, not chained)
+3. `just component-tests` — verify tests pass
+4. `jj desc -m "type(scope): description\n\nbody"` — update working copy description
 
-**Before committing:**
+**Before committing (full pre-commit check):**
 
-- Run tests to make sure everything passes: `just test`
+- Run all tests: `just test`
 - Run clippy for linting: `just clippy`
 - Format code: `just fmt`
 - Update the working copy description with `jj desc -m "..."` — do not ask about committing
