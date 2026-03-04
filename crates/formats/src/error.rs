@@ -2,6 +2,8 @@
 pub enum Error {
     #[error("XML error: {0}")]
     Xml(#[from] quick_xml::Error),
+    #[error("XML encoding error: {0}")]
+    XmlEncoding(#[from] quick_xml::encoding::EncodingError),
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
     #[error("JSON error: {0}")]

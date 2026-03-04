@@ -301,7 +301,7 @@ fn parse_dc(xml: &[u8]) -> Result<DcFields, Error> {
                 }
             }
             (_, Event::Text(ref t)) => {
-                let text = t.unescape()?.into_owned();
+                let text = t.decode()?.into_owned();
                 match std::mem::replace(&mut state, ParseState::Other) {
                     ParseState::InTitle => fields.title = Some(text),
                     ParseState::InCreator { id, role, file_as } => {
