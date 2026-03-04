@@ -83,7 +83,7 @@ version = "1.40.0"
 features = ["serde-str"]
 
 [workspace.dependencies.sea-orm]
-version = "2.0.0-rc.35"
+version = "2.0.0-rc.36"
 features = [
     "debug-print",
     "postgres-array",
@@ -98,7 +98,7 @@ features = [
 ]
 
 [workspace.dependencies.sea-orm-migration]
-version = "2.0.0-rc.35"
+version = "2.0.0-rc.36"
 features = [
     "sqlx-postgres",
     "sqlx-sqlite",
