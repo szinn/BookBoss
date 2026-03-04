@@ -1,0 +1,24 @@
+[package]
+name = "bb-storage"
+description = "BookBoss local filesystem library store"
+autotests = false
+
+version = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+
+[dependencies]
+bb-core.workspace = true
+bb-formats.workspace = true
+async-trait.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+bb-core = { workspace = true, features = ["test-support"] }
+bb-formats.workspace = true
+tempfile = "3"
+tokio.workspace = true

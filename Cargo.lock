@@ -725,6 +725,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "bb-storage"
+version = "0.1.10"
+dependencies = [
+ "async-trait",
+ "bb-core",
+ "bb-formats",
+ "tempfile",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "bb-utils"
 version = "0.1.10"
 dependencies = [
@@ -872,6 +885,7 @@ dependencies = [
  "bb-database",
  "bb-formats",
  "bb-frontend",
+ "bb-storage",
  "clap",
  "config",
  "dioxus",
