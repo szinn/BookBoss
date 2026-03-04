@@ -25,4 +25,9 @@ pub struct CommandLine {
 pub enum Commands {
     #[command(about = "Start server", display_order = 10)]
     Server,
+    #[command(about = "Dump metadata extracted from an EPUB file", display_order = 20)]
+    DumpEpub {
+        #[arg(help = "Path to the EPUB file")]
+        file: std::path::PathBuf,
+    },
 }

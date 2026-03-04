@@ -20,12 +20,14 @@ const DC_NS: &[u8] = b"http://purl.org/dc/elements/1.1/";
 // ─────────────────────────────────────────────────
 
 struct RawAuthor {
+    id: Option<String>,
     name: String,
     role_code: Option<String>,
     file_as: Option<String>,
 }
 
 struct RawIdentifier {
+    id: Option<String>,
     scheme: Option<String>,
     value: String,
 }
@@ -40,17 +42,32 @@ struct DcFields {
     language: Option<String>,
     identifiers: Vec<RawIdentifier>,
     bb_meta_content: Option<String>,
+    /// OPF 3 refines data: maps element id → (role_code, file_as)
+    meta_refines: HashMap<String, (Option<String>, Option<String>)>,
 }
 
 enum ParseState {
     Other,
     InTitle,
-    InCreator { role: Option<String>, file_as: Option<String> },
+    InCreator {
+        id: Option<String>,
+        role: Option<String>,
+        file_as: Option<String>,
+    },
     InDescription,
     InPublisher,
     InDate,
     InLanguage,
-    InIdentifier { scheme: Option<String> },
+    InIdentifier {
+        id: Option<String>,
+        scheme: Option<String>,
+    },
+    /// OPF 3: collecting text for a `<meta refines="#id">` element.
+    /// `is_role`: true = collecting role code, false = collecting file-as.
+    InMetaRefine {
+        is_role: bool,
+        refines_id: String,
+    },
 }
 
 // ── bookboss:metadata JSON structs
@@ -94,21 +111,83 @@ fn marc_to_author_role(code: &str) -> AuthorRole {
     }
 }
 
-fn scheme_to_identifier_type(scheme: &str, value: &str) -> IdentifierType {
-    match scheme {
-        "ISBN" => {
-            if value.len() == 10 {
-                IdentifierType::Isbn10
+/// Classify an identifier, returning `None` for unknown/unrecognised schemes.
+///
+/// Handles both explicit `opf:scheme` attributes (OPF 2) and the
+/// Calibre-style value-prefix format `"scheme:value"` (OPF 3, no attribute).
+/// Classify an identifier, returning `(type, effective_value)` or `None`.
+///
+/// The returned value may differ from `value` when the ISBN is encoded in the
+/// `id` attribute (e.g. `id="isbn9781529061819"` with a UUID value).
+fn classify_identifier(scheme: Option<&str>, value: &str, id_hint: Option<&str>) -> Option<(IdentifierType, String)> {
+    let (effective_scheme, bare_value) = match scheme.filter(|s| !s.is_empty()) {
+        Some(s) => (s.to_uppercase(), value),
+        None => {
+            if let Some(pos) = value.find(':') {
+                // "scheme:value" prefix (e.g. Calibre's "calibre:20139").
+                (value[..pos].to_uppercase(), &value[pos + 1..])
             } else {
-                IdentifierType::Isbn13
+                // No scheme and no prefix — try heuristic ISBN detection on the value.
+                if let Some(id_type) = isbn_from_bare_value(value) {
+                    return Some((id_type, value.to_string()));
+                }
+                // Last resort: check if the id attribute encodes the ISBN,
+                // e.g. id="isbn9781529061819" with a UUID as the element value.
+                return isbn_from_id_attr(id_hint);
             }
         }
-        "ASIN" => IdentifierType::Asin,
-        "GoogleBooks" => IdentifierType::GoogleBooks,
-        "OpenLibrary" => IdentifierType::OpenLibrary,
-        "Hardcover" => IdentifierType::Hardcover,
-        _ => IdentifierType::Isbn13,
+    };
+    let result = match effective_scheme.as_str() {
+        "ISBN" => Some((isbn_type(bare_value), bare_value.to_string())),
+        "ASIN" => Some((IdentifierType::Asin, value.to_string())),
+        "GOOGLEBOOKS" => Some((IdentifierType::GoogleBooks, value.to_string())),
+        "OPENLIBRARY" => Some((IdentifierType::OpenLibrary, value.to_string())),
+        "HARDCOVER" => Some((IdentifierType::Hardcover, value.to_string())),
+        _ => None,
+    };
+    // If the value-based classification failed, try the id attribute as a
+    // fallback (e.g. id="isbn9781529061819" with a UUID element value).
+    result.or_else(|| isbn_from_id_attr(id_hint))
+}
+
+/// Extract an ISBN from an OPF `id` attribute of the form
+/// `"isbn9781529061819"`.
+fn isbn_from_id_attr(id: Option<&str>) -> Option<(IdentifierType, String)> {
+    let id = id?;
+    let rest = id.strip_prefix("isbn").or_else(|| id.strip_prefix("ISBN"))?;
+    let id_type = isbn_from_bare_value(rest)?;
+    Some((id_type, rest.to_string()))
+}
+
+/// Detect an ISBN-10 or ISBN-13 from a value that contains only digits (and
+/// optionally a trailing `X` for ISBN-10).  Returns `None` for anything else.
+fn isbn_from_bare_value(value: &str) -> Option<IdentifierType> {
+    let v = value.trim();
+    let all_digits = v.chars().all(|c| c.is_ascii_digit());
+    match v.len() {
+        13 if all_digits => Some(IdentifierType::Isbn13),
+        10 if v[..9].chars().all(|c| c.is_ascii_digit()) && (v.ends_with(|c: char| c.is_ascii_digit()) || v.ends_with('X')) => Some(IdentifierType::Isbn10),
+        _ => None,
     }
+}
+
+fn isbn_type(value: &str) -> IdentifierType {
+    if value.len() == 10 { IdentifierType::Isbn10 } else { IdentifierType::Isbn13 }
+}
+
+/// Extract a publication year from a dc:date value.
+///
+/// Handles:
+/// - plain year: `"1965"` → 1965
+/// - ISO date:   `"2022-10-11"` → 2022
+/// - ISO datetime: `"2022-08-19T11:29:46Z"` → 2022
+fn parse_year(s: &str) -> Option<i32> {
+    // Fast path: plain integer year.
+    if let Ok(y) = s.parse() {
+        return Some(y);
+    }
+    // Take the first hyphen-delimited segment and try that as a year.
+    s.split('-').next()?.parse().ok()
 }
 
 // ── core DC parser
@@ -130,11 +209,15 @@ fn parse_dc(xml: &[u8]) -> Result<DcFields, Error> {
                 match local.as_ref() {
                     b"title" => state = ParseState::InTitle,
                     b"creator" => {
+                        let mut id = None;
                         let mut role = None;
                         let mut file_as = None;
                         for attr in e.attributes() {
                             let attr = attr.map_err(quick_xml::Error::from)?;
                             match attr.key.as_ref() {
+                                b"id" => {
+                                    id = Some(attr.decode_and_unescape_value(reader.decoder())?.into_owned());
+                                }
                                 b"opf:role" => {
                                     role = Some(attr.decode_and_unescape_value(reader.decoder())?.into_owned());
                                 }
@@ -144,21 +227,28 @@ fn parse_dc(xml: &[u8]) -> Result<DcFields, Error> {
                                 _ => {}
                             }
                         }
-                        state = ParseState::InCreator { role, file_as };
+                        state = ParseState::InCreator { id, role, file_as };
                     }
                     b"description" => state = ParseState::InDescription,
                     b"publisher" => state = ParseState::InPublisher,
                     b"date" => state = ParseState::InDate,
                     b"language" => state = ParseState::InLanguage,
                     b"identifier" => {
+                        let mut id = None;
                         let mut scheme = None;
                         for attr in e.attributes() {
                             let attr = attr.map_err(quick_xml::Error::from)?;
-                            if attr.key.as_ref() == b"opf:scheme" {
-                                scheme = Some(attr.decode_and_unescape_value(reader.decoder())?.into_owned());
+                            match attr.key.as_ref() {
+                                b"id" => {
+                                    id = Some(attr.decode_and_unescape_value(reader.decoder())?.into_owned());
+                                }
+                                b"opf:scheme" => {
+                                    scheme = Some(attr.decode_and_unescape_value(reader.decoder())?.into_owned());
+                                }
+                                _ => {}
                             }
                         }
-                        state = ParseState::InIdentifier { scheme };
+                        state = ParseState::InIdentifier { id, scheme };
                     }
                     _ => {}
                 }
@@ -185,12 +275,38 @@ fn parse_dc(xml: &[u8]) -> Result<DcFields, Error> {
                     fields.bb_meta_content = content;
                 }
             }
+            // OPF 3: <meta property="role|file-as" refines="#id">text</meta>
+            (_, Event::Start(ref e)) if e.local_name().as_ref() == b"meta" => {
+                let mut property = None::<String>;
+                let mut refines = None::<String>;
+                for attr in e.attributes() {
+                    let attr = attr.map_err(quick_xml::Error::from)?;
+                    match attr.key.as_ref() {
+                        b"property" => {
+                            property = Some(attr.decode_and_unescape_value(reader.decoder())?.into_owned());
+                        }
+                        b"refines" => {
+                            refines = Some(attr.decode_and_unescape_value(reader.decoder())?.into_owned());
+                        }
+                        _ => {}
+                    }
+                }
+                if let (Some(prop), Some(ref_id)) = (property, refines) {
+                    let refines_id = ref_id.trim_start_matches('#').to_string();
+                    match prop.as_str() {
+                        "role" => state = ParseState::InMetaRefine { is_role: true, refines_id },
+                        "file-as" => state = ParseState::InMetaRefine { is_role: false, refines_id },
+                        _ => {}
+                    }
+                }
+            }
             (_, Event::Text(ref t)) => {
                 let text = t.unescape()?.into_owned();
                 match std::mem::replace(&mut state, ParseState::Other) {
                     ParseState::InTitle => fields.title = Some(text),
-                    ParseState::InCreator { role, file_as } => {
+                    ParseState::InCreator { id, role, file_as } => {
                         fields.authors.push(RawAuthor {
+                            id,
                             name: text,
                             role_code: role,
                             file_as,
@@ -200,8 +316,16 @@ fn parse_dc(xml: &[u8]) -> Result<DcFields, Error> {
                     ParseState::InPublisher => fields.publisher = Some(text),
                     ParseState::InDate => fields.published_date = Some(text),
                     ParseState::InLanguage => fields.language = Some(text),
-                    ParseState::InIdentifier { scheme } => {
-                        fields.identifiers.push(RawIdentifier { scheme, value: text });
+                    ParseState::InIdentifier { id, scheme } => {
+                        fields.identifiers.push(RawIdentifier { id, scheme, value: text });
+                    }
+                    ParseState::InMetaRefine { is_role, refines_id } => {
+                        let entry = fields.meta_refines.entry(refines_id).or_default();
+                        if is_role {
+                            entry.0 = Some(text);
+                        } else {
+                            entry.1 = Some(text);
+                        }
                     }
                     ParseState::Other => {}
                 }
@@ -211,6 +335,21 @@ fn parse_dc(xml: &[u8]) -> Result<DcFields, Error> {
             }
             (_, Event::Eof) => break,
             _ => {}
+        }
+    }
+
+    // Apply OPF 3 refines (role, file-as) to authors that were identified by id
+    // attribute.
+    for author in &mut fields.authors {
+        if let Some(ref id) = author.id {
+            if let Some((role, file_as)) = fields.meta_refines.get(id.as_str()) {
+                if author.role_code.is_none() {
+                    author.role_code.clone_from(role);
+                }
+                if author.file_as.is_none() {
+                    author.file_as.clone_from(file_as);
+                }
+            }
         }
     }
 
@@ -253,13 +392,12 @@ pub fn parse_sidecar(xml: &[u8]) -> Result<BookSidecar, Error> {
     let identifiers: Vec<SidecarIdentifier> = fields
         .identifiers
         .into_iter()
-        .map(|raw| {
-            let scheme = raw.scheme.as_deref().unwrap_or("");
-            let id_type = scheme_to_identifier_type(scheme, &raw.value);
-            SidecarIdentifier {
+        .filter_map(|raw| {
+            let (id_type, id_value) = classify_identifier(raw.scheme.as_deref(), &raw.value, raw.id.as_deref())?;
+            Some(SidecarIdentifier {
                 identifier_type: id_type,
-                value: raw.value,
-            }
+                value: id_value,
+            })
         })
         .collect();
 
@@ -268,7 +406,7 @@ pub fn parse_sidecar(xml: &[u8]) -> Result<BookSidecar, Error> {
         authors,
         description: fields.description,
         publisher: fields.publisher,
-        published_date: fields.published_date.as_deref().and_then(|s| s.parse().ok()),
+        published_date: fields.published_date.as_deref().and_then(parse_year),
         language: fields.language,
         identifiers,
         series: bb.series,
@@ -301,13 +439,12 @@ pub fn extract_metadata(xml: &[u8]) -> Result<ExtractedMetadata, Error> {
     let identifiers: Vec<ExtractedIdentifier> = fields
         .identifiers
         .into_iter()
-        .map(|raw| {
-            let scheme = raw.scheme.as_deref().unwrap_or("");
-            let id_type = scheme_to_identifier_type(scheme, &raw.value);
-            ExtractedIdentifier {
+        .filter_map(|raw| {
+            let (id_type, id_value) = classify_identifier(raw.scheme.as_deref(), &raw.value, raw.id.as_deref())?;
+            Some(ExtractedIdentifier {
                 identifier_type: id_type,
-                value: raw.value,
-            }
+                value: id_value,
+            })
         })
         .collect();
 
@@ -316,7 +453,7 @@ pub fn extract_metadata(xml: &[u8]) -> Result<ExtractedMetadata, Error> {
         authors: if authors.is_empty() { None } else { Some(authors) },
         description: fields.description,
         publisher: fields.publisher,
-        published_date: fields.published_date.as_deref().and_then(|s| s.parse().ok()),
+        published_date: fields.published_date.as_deref().and_then(parse_year),
         language: fields.language,
         identifiers: if identifiers.is_empty() { None } else { Some(identifiers) },
         series_name: None,

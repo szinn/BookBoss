@@ -64,6 +64,25 @@ async fn main() -> anyhow::Result<()> {
     let config = Config::load().context("Cannot load configuration")?;
 
     match cli.command {
+        Commands::DumpEpub { file } => {
+            use bb_core::{book::FileFormat, pipeline::MetadataExtractor};
+            use bb_formats::{EpubExtractor, read_opf_xml};
+
+            let raw = read_opf_xml(&file)?;
+            println!("=== raw OPF ===\n{raw}\n");
+
+            let meta = EpubExtractor.extract(&file, FileFormat::Epub).await?;
+            println!("=== extracted metadata ===");
+            println!("title:        {:?}", meta.title);
+            println!("authors:      {:?}", meta.authors);
+            println!("description:  {:?}", meta.description);
+            println!("publisher:    {:?}", meta.publisher);
+            println!("published:    {:?}", meta.published_date);
+            println!("language:     {:?}", meta.language);
+            println!("identifiers:  {:?}", meta.identifiers);
+            println!("series_name:  {:?}", meta.series_name);
+            println!("series_num:   {:?}", meta.series_number);
+        }
         Commands::Server => {
             init_logging()?;
             let crate_version = clap::crate_version!();

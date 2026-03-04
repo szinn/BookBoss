@@ -23,30 +23,38 @@ impl MetadataExtractor for EpubExtractor {
 }
 
 fn extract_epub_metadata(path: &Path) -> Result<ExtractedMetadata, CoreError> {
-    let file = std::fs::File::open(path).map_err(|e| CoreError::Infrastructure(e.to_string()))?;
-    let mut archive = zip::ZipArchive::new(file).map_err(|e| CoreError::Infrastructure(e.to_string()))?;
-
-    let opf_path = {
-        let mut container = archive
-            .by_name("META-INF/container.xml")
-            .map_err(|e| CoreError::Infrastructure(e.to_string()))?;
-        let mut buf = Vec::new();
-        container.read_to_end(&mut buf).map_err(|e| CoreError::Infrastructure(e.to_string()))?;
-        find_opf_path(&buf)?
-    };
-
-    let opf_bytes = {
-        let mut opf_file = archive.by_name(&opf_path).map_err(|e| CoreError::Infrastructure(e.to_string()))?;
-        let mut buf = Vec::new();
-        opf_file.read_to_end(&mut buf).map_err(|e| CoreError::Infrastructure(e.to_string()))?;
-        buf
-    };
-
+    let opf_bytes = read_opf_bytes(path).map_err(|e| CoreError::Infrastructure(e.to_string()))?;
     crate::opf::extract_metadata(&opf_bytes).map_err(|e| CoreError::Infrastructure(e.to_string()))
 }
 
+/// Read and return the raw OPF XML bytes from an EPUB file.
+fn read_opf_bytes(path: &Path) -> Result<Vec<u8>, crate::Error> {
+    let file = std::fs::File::open(path)?;
+    let mut archive = zip::ZipArchive::new(file)?;
+
+    let opf_path = {
+        let mut container = archive.by_name("META-INF/container.xml")?;
+        let mut buf = Vec::new();
+        container.read_to_end(&mut buf)?;
+        find_opf_path(&buf)?
+    };
+
+    let mut opf_file = archive.by_name(&opf_path)?;
+    let mut buf = Vec::new();
+    opf_file.read_to_end(&mut buf)?;
+    Ok(buf)
+}
+
+/// Read and return the raw OPF XML text from an EPUB file.
+///
+/// Useful for diagnostics and exploration tools.
+pub fn read_opf_xml(path: &Path) -> Result<String, crate::Error> {
+    let bytes = read_opf_bytes(path)?;
+    Ok(String::from_utf8_lossy(&bytes).into_owned())
+}
+
 /// Parse META-INF/container.xml and return the `full-path` of the rootfile.
-fn find_opf_path(xml: &[u8]) -> Result<String, CoreError> {
+fn find_opf_path(xml: &[u8]) -> Result<String, crate::Error> {
     use quick_xml::{Reader, events::Event};
     let mut reader = Reader::from_reader(xml);
     reader.config_mut().trim_text(true);
@@ -56,21 +64,19 @@ fn find_opf_path(xml: &[u8]) -> Result<String, CoreError> {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Empty(ref e)) if e.local_name().as_ref() == b"rootfile" => {
                 for attr in e.attributes() {
-                    let attr = attr.map_err(|e| CoreError::Infrastructure(e.to_string()))?;
+                    let attr = attr.map_err(quick_xml::Error::from)?;
                     if attr.key.as_ref() == b"full-path" {
-                        let val = attr
-                            .decode_and_unescape_value(reader.decoder())
-                            .map_err(|e| CoreError::Infrastructure(e.to_string()))?;
+                        let val = attr.decode_and_unescape_value(reader.decoder())?;
                         return Ok(val.into_owned());
                     }
                 }
             }
             Ok(Event::Eof) => break,
-            Err(e) => return Err(CoreError::Infrastructure(e.to_string())),
+            Err(e) => return Err(e.into()),
             _ => {}
         }
     }
-    Err(CoreError::Infrastructure("container.xml: no rootfile found".to_string()))
+    Err(crate::Error::InvalidValue("container.xml: no rootfile found".to_string()))
 }
 
 #[cfg(test)]

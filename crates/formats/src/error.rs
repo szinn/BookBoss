@@ -8,6 +8,8 @@ pub enum Error {
     Json(#[from] serde_json::Error),
     #[error("invalid UTF-8: {0}")]
     Utf8(#[from] std::str::Utf8Error),
+    #[error("ZIP error: {0}")]
+    Zip(#[from] zip::result::ZipError),
     #[error("{0}")]
     InvalidValue(String),
     #[error("missing field: {0}")]
