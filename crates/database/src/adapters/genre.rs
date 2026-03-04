@@ -36,7 +36,6 @@ impl GenreRepositoryAdapter {
 
 #[async_trait::async_trait]
 impl GenreRepository for GenreRepositoryAdapter {
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn add_genre(&self, transaction: &dyn Transaction, genre: NewGenre) -> Result<Genre, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -57,7 +56,6 @@ impl GenreRepository for GenreRepositoryAdapter {
         Ok(model.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn update_genre(&self, transaction: &dyn Transaction, genre: Genre) -> Result<Genre, Error> {
         if genre.id == 0 {
             return Err(Error::InvalidId(genre.id));
@@ -85,7 +83,6 @@ impl GenreRepository for GenreRepositoryAdapter {
         Ok(updated.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_id(&self, transaction: &dyn Transaction, id: GenreId) -> Result<Option<Genre>, Error> {
         if id == 0 {
             return Err(Error::InvalidId(id));
@@ -99,12 +96,10 @@ impl GenreRepository for GenreRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_token(&self, transaction: &dyn Transaction, token: &GenreToken) -> Result<Option<Genre>, Error> {
         self.find_by_id(transaction, token.id()).await
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_name(&self, transaction: &dyn Transaction, name: &str) -> Result<Option<Genre>, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -116,7 +111,6 @@ impl GenreRepository for GenreRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn list_genres(&self, transaction: &dyn Transaction, start_id: Option<GenreId>, page_size: Option<u64>) -> Result<Vec<Genre>, Error> {
         const DEFAULT_PAGE_SIZE: u64 = 50;
         const MAX_PAGE_SIZE: u64 = 50;

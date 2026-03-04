@@ -114,7 +114,6 @@ impl ImportJobRepositoryAdapter {
 
 #[async_trait::async_trait]
 impl ImportJobRepository for ImportJobRepositoryAdapter {
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn add_job(&self, transaction: &dyn Transaction, job: NewImportJob) -> Result<ImportJob, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -143,7 +142,6 @@ impl ImportJobRepository for ImportJobRepositoryAdapter {
         Ok(model.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn update_job(&self, transaction: &dyn Transaction, job: ImportJob) -> Result<ImportJob, Error> {
         if job.id == 0 {
             return Err(Error::InvalidId(job.id));
@@ -173,7 +171,6 @@ impl ImportJobRepository for ImportJobRepositoryAdapter {
         Ok(updated.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_id(&self, transaction: &dyn Transaction, id: ImportJobId) -> Result<Option<ImportJob>, Error> {
         if id == 0 {
             return Err(Error::InvalidId(id));
@@ -187,12 +184,10 @@ impl ImportJobRepository for ImportJobRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_token(&self, transaction: &dyn Transaction, token: &ImportJobToken) -> Result<Option<ImportJob>, Error> {
         self.find_by_id(transaction, token.id()).await
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_hash(&self, transaction: &dyn Transaction, file_hash: &str) -> Result<Option<ImportJob>, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -204,7 +199,6 @@ impl ImportJobRepository for ImportJobRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn list_by_status(
         &self,
         transaction: &dyn Transaction,

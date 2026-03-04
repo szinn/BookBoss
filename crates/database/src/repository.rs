@@ -32,7 +32,6 @@ impl Repository for RepositoryImpl {
         Ok(Box::new(TransactionImpl::new(transaction)))
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
     async fn close(&self) -> Result<(), Error> {
         self.database.clone().close().await.map_err(handle_dberr)?;
 

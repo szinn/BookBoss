@@ -160,7 +160,6 @@ pub trait Repository: Send + Sync {
 ///     Ok(result)
 /// })).await?;
 /// ```
-#[tracing::instrument(level = "trace", skip(repository, callback))]
 pub async fn transaction<F, T>(repository: &dyn Repository, callback: F) -> Result<T, Error>
 where
     F: for<'c> FnOnce(&'c dyn Transaction) -> Pin<Box<dyn Future<Output = Result<T, Error>> + Send + 'c>> + Send,
@@ -189,7 +188,6 @@ where
 ///     Ok(result)
 /// })).await?;
 /// ```
-#[tracing::instrument(level = "trace", skip(repository, callback))]
 pub async fn read_only_transaction<F, T>(repository: &dyn Repository, callback: F) -> Result<T, Error>
 where
     F: for<'c> FnOnce(&'c dyn Transaction) -> Pin<Box<dyn Future<Output = Result<T, Error>> + Send + 'c>> + Send,

@@ -5,7 +5,6 @@ use {crate::server::AuthSession, bb_core::CoreServices, std::sync::Arc};
 use crate::{Route, settings::BookDisplayView};
 
 #[put("/api/v1/logout", auth_session: axum::Extension<AuthSession>)]
-#[tracing::instrument(level = "trace", skip(auth_session))]
 async fn logout() -> Result<(), ServerFnError> {
     auth_session.logout_user();
 
@@ -13,7 +12,6 @@ async fn logout() -> Result<(), ServerFnError> {
 }
 
 #[put("/api/v1/book_display_view", auth_session: axum::Extension<AuthSession>, core_services: axum::Extension<Arc<CoreServices>>)]
-#[tracing::instrument(level = "trace", skip(auth_session, core_services))]
 async fn save_book_display_view(view: BookDisplayView) -> Result<(), ServerFnError> {
     let user = auth_session.current_user.as_ref().ok_or_else(|| ServerFnError::new("Not authenticated"))?;
     user.set_book_display_view(view, &core_services)

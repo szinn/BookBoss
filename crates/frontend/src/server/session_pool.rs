@@ -28,12 +28,10 @@ pub(crate) type AuthSession = axum_session_auth::AuthSession<AuthUser, UserId, B
 
 #[async_trait::async_trait]
 impl DatabasePool for BackendSessionPool {
-    #[tracing::instrument(level = "trace", skip(self))]
     async fn initiate(&self, _table_name: &str) -> Result<(), DatabaseError> {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
     async fn count(&self, _table_name: &str) -> Result<i64, DatabaseError> {
         self.core_services
             .auth_service
@@ -42,7 +40,6 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn store(&self, id: &str, session: &str, expires: i64, _table_name: &str) -> Result<(), DatabaseError> {
         let expires_at = DateTime::from_timestamp(expires, 0).ok_or_else(|| DatabaseError::GenericInsertError(format!("invalid timestamp: {expires}")))?;
         let new_session = NewSession::new(id, session, expires_at).map_err(|e| DatabaseError::GenericInsertError(e.to_string()))?;
@@ -54,7 +51,6 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericInsertError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn load(&self, id: &str, _table_name: &str) -> Result<Option<String>, DatabaseError> {
         self.core_services
             .auth_service
@@ -64,7 +60,6 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn delete_one_by_id(&self, id: &str, _table_name: &str) -> Result<(), DatabaseError> {
         self.core_services
             .auth_service
@@ -73,7 +68,6 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn exists(&self, id: &str, _table_name: &str) -> Result<bool, DatabaseError> {
         self.core_services
             .auth_service
@@ -82,7 +76,6 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn delete_by_expiry(&self, _table_name: &str) -> Result<Vec<String>, DatabaseError> {
         self.core_services
             .auth_service
@@ -91,7 +84,6 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn delete_all(&self, _table_name: &str) -> Result<(), DatabaseError> {
         self.core_services
             .auth_service
@@ -100,7 +92,6 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericDeleteError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, _table_name))]
     async fn get_ids(&self, _table_name: &str) -> Result<Vec<String>, DatabaseError> {
         self.core_services
             .auth_service
@@ -109,7 +100,6 @@ impl DatabasePool for BackendSessionPool {
             .map_err(|e| DatabaseError::GenericSelectError(e.to_string()))
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
     fn auto_handles_expiry(&self) -> bool {
         false
     }
@@ -117,7 +107,6 @@ impl DatabasePool for BackendSessionPool {
 
 #[async_trait::async_trait]
 impl HasPermission<BackendSessionPool> for AuthUser {
-    #[tracing::instrument(level = "trace", skip(self, _pool))]
     async fn has(&self, perm: &str, _pool: &Option<&BackendSessionPool>) -> bool {
         self.permissions.contains(Capability::SuperAdmin.as_str())
             || self.permissions.contains(perm)

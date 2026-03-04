@@ -37,7 +37,6 @@ pub struct CoreServices {
 }
 
 impl CoreServices {
-    #[tracing::instrument(level = "trace", skip(repository_service, library_store))]
     pub(crate) fn new(repository_service: Arc<RepositoryService>, library_store: Arc<dyn LibraryStore>) -> Self {
         Self {
             auth_service: Arc::new(AuthServiceImpl::new(repository_service.clone())),

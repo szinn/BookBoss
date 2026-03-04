@@ -45,25 +45,29 @@ impl AuthService for AuthServiceImpl {
         let id = id.to_owned();
         with_transaction!(self, session_repository, |tx| session_repository.load(tx, &id).await)
     }
+
     async fn delete_by_id(&self, id: &str) -> Result<(), Error> {
         let id = id.to_owned();
         with_transaction!(self, session_repository, |tx| session_repository.delete_by_id(tx, &id).await)
     }
+
     async fn exists(&self, id: &str) -> Result<bool, Error> {
         let id = id.to_owned();
         with_transaction!(self, session_repository, |tx| session_repository.exists(tx, &id).await)
     }
+
     async fn delete_by_expiry(&self) -> Result<Vec<String>, Error> {
         with_transaction!(self, session_repository, |tx| session_repository.delete_by_expiry(tx).await)
     }
+
     async fn delete_all(&self) -> Result<(), Error> {
         with_transaction!(self, session_repository, |tx| session_repository.delete_all(tx).await)
     }
+
     async fn get_ids(&self) -> Result<Vec<String>, Error> {
         with_transaction!(self, session_repository, |tx| session_repository.get_ids(tx).await)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, password))]
     async fn is_valid_login(&self, username: &str, password: &str) -> Result<Option<User>, Error> {
         let username = username.to_owned();
         let password = password.to_owned();

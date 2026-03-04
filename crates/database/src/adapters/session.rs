@@ -33,7 +33,6 @@ impl SessionRepositoryAdapter {
 
 #[async_trait::async_trait]
 impl SessionRepository for SessionRepositoryAdapter {
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn count(&self, transaction: &dyn Transaction) -> Result<i64, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -42,7 +41,6 @@ impl SessionRepository for SessionRepositoryAdapter {
         Ok(count as i64)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn store(&self, transaction: &dyn Transaction, session: NewSession) -> Result<Session, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -73,14 +71,12 @@ impl SessionRepository for SessionRepositoryAdapter {
         Ok(stored.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn load(&self, transaction: &dyn Transaction, id: &str) -> Result<Option<Session>, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
         Ok(prelude::Sessions::find_by_id(id).one(transaction).await.map_err(handle_dberr)?.map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn delete_by_id(&self, transaction: &dyn Transaction, id: &str) -> Result<(), Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -93,7 +89,6 @@ impl SessionRepository for SessionRepositoryAdapter {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn exists(&self, transaction: &dyn Transaction, id: &str) -> Result<bool, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -102,7 +97,6 @@ impl SessionRepository for SessionRepositoryAdapter {
         Ok(count > 0)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn delete_by_expiry(&self, transaction: &dyn Transaction) -> Result<Vec<String>, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
         let now = Utc::now();
@@ -127,7 +121,6 @@ impl SessionRepository for SessionRepositoryAdapter {
         Ok(ids)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn delete_all(&self, transaction: &dyn Transaction) -> Result<(), Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -136,7 +129,6 @@ impl SessionRepository for SessionRepositoryAdapter {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn get_ids(&self, transaction: &dyn Transaction) -> Result<Vec<String>, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 

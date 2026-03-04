@@ -32,7 +32,6 @@ impl UserSettingRepositoryAdapter {
 
 #[async_trait::async_trait]
 impl UserSettingRepository for UserSettingRepositoryAdapter {
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn get(&self, transaction: &dyn Transaction, user_id: UserId, key: &str) -> Result<Option<UserSetting>, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -43,7 +42,6 @@ impl UserSettingRepository for UserSettingRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn set(&self, transaction: &dyn Transaction, setting: NewUserSetting) -> Result<UserSetting, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
         let now = Utc::now();
@@ -74,7 +72,6 @@ impl UserSettingRepository for UserSettingRepositoryAdapter {
             .ok_or(Error::RepositoryError(RepositoryError::NotFound))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn delete(&self, transaction: &dyn Transaction, user_id: UserId, key: &str) -> Result<(), Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -86,7 +83,6 @@ impl UserSettingRepository for UserSettingRepositoryAdapter {
         Ok(())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn list_by_user(&self, transaction: &dyn Transaction, user_id: UserId) -> Result<Vec<UserSetting>, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 

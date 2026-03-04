@@ -22,7 +22,6 @@ use {
 };
 
 #[post("/api/v1/series", auth_session: axum::Extension<AuthSession>, core_services: axum::Extension<Arc<CoreServices>>)]
-#[tracing::instrument(level = "trace", skip(auth_session, core_services))]
 async fn get_series(token: String) -> Result<SeriesPageData, ServerFnError> {
     auth_session
         .current_user

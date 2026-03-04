@@ -30,13 +30,11 @@ impl Default for AuthUser {
 
 #[async_trait::async_trait]
 impl Authentication<Self, UserId, BackendSessionPool> for AuthUser {
-    #[tracing::instrument(level = "trace", skip(pool))]
     async fn load_user(userid: UserId, pool: Option<&BackendSessionPool>) -> Result<Self, anyhow::Error> {
         let Some(pool) = pool else {
             return Ok(Self::default());
         };
         let user = pool.core_services.user_service.find_by_id(userid).await?;
-        tracing::info!("Testing capability: {:?}", Capability::Admin);
         match user {
             Some(user) => Ok(Self {
                 id: userid,
@@ -48,17 +46,14 @@ impl Authentication<Self, UserId, BackendSessionPool> for AuthUser {
         }
     }
 
-    #[tracing::instrument(level = "trace")]
     fn is_authenticated(&self) -> bool {
         !self.anonymous
     }
 
-    #[tracing::instrument(level = "trace")]
     fn is_active(&self) -> bool {
         !self.anonymous
     }
 
-    #[tracing::instrument(level = "trace")]
     fn is_anonymous(&self) -> bool {
         self.anonymous
     }

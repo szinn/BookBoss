@@ -36,7 +36,6 @@ impl TagRepositoryAdapter {
 
 #[async_trait::async_trait]
 impl TagRepository for TagRepositoryAdapter {
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn add_tag(&self, transaction: &dyn Transaction, tag: NewTag) -> Result<Tag, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -57,7 +56,6 @@ impl TagRepository for TagRepositoryAdapter {
         Ok(model.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn update_tag(&self, transaction: &dyn Transaction, tag: Tag) -> Result<Tag, Error> {
         if tag.id == 0 {
             return Err(Error::InvalidId(tag.id));
@@ -85,7 +83,6 @@ impl TagRepository for TagRepositoryAdapter {
         Ok(updated.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_id(&self, transaction: &dyn Transaction, id: TagId) -> Result<Option<Tag>, Error> {
         if id == 0 {
             return Err(Error::InvalidId(id));
@@ -99,12 +96,10 @@ impl TagRepository for TagRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_token(&self, transaction: &dyn Transaction, token: &TagToken) -> Result<Option<Tag>, Error> {
         self.find_by_id(transaction, token.id()).await
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_name(&self, transaction: &dyn Transaction, name: &str) -> Result<Option<Tag>, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -116,7 +111,6 @@ impl TagRepository for TagRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn list_tags(&self, transaction: &dyn Transaction, start_id: Option<TagId>, page_size: Option<u64>) -> Result<Vec<Tag>, Error> {
         const DEFAULT_PAGE_SIZE: u64 = 50;
         const MAX_PAGE_SIZE: u64 = 50;

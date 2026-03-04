@@ -25,7 +25,6 @@ pub(crate) struct LibraryStats {
     auth_session: axum::Extension<AuthSession>,
     _core_services: axum::Extension<Arc<CoreServices>>
 )]
-#[tracing::instrument(level = "trace", skip(auth_session, _core_services))]
 async fn get_library_stats() -> Result<LibraryStats, ServerFnError> {
     auth_session
         .current_user

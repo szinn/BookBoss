@@ -126,7 +126,6 @@ impl BookRepositoryAdapter {
 
 #[async_trait::async_trait]
 impl BookRepository for BookRepositoryAdapter {
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn add_book(&self, transaction: &dyn Transaction, book: NewBook) -> Result<Book, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -158,7 +157,6 @@ impl BookRepository for BookRepositoryAdapter {
         Ok(model.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn update_book(&self, transaction: &dyn Transaction, book: Book) -> Result<Book, Error> {
         if book.id == 0 {
             return Err(Error::InvalidId(book.id));
@@ -194,7 +192,6 @@ impl BookRepository for BookRepositoryAdapter {
         Ok(updated.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_id(&self, transaction: &dyn Transaction, id: BookId) -> Result<Option<Book>, Error> {
         if id == 0 {
             return Err(Error::InvalidId(id));
@@ -208,12 +205,10 @@ impl BookRepository for BookRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_token(&self, transaction: &dyn Transaction, token: &BookToken) -> Result<Option<Book>, Error> {
         self.find_by_id(transaction, token.id()).await
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn list_books(
         &self,
         transaction: &dyn Transaction,
@@ -277,7 +272,6 @@ impl BookRepository for BookRepositoryAdapter {
         Ok(rows.into_iter().map(Into::into).collect())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn authors_for_book(&self, transaction: &dyn Transaction, book_id: BookId) -> Result<Vec<BookAuthor>, Error> {
         if book_id == 0 {
             return Err(Error::InvalidId(book_id));
@@ -303,7 +297,6 @@ impl BookRepository for BookRepositoryAdapter {
             .collect()
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn files_for_book(&self, transaction: &dyn Transaction, book_id: BookId) -> Result<Vec<BookFile>, Error> {
         if book_id == 0 {
             return Err(Error::InvalidId(book_id));
@@ -328,7 +321,6 @@ impl BookRepository for BookRepositoryAdapter {
             .collect()
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn identifiers_for_book(&self, transaction: &dyn Transaction, book_id: BookId) -> Result<Vec<BookIdentifier>, Error> {
         if book_id == 0 {
             return Err(Error::InvalidId(book_id));

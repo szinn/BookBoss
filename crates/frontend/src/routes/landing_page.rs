@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -19,8 +17,7 @@ pub(crate) const MIN_PASSWORD_LEN: usize = 12;
 #[cfg(feature = "server")]
 use {crate::server::AuthSession, bb_core::CoreServices};
 
-#[get("/api/v1/get_landing_state", core_services: axum::Extension<Arc<CoreServices>>, auth_session: axum::Extension<AuthSession>)]
-#[tracing::instrument(level = "trace", skip(core_services, auth_session))]
+#[get("/api/v1/get_landing_state", core_services: axum::Extension<std::sync::Arc<CoreServices>>, auth_session: axum::Extension<AuthSession>)]
 async fn get_landing_state() -> Result<LandingState, ServerFnError> {
     let is_authenticated = auth_session.current_user.as_ref().map(|u| !u.username.is_empty()).unwrap_or(false);
 
@@ -36,8 +33,7 @@ async fn get_landing_state() -> Result<LandingState, ServerFnError> {
     })
 }
 
-#[put("/api/v1/login", core_services: axum::Extension<Arc<CoreServices>>, auth_session: axum::Extension<AuthSession>)]
-#[tracing::instrument(level = "trace", skip(core_services, auth_session))]
+#[put("/api/v1/login", core_services: axum::Extension<std::sync::Arc<CoreServices>>, auth_session: axum::Extension<AuthSession>)]
 pub(crate) async fn perform_login(username: String, password: String) -> Result<(), ServerFnError> {
     match core_services
         .auth_service
@@ -53,8 +49,7 @@ pub(crate) async fn perform_login(username: String, password: String) -> Result<
     }
 }
 
-#[put("/api/v1/register_admin", core_services: axum::Extension<Arc<CoreServices>>, auth_session: axum::Extension<AuthSession>)]
-#[tracing::instrument(level = "trace", skip(core_services, auth_session))]
+#[put("/api/v1/register_admin", core_services: axum::Extension<std::sync::Arc<CoreServices>>, auth_session: axum::Extension<AuthSession>)]
 pub(crate) async fn register_admin(username: String, password: String, email: String) -> Result<(), ServerFnError> {
     use std::collections::HashSet;
 

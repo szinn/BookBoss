@@ -36,7 +36,6 @@ impl PublisherRepositoryAdapter {
 
 #[async_trait::async_trait]
 impl PublisherRepository for PublisherRepositoryAdapter {
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn add_publisher(&self, transaction: &dyn Transaction, publisher: NewPublisher) -> Result<Publisher, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -57,7 +56,6 @@ impl PublisherRepository for PublisherRepositoryAdapter {
         Ok(model.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn update_publisher(&self, transaction: &dyn Transaction, publisher: Publisher) -> Result<Publisher, Error> {
         if publisher.id == 0 {
             return Err(Error::InvalidId(publisher.id));
@@ -85,7 +83,6 @@ impl PublisherRepository for PublisherRepositoryAdapter {
         Ok(updated.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_id(&self, transaction: &dyn Transaction, id: PublisherId) -> Result<Option<Publisher>, Error> {
         if id == 0 {
             return Err(Error::InvalidId(id));
@@ -99,12 +96,10 @@ impl PublisherRepository for PublisherRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_token(&self, transaction: &dyn Transaction, token: &PublisherToken) -> Result<Option<Publisher>, Error> {
         self.find_by_id(transaction, token.id()).await
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn list_publishers(&self, transaction: &dyn Transaction, start_id: Option<PublisherId>, page_size: Option<u64>) -> Result<Vec<Publisher>, Error> {
         const DEFAULT_PAGE_SIZE: u64 = 50;
         const MAX_PAGE_SIZE: u64 = 50;

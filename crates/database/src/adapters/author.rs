@@ -37,7 +37,6 @@ impl AuthorRepositoryAdapter {
 
 #[async_trait::async_trait]
 impl AuthorRepository for AuthorRepositoryAdapter {
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn add_author(&self, transaction: &dyn Transaction, author: NewAuthor) -> Result<Author, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -59,7 +58,6 @@ impl AuthorRepository for AuthorRepositoryAdapter {
         Ok(model.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn update_author(&self, transaction: &dyn Transaction, author: Author) -> Result<Author, Error> {
         if author.id == 0 {
             return Err(Error::InvalidId(author.id));
@@ -90,7 +88,6 @@ impl AuthorRepository for AuthorRepositoryAdapter {
         Ok(updated.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_id(&self, transaction: &dyn Transaction, id: AuthorId) -> Result<Option<Author>, Error> {
         if id == 0 {
             return Err(Error::InvalidId(id));
@@ -104,12 +101,10 @@ impl AuthorRepository for AuthorRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_token(&self, transaction: &dyn Transaction, token: &AuthorToken) -> Result<Option<Author>, Error> {
         self.find_by_id(transaction, token.id()).await
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn list_authors(&self, transaction: &dyn Transaction, start_id: Option<AuthorId>, page_size: Option<u64>) -> Result<Vec<Author>, Error> {
         const DEFAULT_PAGE_SIZE: u64 = 50;
         const MAX_PAGE_SIZE: u64 = 50;

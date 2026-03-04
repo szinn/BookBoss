@@ -43,7 +43,6 @@ impl UserRepositoryAdapter {
 
 #[async_trait::async_trait]
 impl UserRepository for UserRepositoryAdapter {
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn add_user(&self, transaction: &dyn Transaction, user: NewUser) -> Result<User, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -68,7 +67,6 @@ impl UserRepository for UserRepositoryAdapter {
         Ok(model.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn update_user(&self, transaction: &dyn Transaction, user: User) -> Result<User, Error> {
         if user.id == 0 {
             return Err(Error::InvalidId(user.id));
@@ -106,7 +104,6 @@ impl UserRepository for UserRepositoryAdapter {
         Ok(updated.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn delete_user(&self, transaction: &dyn Transaction, user: User) -> Result<User, Error> {
         if user.id == 0 {
             return Err(Error::InvalidId(user.id));
@@ -129,7 +126,6 @@ impl UserRepository for UserRepositoryAdapter {
         Ok(user)
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn list_users(&self, transaction: &dyn Transaction, start_id: Option<UserId>, page_size: Option<u64>) -> Result<Vec<User>, Error> {
         const DEFAULT_PAGE_SIZE: u64 = 50;
         const MAX_PAGE_SIZE: u64 = 50;
@@ -156,7 +152,6 @@ impl UserRepository for UserRepositoryAdapter {
         Ok(users.into_iter().map(Into::into).collect())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_id(&self, transaction: &dyn Transaction, id: UserId) -> Result<Option<User>, Error> {
         if id == 0 {
             return Err(Error::InvalidId(id));
@@ -170,7 +165,6 @@ impl UserRepository for UserRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_username(&self, transaction: &dyn Transaction, username: &str) -> Result<Option<User>, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 

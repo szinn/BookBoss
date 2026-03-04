@@ -37,7 +37,6 @@ impl SeriesRepositoryAdapter {
 
 #[async_trait::async_trait]
 impl SeriesRepository for SeriesRepositoryAdapter {
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn add_series(&self, transaction: &dyn Transaction, s: NewSeries) -> Result<Series, Error> {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
@@ -59,7 +58,6 @@ impl SeriesRepository for SeriesRepositoryAdapter {
         Ok(model.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn update_series(&self, transaction: &dyn Transaction, s: Series) -> Result<Series, Error> {
         if s.id == 0 {
             return Err(Error::InvalidId(s.id));
@@ -90,7 +88,6 @@ impl SeriesRepository for SeriesRepositoryAdapter {
         Ok(updated.into())
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_id(&self, transaction: &dyn Transaction, id: SeriesId) -> Result<Option<Series>, Error> {
         if id == 0 {
             return Err(Error::InvalidId(id));
@@ -104,12 +101,10 @@ impl SeriesRepository for SeriesRepositoryAdapter {
             .map(Into::into))
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn find_by_token(&self, transaction: &dyn Transaction, token: &SeriesToken) -> Result<Option<Series>, Error> {
         self.find_by_id(transaction, token.id()).await
     }
 
-    #[tracing::instrument(level = "trace", skip(self, transaction))]
     async fn list_series(&self, transaction: &dyn Transaction, start_id: Option<SeriesId>, page_size: Option<u64>) -> Result<Vec<Series>, Error> {
         const DEFAULT_PAGE_SIZE: u64 = 50;
         const MAX_PAGE_SIZE: u64 = 50;
