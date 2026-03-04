@@ -7,8 +7,8 @@
 ///   2. Paste the minimal failing OPF as a `br#"..."#` byte literal.
 ///   3. Call `extract_metadata` or `parse_sidecar` and assert with
 ///      `insta::assert_debug_snapshot!(result)`.
-///   4. Run `INSTA_UPDATE=always cargo test -p bb-formats <test_name>`
-///      to generate the snapshot.
+///   4. Run `INSTA_UPDATE=always cargo test -p bb-formats <test_name>` to
+///      generate the snapshot.
 use super::{extract_metadata, parse_sidecar, write_sidecar};
 
 #[test]

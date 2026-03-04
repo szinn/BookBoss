@@ -53,6 +53,21 @@ pub fn read_opf_xml(path: &Path) -> Result<String, crate::Error> {
     Ok(String::from_utf8_lossy(&bytes).into_owned())
 }
 
+/// Read and return only the `<metadata>` block from the OPF XML in an EPUB
+/// file.
+///
+/// Useful for diagnostics and exploration tools.
+pub fn read_opf_metadata_xml(path: &Path) -> Result<String, crate::Error> {
+    let xml = read_opf_xml(path)?;
+    let start = xml
+        .find("<metadata")
+        .ok_or_else(|| crate::Error::InvalidValue("OPF: no <metadata> element found".to_string()))?;
+    let end = xml
+        .find("</metadata>")
+        .ok_or_else(|| crate::Error::InvalidValue("OPF: no </metadata> closing tag found".to_string()))?;
+    Ok(xml[start..end + "</metadata>".len()].to_string())
+}
+
 /// Parse META-INF/container.xml and return the `full-path` of the rootfile.
 fn find_opf_path(xml: &[u8]) -> Result<String, crate::Error> {
     use quick_xml::{Reader, events::Event};

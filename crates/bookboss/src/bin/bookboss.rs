@@ -27,10 +27,10 @@ async fn main() -> anyhow::Result<()> {
     match cli.command {
         Commands::DumpEpub { file } => {
             use bb_core::{book::FileFormat, pipeline::MetadataExtractor};
-            use bb_formats::{EpubExtractor, read_opf_xml};
+            use bb_formats::{EpubExtractor, read_opf_metadata_xml};
 
-            let raw = read_opf_xml(&file)?;
-            println!("=== raw OPF ===\n{raw}\n");
+            let raw = read_opf_metadata_xml(&file)?;
+            println!("=== raw OPF metadata ===\n{raw}\n");
 
             let meta = EpubExtractor.extract(&file, FileFormat::Epub).await?;
             println!("=== extracted metadata ===");
