@@ -39,7 +39,6 @@ RUN tailwindcss -i ./crates/frontend/assets/input.css -o ./crates/frontend/asset
 
 # Build actual binary
 RUN /usr/local/cargo/bin/dx bundle --web --package bookboss --release
-RUN ls -laR target/dx/bookboss/release/web
 
 FROM chef AS builder-server
 COPY --from=planner /app/recipe.json recipe.json
@@ -53,7 +52,6 @@ RUN tailwindcss -i ./crates/frontend/assets/input.css -o ./crates/frontend/asset
 
 # Build actual binary
 RUN /usr/local/cargo/bin/dx bundle --server --package bookboss --release --target x86_64-unknown-linux-musl
-RUN ls -laR target/dx/bookboss/release/web
 
 # Sanity check: should say "not a dynamic executable"
 RUN ldd target/dx/bookboss/release/web/bookboss || true
