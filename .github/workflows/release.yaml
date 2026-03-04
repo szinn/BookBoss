@@ -36,7 +36,7 @@ jobs:
           fetch-depth: 1
 
       - name: Login to GHCR
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
