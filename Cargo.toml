@@ -24,7 +24,7 @@ testcontainers = "0.27.1"
 
 anyhow = "1.0.102"
 zip = "2"
-quick-xml = "0.37"
+quick-xml = "0.39.2"
 async-trait = "0.1.89"
 axum = "0.8.8"
 config = "0.15.19"
