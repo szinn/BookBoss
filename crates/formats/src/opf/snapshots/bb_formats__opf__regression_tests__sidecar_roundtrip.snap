@@ -1,0 +1,73 @@
+---
+source: crates/formats/src/opf/regression_tests.rs
+expression: parsed
+---
+BookSidecar {
+    title: "The Way of Kings",
+    authors: [
+        SidecarAuthor {
+            name: "Brandon Sanderson",
+            role: Author,
+            sort_order: 0,
+            file_as: Some(
+                "Sanderson, Brandon",
+            ),
+        },
+        SidecarAuthor {
+            name: "Jane Editor",
+            role: Editor,
+            sort_order: 1,
+            file_as: None,
+        },
+    ],
+    description: Some(
+        "An epic fantasy novel.",
+    ),
+    publisher: Some(
+        "Tor Books",
+    ),
+    published_date: Some(
+        2010,
+    ),
+    language: Some(
+        "en",
+    ),
+    identifiers: [
+        SidecarIdentifier {
+            identifier_type: Isbn13,
+            value: "9780765326355",
+        },
+        SidecarIdentifier {
+            identifier_type: Asin,
+            value: "B003P2WO5E",
+        },
+    ],
+    series: Some(
+        SidecarSeries {
+            name: "The Stormlight Archive",
+            number: Some(
+                1,
+            ),
+        },
+    ),
+    genres: [
+        "Fantasy",
+        "Epic Fantasy",
+    ],
+    tags: [
+        "magic-system",
+    ],
+    rating: Some(
+        5,
+    ),
+    status: Available,
+    metadata_source: Some(
+        Hardcover,
+    ),
+    files: [
+        SidecarFile {
+            format: Epub,
+            hash: "abc123",
+        },
+    ],
+}

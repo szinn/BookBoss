@@ -72,6 +72,10 @@ test:
 insta:
     cargo insta test --workspace --test-runner nextest --all-features
 
+[doc('Review insta deltas')]
+insta-review:
+    cargo insta review
+
 [doc('Run all component tests using nextest')]
 component-tests:
     cargo nextest run --workspace --all-features --exclude integration-tests

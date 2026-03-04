@@ -24,5 +24,6 @@ zip.workspace = true
 
 [dev-dependencies]
 bb-core = { workspace = true, features = ["test-support"] }
+insta.workspace = true
 rust_decimal.workspace = true
 tokio.workspace = true

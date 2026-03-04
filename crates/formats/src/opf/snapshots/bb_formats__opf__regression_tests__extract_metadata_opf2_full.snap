@@ -1,0 +1,42 @@
+---
+source: crates/formats/src/opf/regression_tests.rs
+expression: meta
+---
+ExtractedMetadata {
+    title: Some(
+        "Dune",
+    ),
+    authors: Some(
+        [
+            ExtractedAuthor {
+                name: "Frank Herbert",
+                role: Some(
+                    Author,
+                ),
+                sort_order: 0,
+            },
+        ],
+    ),
+    description: Some(
+        "A science fiction epic.",
+    ),
+    publisher: Some(
+        "Chilton Books",
+    ),
+    published_date: Some(
+        1965,
+    ),
+    language: Some(
+        "en",
+    ),
+    identifiers: Some(
+        [
+            ExtractedIdentifier {
+                identifier_type: Isbn13,
+                value: "9780441013593",
+            },
+        ],
+    ),
+    series_name: None,
+    series_number: None,
+}

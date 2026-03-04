@@ -1,0 +1,24 @@
+---
+source: crates/formats/src/opf/regression_tests.rs
+expression: meta
+---
+ExtractedMetadata {
+    title: Some(
+        "Test",
+    ),
+    authors: None,
+    description: None,
+    publisher: None,
+    published_date: None,
+    language: None,
+    identifiers: Some(
+        [
+            ExtractedIdentifier {
+                identifier_type: Isbn13,
+                value: "9780441013593",
+            },
+        ],
+    ),
+    series_name: None,
+    series_number: None,
+}
