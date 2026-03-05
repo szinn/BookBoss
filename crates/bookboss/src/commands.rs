@@ -35,4 +35,9 @@ pub enum Commands {
         #[arg(help = "ISBN-10 or ISBN-13")]
         isbn: String,
     },
+    #[command(about = "Look up a book by ISBN on Hardcover and dump the result", display_order = 40)]
+    Hardcover {
+        #[arg(help = "ISBN-10 or ISBN-13")]
+        isbn: String,
+    },
 }
