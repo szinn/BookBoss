@@ -5,6 +5,7 @@ use bb_core::{
     auth::SessionRepository,
     book::{AuthorRepository, BookRepository, GenreRepository, PublisherRepository, SeriesRepository, TagRepository},
     import::ImportJobRepository,
+    jobs::JobRepository,
     repository::{Repository, RepositoryService, RepositoryServiceBuilder},
     user::{UserRepository, UserSettingRepository},
 };
@@ -25,8 +26,8 @@ mod transaction;
 use crate::{
     adapters::{
         author::AuthorRepositoryAdapter, book::BookRepositoryAdapter, genre::GenreRepositoryAdapter, import_job::ImportJobRepositoryAdapter,
-        publisher::PublisherRepositoryAdapter, series::SeriesRepositoryAdapter, session::SessionRepositoryAdapter, tag::TagRepositoryAdapter,
-        user::UserRepositoryAdapter, user_settings::UserSettingRepositoryAdapter,
+        job::JobRepositoryAdapter, publisher::PublisherRepositoryAdapter, series::SeriesRepositoryAdapter, session::SessionRepositoryAdapter,
+        tag::TagRepositoryAdapter, user::UserRepositoryAdapter, user_settings::UserSettingRepositoryAdapter,
     },
     migrations::Migrator,
     repository::RepositoryImpl,
@@ -69,6 +70,7 @@ pub async fn create_repository_service(database: DatabaseConnection) -> Result<A
         .tag_repository(Arc::new(TagRepositoryAdapter::new()) as Arc<dyn TagRepository>)
         .book_repository(Arc::new(BookRepositoryAdapter::new()) as Arc<dyn BookRepository>)
         .import_job_repository(Arc::new(ImportJobRepositoryAdapter::new()) as Arc<dyn ImportJobRepository>)
+        .job_repository(Arc::new(JobRepositoryAdapter::new()) as Arc<dyn JobRepository>)
         .build()
         .map_err(|e| Error::Infrastructure(e.to_string()))?;
 

@@ -105,6 +105,7 @@ mod tests {
             Publisher, PublisherId, PublisherRepository, PublisherToken, Series, SeriesId, SeriesRepository, SeriesToken, Tag, TagId, TagRepository, TagToken,
         },
         import::{ImportJob, ImportJobId, ImportJobRepository, ImportJobToken, ImportStatus, NewImportJob},
+        jobs::{Job, JobRepository},
         repository::{Repository, RepositoryServiceBuilder, Transaction},
         user::{
             NewUser, NewUserSetting, User, UserId, UserSetting,
@@ -478,6 +479,26 @@ mod tests {
         }
     }
 
+    struct MockJobRepository;
+    #[async_trait::async_trait]
+    impl JobRepository for MockJobRepository {
+        async fn enqueue_raw(&self, _: &dyn Transaction, _: &str, _: serde_json::Value, _: i16) -> Result<Job, Error> {
+            unimplemented!()
+        }
+        async fn claim_next(&self, _: &dyn Transaction) -> Result<Option<Job>, Error> {
+            unimplemented!()
+        }
+        async fn complete(&self, _: &dyn Transaction, _: Job) -> Result<Job, Error> {
+            unimplemented!()
+        }
+        async fn fail(&self, _: &dyn Transaction, _: Job, _: String) -> Result<Job, Error> {
+            unimplemented!()
+        }
+        async fn reset_running_to_pending(&self, _: &dyn Transaction) -> Result<u64, Error> {
+            unimplemented!()
+        }
+    }
+
     struct MockBookRepository;
     #[async_trait::async_trait]
     impl BookRepository for MockBookRepository {
@@ -535,6 +556,7 @@ mod tests {
                 .tag_repository(Arc::new(MockTagRepository) as Arc<dyn TagRepository>)
                 .book_repository(Arc::new(MockBookRepository) as Arc<dyn BookRepository>)
                 .import_job_repository(Arc::new(MockImportJobRepository) as Arc<dyn ImportJobRepository>)
+                .job_repository(Arc::new(MockJobRepository) as Arc<dyn JobRepository>)
                 .build()
                 .expect("all fields provided"),
         );
@@ -555,6 +577,7 @@ mod tests {
                 .tag_repository(Arc::new(MockTagRepository) as Arc<dyn TagRepository>)
                 .book_repository(Arc::new(MockBookRepository) as Arc<dyn BookRepository>)
                 .import_job_repository(Arc::new(MockImportJobRepository) as Arc<dyn ImportJobRepository>)
+                .job_repository(Arc::new(MockJobRepository) as Arc<dyn JobRepository>)
                 .build()
                 .expect("all fields provided"),
         );

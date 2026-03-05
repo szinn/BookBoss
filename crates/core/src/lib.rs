@@ -3,6 +3,7 @@ pub mod book;
 pub mod device;
 pub mod error;
 pub mod import;
+pub mod jobs;
 pub mod pipeline;
 pub mod reading;
 pub mod repository;
