@@ -26,7 +26,8 @@ echo "==> Preparing release $VERSION"
 
 # Generate the changelog now that the tag is in place
 echo "    Generating CHANGELOG.md..."
-RUST_LOG= git-cliff --config .config/cliff.toml -t "${VERSION}" >CHANGELOG.md
+RUST_LOG='' git-cliff --config .config/cliff.toml -t "${VERSION}" >CHANGELOG.md
+just fmt
 
 # Update version in [workspace.package] section of Cargo.toml
 echo "    Updating Cargo.toml..."

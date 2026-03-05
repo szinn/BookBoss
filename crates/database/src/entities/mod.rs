@@ -15,6 +15,7 @@ pub(crate) mod device_sync_log;
 pub(crate) mod devices;
 pub(crate) mod genres;
 pub(crate) mod import_jobs;
+pub(crate) mod jobs;
 pub(crate) mod publishers;
 pub(crate) mod series;
 pub(crate) mod sessions;
