@@ -90,7 +90,7 @@ jobs:
       - name: Create GitHub Release
         if: github.event_name == 'push'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
           gh release create "${{ steps.vars.outputs.version }}" \
             --title "BookBoss ${{ steps.vars.outputs.version }}" \
