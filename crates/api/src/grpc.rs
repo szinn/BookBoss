@@ -29,9 +29,8 @@ impl GrpcSubsystem {
 
 impl IntoSubsystem<Error> for GrpcSubsystem {
     async fn run(self, subsys: &mut SubsystemHandle) -> Result<(), Error> {
-        let addr = format!("{}:{}", self.config.grpc_listen_ip, self.config.grpc_listen_port)
-            .parse()
-            .map_err(|_| Error::from(ApiError::AddressParse("0.0.0.0:3001".into())))?;
+        let host_addr = format!("{}:{}", self.config.grpc_listen_ip, self.config.grpc_listen_port);
+        let addr = host_addr.parse().map_err(|_| Error::from(ApiError::AddressParse(host_addr)))?;
 
         let system_service = system::GrpcSystemService::new();
 

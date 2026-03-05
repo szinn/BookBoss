@@ -5,7 +5,6 @@ use crate::grpc::{
     system_proto::{StatusRequest, StatusResponse, system_service_server::SystemService},
 };
 
-/// gRPC SystemService implementation
 pub(crate) struct GrpcSystemService;
 
 impl GrpcSystemService {
@@ -28,10 +27,8 @@ pub(crate) mod handler {
 
     use crate::grpc::system_proto::{StatusRequest, StatusResponse};
 
-    pub(crate) async fn status(request: StatusRequest) -> Result<StatusResponse, Error> {
-        Ok(StatusResponse {
-            answer: format!("{}: Answered", request.question),
-        })
+    pub(crate) async fn status(_request: StatusRequest) -> Result<StatusResponse, Error> {
+        Ok(StatusResponse { status: "Running".to_string() })
     }
 }
 
@@ -47,32 +44,11 @@ mod tests {
     // ===================
     #[tokio::test]
     async fn test_handler_status_success() {
-        let request = StatusRequest { question: "Hello".into() };
+        let request = StatusRequest {};
 
         let result = handler::status(request).await.unwrap();
 
-        assert_eq!(result.answer, "Hello: Answered");
-    }
-
-    #[tokio::test]
-    async fn test_handler_status_empty_question() {
-        let request = StatusRequest { question: String::new() };
-
-        let result = handler::status(request).await.unwrap();
-
-        assert_eq!(result.answer, ": Answered");
-    }
-
-    #[tokio::test]
-    async fn test_handler_status_long_question() {
-        let long_question = "a".repeat(1000);
-        let request = StatusRequest {
-            question: long_question.clone(),
-        };
-
-        let result = handler::status(request).await.unwrap();
-
-        assert_eq!(result.answer, format!("{}: Answered", long_question));
+        assert_eq!(result.status, "Running");
     }
 
     // ===================
@@ -82,28 +58,12 @@ mod tests {
     async fn test_grpc_service_status() {
         let service = GrpcSystemService::new();
 
-        let request = Request::new(StatusRequest {
-            question: "Test Question".into(),
-        });
+        let request = Request::new(StatusRequest {});
 
         let response = service.status(request).await.unwrap();
         let status_response = response.into_inner();
 
-        assert_eq!(status_response.answer, "Test Question: Answered");
-    }
-
-    #[tokio::test]
-    async fn test_grpc_service_status_with_special_characters() {
-        let service = GrpcSystemService::new();
-
-        let request = Request::new(StatusRequest {
-            question: "What's the status? 🚀".into(),
-        });
-
-        let response = service.status(request).await.unwrap();
-        let status_response = response.into_inner();
-
-        assert_eq!(status_response.answer, "What's the status? 🚀: Answered");
+        assert_eq!(status_response.status, "Running");
     }
 }
 
@@ -116,18 +76,19 @@ pub mod api {
     };
 
     #[tracing::instrument(level = "trace")]
-    pub async fn status(question: String) -> Result<String, Error> {
-        let mut client = SystemServiceClient::connect("http://localhost:3001")
+    pub async fn status(host: &str, port: u16) -> Result<String, Error> {
+        let server = format!("http://{}:{}", host, port);
+        let mut client = SystemServiceClient::connect(server)
             .await
             .map_err(|e| Error::from(ApiError::GrpcClient(e.to_string())))?;
 
-        let request = tonic::Request::new(StatusRequest { question });
+        let request = tonic::Request::new(StatusRequest {});
         let response: StatusResponse = client
             .status(request)
             .await
             .map_err(|e| Error::from(ApiError::GrpcClient(e.to_string())))?
             .into_inner();
 
-        Ok(response.answer)
+        Ok(response.status)
     }
 }

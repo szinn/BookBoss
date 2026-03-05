@@ -22,6 +22,12 @@ pub struct CommandLine {
 }
 
 #[derive(Debug, clap::Subcommand)]
+pub enum GrpcSubcommand {
+    #[command(about = "Query the status of the running server")]
+    Status,
+}
+
+#[derive(Debug, clap::Subcommand)]
 pub enum Commands {
     #[command(about = "Start server", display_order = 10)]
     Server,
@@ -39,5 +45,14 @@ pub enum Commands {
     Hardcover {
         #[arg(help = "ISBN-10 or ISBN-13")]
         isbn: String,
+    },
+    #[command(about = "Interact with a running BookBoss server via gRPC", display_order = 50)]
+    Grpc {
+        #[arg(short = 'H', long, default_value = "localhost", help = "Host to connect to")]
+        host: String,
+        #[arg(short = 'p', long, default_value_t = 8081, help = "gRPC port")]
+        port: u16,
+        #[command(subcommand)]
+        command: GrpcSubcommand,
     },
 }

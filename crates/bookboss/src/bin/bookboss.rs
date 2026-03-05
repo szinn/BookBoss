@@ -7,6 +7,7 @@ fn main() {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     use anyhow::Context;
+    use bb_api::create_api_subsystem;
     use bb_core::create_services;
     use bb_database::{create_repository_service, open_database};
     use bb_frontend::server::launch_server_frontend;
@@ -15,11 +16,7 @@ async fn main() -> anyhow::Result<()> {
         config::Config,
         logging::init_logging,
     };
-    #[cfg(feature = "grpc")]
-    use {
-        bb_api::create_api_subsystem,
-        tokio_graceful_shutdown::{IntoSubsystem, SubsystemBuilder, SubsystemHandle, Toplevel},
-    };
+    use tokio_graceful_shutdown::{IntoSubsystem, SubsystemBuilder, SubsystemHandle, Toplevel};
 
     let cli: CommandLine = clap::Parser::parse();
     let config = Config::load().context("Cannot load configuration")?;
@@ -116,6 +113,17 @@ async fn main() -> anyhow::Result<()> {
                 }
             }
         }
+        Commands::Grpc { host, port, command } => {
+            use bb_api::grpc::system::api;
+            use bookboss::commands::GrpcSubcommand;
+
+            match command {
+                GrpcSubcommand::Status => {
+                    let status = api::status(&host, port).await?;
+                    println!("Status: {status}");
+                }
+            }
+        }
         Commands::Server => {
             init_logging()?;
             let crate_version = clap::crate_version!();
@@ -141,7 +149,6 @@ async fn main() -> anyhow::Result<()> {
             let services = create_services(repository_service.clone(), library_store, pipeline_service).context("Couldn't create core services")?;
             let frontend = launch_server_frontend(&config.frontend, services.clone());
 
-            #[cfg(feature = "grpc")]
             let server = {
                 use std::time::Duration;
 
@@ -157,7 +164,6 @@ async fn main() -> anyhow::Result<()> {
             span.exit();
 
             // Wait for shutdown request
-            #[cfg(feature = "grpc")]
             server.await?;
             let _ = frontend.join();
 

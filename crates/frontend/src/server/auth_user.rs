@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use axum_session_auth::Authentication;
-use bb_core::{CoreServices, types::Capability, user::UserId};
+use bb_core::{CoreServices, user::UserId};
 use serde::{Deserialize, Serialize};
 
 use crate::{

@@ -44,7 +44,6 @@ server = [
     "bb-frontend?/server",
 ]
 web = ["dioxus/web", "dep:bb-frontend", "bb-frontend?/web"]
-grpc = []
 
 [dependencies]
 async-trait = { workspace = true, optional = true }
