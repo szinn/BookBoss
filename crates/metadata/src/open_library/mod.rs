@@ -6,6 +6,7 @@ use async_trait::async_trait;
 use bb_core::{
     Error,
     book::{AuthorRole, IdentifierType},
+    import::ImportSource,
     pipeline::{ExtractedAuthor, ExtractedIdentifier, ExtractedMetadata, MetadataProvider, ProviderBook},
 };
 use model::OlBookData;
@@ -144,6 +145,10 @@ impl OpenLibraryAdapter {
 
 #[async_trait]
 impl MetadataProvider for OpenLibraryAdapter {
+    fn name(&self) -> &'static str {
+        "Open Library"
+    }
+
     async fn enrich(&self, extracted: &ExtractedMetadata) -> Result<Option<ProviderBook>, Error> {
         let Some((isbn_type, isbn)) = Self::find_isbn(extracted) else {
             return Ok(None);
@@ -169,7 +174,11 @@ impl MetadataProvider for OpenLibraryAdapter {
         let metadata = Self::map_to_extracted(book_data, isbn_type, &isbn);
         let cover_bytes = self.fetch_cover(book_data, &isbn).await;
 
-        Ok(Some(ProviderBook { metadata, cover_bytes }))
+        Ok(Some(ProviderBook {
+            metadata,
+            cover_bytes,
+            source: ImportSource::OpenLibrary,
+        }))
     }
 }
 

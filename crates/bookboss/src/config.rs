@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use bb_api::ApiConfig;
 use bb_database::DatabaseConfig;
 use bb_frontend::FrontendConfig;
+use bb_metadata::MetadataConfig;
 use serde::Deserialize;
 
 use crate::error::Error;
@@ -20,6 +21,8 @@ pub struct Config {
     #[serde(default)]
     pub frontend: FrontendConfig,
     pub library: LibraryConfig,
+    #[serde(default)]
+    pub metadata: MetadataConfig,
 }
 
 impl Config {

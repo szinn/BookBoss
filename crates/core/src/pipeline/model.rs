@@ -1,6 +1,9 @@
 use rust_decimal::Decimal;
 
-use crate::book::{AuthorRole, IdentifierType};
+use crate::{
+    book::{AuthorRole, IdentifierType},
+    import::ImportSource,
+};
 
 #[derive(Debug, Clone)]
 pub struct ExtractedAuthor {
@@ -35,9 +38,12 @@ pub struct ExtractedMetadata {
 /// Enriched metadata returned by an external metadata provider.
 ///
 /// Wraps [`ExtractedMetadata`] and adds cover art bytes fetched by the
-/// provider. The pipeline never makes HTTP calls directly.
+/// provider. `source` identifies which provider produced the result so the
+/// pipeline can record provenance without needing a separate construction-time
+/// hint. The pipeline never makes HTTP calls directly.
 #[derive(Debug, Clone)]
 pub struct ProviderBook {
     pub metadata: ExtractedMetadata,
     pub cover_bytes: Option<Vec<u8>>,
+    pub source: ImportSource,
 }

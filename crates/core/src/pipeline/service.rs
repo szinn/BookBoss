@@ -23,8 +23,7 @@ pub struct PipelineServiceImpl {
     repository_service: Arc<RepositoryService>,
     library_store: Arc<dyn LibraryStore>,
     extractor: Arc<dyn MetadataExtractor>,
-    provider: Option<Arc<dyn MetadataProvider>>,
-    provider_source: ImportSource,
+    providers: Vec<Arc<dyn MetadataProvider>>,
 }
 
 impl PipelineServiceImpl {
@@ -32,15 +31,13 @@ impl PipelineServiceImpl {
         repository_service: Arc<RepositoryService>,
         library_store: Arc<dyn LibraryStore>,
         extractor: Arc<dyn MetadataExtractor>,
-        provider: Option<Arc<dyn MetadataProvider>>,
-        provider_source: ImportSource,
+        providers: Vec<Arc<dyn MetadataProvider>>,
     ) -> Self {
         Self {
             repository_service,
             library_store,
             extractor,
-            provider,
-            provider_source,
+            providers,
         }
     }
 }
@@ -115,15 +112,18 @@ impl PipelineService for PipelineServiceImpl {
             .await?
         };
 
-        // ── 5. Enrich with provider if available ──────────────────────────────
-        let (final_meta, cover_bytes, job_source) = if let Some(provider) = &self.provider {
-            match provider.enrich(&extracted).await? {
-                Some(pb) => (pb.metadata, pb.cover_bytes, Some(self.provider_source.clone())),
-                None => (extracted, None, Some(ImportSource::Embedded)),
+        // ── 5. Enrich: try each provider in order, first success wins ─────────
+        let (final_meta, cover_bytes, job_source) = {
+            let mut result = None;
+            for provider in &self.providers {
+                if let Some(pb) = provider.enrich(&extracted).await? {
+                    result = Some((pb.metadata, pb.cover_bytes, pb.source));
+                    break;
+                }
             }
-        } else {
-            (extracted, None, Some(ImportSource::Embedded))
+            result.unwrap_or((extracted, None, ImportSource::Embedded))
         };
+        let job_source = Some(job_source);
 
         // ── 6. Resolve cover filename from magic bytes ─────────────────────────
         let cover_filename: Option<String> = cover_bytes.as_deref().map(|b| detect_cover_filename(b).to_string());

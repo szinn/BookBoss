@@ -90,15 +90,14 @@ async fn main() -> anyhow::Result<()> {
             let repository_service = create_repository_service(database).await.context("Couldn't create database connection")?;
             let library_store = std::sync::Arc::new(bb_storage::LocalLibraryStore::new(config.library.library_path.clone()));
             let pipeline_service = {
-                use bb_core::{import::ImportSource, pipeline::PipelineServiceImpl};
+                use bb_core::pipeline::PipelineServiceImpl;
                 use bb_formats::EpubExtractor;
-                use bb_metadata::OpenLibraryAdapter;
+                use bb_metadata::create_metadata_providers;
                 std::sync::Arc::new(PipelineServiceImpl::new(
                     repository_service.clone(),
                     library_store.clone(),
                     std::sync::Arc::new(EpubExtractor),
-                    Some(std::sync::Arc::new(OpenLibraryAdapter::new())),
-                    ImportSource::OpenLibrary,
+                    create_metadata_providers(&config.metadata),
                 )) as std::sync::Arc<dyn bb_core::pipeline::PipelineService>
             };
             let services = create_services(repository_service.clone(), library_store, pipeline_service).context("Couldn't create core services")?;
