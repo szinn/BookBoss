@@ -70,7 +70,7 @@ test:
 
 [doc('Run all tests using insta')]
 insta:
-    cargo insta test --workspace --test-runner nextest --all-features
+    cargo insta test -p bb-formats --test-runner nextest --all-features
 
 [doc('Review insta deltas')]
 insta-review:
