@@ -30,4 +30,9 @@ pub enum Commands {
         #[arg(help = "Path to the EPUB file")]
         file: std::path::PathBuf,
     },
+    #[command(about = "Look up a book by ISBN on Open Library and dump the result", display_order = 30)]
+    OpenLibrary {
+        #[arg(help = "ISBN-10 or ISBN-13")]
+        isbn: String,
+    },
 }

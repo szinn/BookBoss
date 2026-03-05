@@ -14,8 +14,12 @@ bb-core.workspace = true
 
 async-trait.workspace = true
 chrono.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 tracing.workspace = true
 
 [dev-dependencies]
 bb-core = { workspace = true, features = ["test-support"] }
 tokio.workspace = true
+wiremock.workspace = true

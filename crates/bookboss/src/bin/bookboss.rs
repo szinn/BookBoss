@@ -44,6 +44,40 @@ async fn main() -> anyhow::Result<()> {
             println!("series_name:  {:?}", meta.series_name);
             println!("series_num:   {:?}", meta.series_number);
         }
+        Commands::OpenLibrary { isbn } => {
+            use bb_core::{
+                book::IdentifierType,
+                pipeline::{ExtractedIdentifier, ExtractedMetadata, MetadataProvider},
+            };
+            use bb_metadata::OpenLibraryAdapter;
+
+            let isbn_type = if isbn.len() == 10 { IdentifierType::Isbn10 } else { IdentifierType::Isbn13 };
+            let extracted = ExtractedMetadata {
+                identifiers: Some(vec![ExtractedIdentifier {
+                    identifier_type: isbn_type,
+                    value: isbn.clone(),
+                }]),
+                ..Default::default()
+            };
+
+            let adapter = OpenLibraryAdapter::new();
+            match adapter.enrich(&extracted).await? {
+                None => println!("No record found on Open Library for ISBN {isbn}"),
+                Some(book) => {
+                    let m = &book.metadata;
+                    println!("title:        {:?}", m.title);
+                    println!("authors:      {:?}", m.authors);
+                    println!("description:  {:?}", m.description);
+                    println!("publisher:    {:?}", m.publisher);
+                    println!("published:    {:?}", m.published_date);
+                    println!("language:     {:?}", m.language);
+                    println!("identifiers:  {:?}", m.identifiers);
+                    println!("series_name:  {:?}", m.series_name);
+                    println!("series_num:   {:?}", m.series_number);
+                    println!("cover:        {}", if book.cover_bytes.is_some() { "found" } else { "not found" });
+                }
+            }
+        }
         Commands::Server => {
             init_logging()?;
             let crate_version = clap::crate_version!();

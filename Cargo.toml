@@ -42,7 +42,13 @@ tonic-prost = "0.14.5"
 tonic-prost-build = "0.14.5"
 tower = "0.5.3"
 tracing-log = "0.2.0"
+wiremock = "0.6"
 zip = "8.2.0"
+
+[workspace.dependencies.reqwest]
+version = "0.12"
+default-features = false
+features = ["json", "rustls-tls"]
 
 [workspace.dependencies.argon2]
 version = "0.5.3"
