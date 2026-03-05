@@ -41,8 +41,8 @@ impl LibraryStore for LocalLibraryStore {
         self.book_dir(token).join(format!("{slug}.{}", format_ext(format)))
     }
 
-    fn cover_path(&self, token: &BookToken) -> PathBuf {
-        self.book_dir(token).join("cover.jpg")
+    fn cover_path(&self, token: &BookToken, filename: &str) -> PathBuf {
+        self.book_dir(token).join(filename)
     }
 
     fn metadata_path(&self, token: &BookToken) -> PathBuf {
@@ -62,10 +62,10 @@ impl LibraryStore for LocalLibraryStore {
         Ok(())
     }
 
-    async fn store_cover(&self, token: &BookToken, data: &[u8]) -> Result<(), Error> {
+    async fn store_cover(&self, token: &BookToken, filename: &str, data: &[u8]) -> Result<(), Error> {
         let book_dir = self.book_dir(token);
         tokio::fs::create_dir_all(&book_dir).await.map_err(io_err)?;
-        let cover_path = self.cover_path(token);
+        let cover_path = self.cover_path(token, filename);
         tokio::fs::write(cover_path, data).await.map_err(io_err)?;
         Ok(())
     }
@@ -166,9 +166,9 @@ mod tests {
         let token = test_token();
 
         let data = b"fake jpeg bytes";
-        store.store_cover(&token, data).await.unwrap();
+        store.store_cover(&token, "cover.jpg", data).await.unwrap();
 
-        let cover = store.cover_path(&token);
+        let cover = store.cover_path(&token, "cover.jpg");
         assert!(cover.exists(), "cover.jpg should exist");
         let contents = tokio::fs::read(&cover).await.unwrap();
         assert_eq!(contents, data);

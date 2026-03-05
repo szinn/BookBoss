@@ -11,4 +11,5 @@ pub trait PublisherRepository: Send + Sync {
     async fn find_by_id(&self, transaction: &dyn Transaction, id: PublisherId) -> Result<Option<Publisher>, Error>;
     async fn find_by_token(&self, transaction: &dyn Transaction, token: &PublisherToken) -> Result<Option<Publisher>, Error>;
     async fn list_publishers(&self, transaction: &dyn Transaction, start_id: Option<PublisherId>, page_size: Option<u64>) -> Result<Vec<Publisher>, Error>;
+    async fn find_by_name(&self, transaction: &dyn Transaction, name: &str) -> Result<Option<Publisher>, Error>;
 }

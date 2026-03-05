@@ -1,8 +1,8 @@
 use bb_core::{
     Error, RepositoryError,
     book::{
-        AuthorRole, Book, BookAuthor, BookFile, BookFilter, BookId, BookIdentifier, BookRepository, BookStatus, BookToken, FileFormat, IdentifierType,
-        MetadataSource, NewBook,
+        AuthorId, AuthorRole, Book, BookAuthor, BookFile, BookFilter, BookId, BookIdentifier, BookRepository, BookStatus, BookToken, FileFormat,
+        IdentifierType, MetadataSource, NewBook,
     },
     repository::Transaction,
 };
@@ -48,6 +48,36 @@ fn str_to_metadata_source(s: &str) -> Result<MetadataSource, Error> {
         "open_library" => Ok(MetadataSource::OpenLibrary),
         "manual" => Ok(MetadataSource::Manual),
         _ => Err(Error::RepositoryError(RepositoryError::Database(format!("unknown metadata source: {s}")))),
+    }
+}
+
+fn author_role_to_str(role: &AuthorRole) -> &'static str {
+    match role {
+        AuthorRole::Author => "author",
+        AuthorRole::Editor => "editor",
+        AuthorRole::Translator => "translator",
+        AuthorRole::Illustrator => "illustrator",
+    }
+}
+
+fn file_format_to_str(format: &FileFormat) -> &'static str {
+    match format {
+        FileFormat::Epub => "epub",
+        FileFormat::Mobi => "mobi",
+        FileFormat::Azw3 => "azw3",
+        FileFormat::Pdf => "pdf",
+        FileFormat::Cbz => "cbz",
+    }
+}
+
+fn identifier_type_to_str(id_type: &IdentifierType) -> &'static str {
+    match id_type {
+        IdentifierType::Isbn10 => "isbn10",
+        IdentifierType::Isbn13 => "isbn13",
+        IdentifierType::Asin => "asin",
+        IdentifierType::GoogleBooks => "google_books",
+        IdentifierType::OpenLibrary => "open_library",
+        IdentifierType::Hardcover => "hardcover",
     }
 }
 
@@ -342,6 +372,89 @@ impl BookRepository for BookRepositoryAdapter {
                 })
             })
             .collect()
+    }
+
+    async fn find_file_by_hash(&self, transaction: &dyn Transaction, hash: &str) -> Result<Option<BookFile>, Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        let row = prelude::BookFiles::find()
+            .filter(book_files::Column::FileHash.eq(hash))
+            .one(transaction)
+            .await
+            .map_err(handle_dberr)?;
+
+        row.map(|m| {
+            Ok(BookFile {
+                book_id: m.book_id as u64,
+                format: str_to_file_format(&m.format)?,
+                file_size: m.file_size,
+                file_hash: m.file_hash,
+            })
+        })
+        .transpose()
+    }
+
+    async fn add_book_file(
+        &self,
+        transaction: &dyn Transaction,
+        book_id: BookId,
+        format: FileFormat,
+        file_size: i64,
+        file_hash: String,
+    ) -> Result<BookFile, Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        let model = book_files::ActiveModel {
+            book_id: Set(book_id as i64),
+            format: Set(file_format_to_str(&format).to_string()),
+            file_size: Set(file_size),
+            file_hash: Set(file_hash.clone()),
+        };
+
+        model.insert(transaction).await.map_err(handle_dberr)?;
+
+        Ok(BookFile {
+            book_id,
+            format,
+            file_size,
+            file_hash,
+        })
+    }
+
+    async fn add_book_author(
+        &self,
+        transaction: &dyn Transaction,
+        book_id: BookId,
+        author_id: AuthorId,
+        role: AuthorRole,
+        sort_order: i32,
+    ) -> Result<(), Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        let model = book_authors::ActiveModel {
+            book_id: Set(book_id as i64),
+            author_id: Set(author_id as i64),
+            role: Set(author_role_to_str(&role).to_string()),
+            sort_order: Set(sort_order),
+        };
+
+        model.insert(transaction).await.map_err(handle_dberr)?;
+
+        Ok(())
+    }
+
+    async fn add_book_identifier(&self, transaction: &dyn Transaction, book_id: BookId, identifier_type: IdentifierType, value: String) -> Result<(), Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        let model = book_identifiers::ActiveModel {
+            book_id: Set(book_id as i64),
+            identifier_type: Set(identifier_type_to_str(&identifier_type).to_string()),
+            value: Set(value),
+        };
+
+        model.insert(transaction).await.map_err(handle_dberr)?;
+
+        Ok(())
     }
 }
 

@@ -86,9 +86,9 @@ mod tests {
         Error, RepositoryError,
         auth::{NewSession, Session, repository::SessionRepository},
         book::{
-            Author, AuthorId, AuthorRepository, AuthorToken, Book, BookAuthor, BookFile, BookFilter, BookId, BookIdentifier, BookRepository, BookToken, Genre,
-            GenreId, GenreRepository, GenreToken, NewAuthor, NewBook, NewGenre, NewPublisher, NewSeries, NewTag, Publisher, PublisherId, PublisherRepository,
-            PublisherToken, Series, SeriesId, SeriesRepository, SeriesToken, Tag, TagId, TagRepository, TagToken,
+            Author, AuthorId, AuthorRepository, AuthorRole, AuthorToken, Book, BookAuthor, BookFile, BookFilter, BookId, BookIdentifier, BookRepository,
+            BookToken, FileFormat, Genre, GenreId, GenreRepository, GenreToken, IdentifierType, NewAuthor, NewBook, NewGenre, NewPublisher, NewSeries, NewTag,
+            Publisher, PublisherId, PublisherRepository, PublisherToken, Series, SeriesId, SeriesRepository, SeriesToken, Tag, TagId, TagRepository, TagToken,
         },
         import::{ImportJob, ImportJobId, ImportJobRepository, ImportJobToken, ImportStatus, NewImportJob},
         repository::{Repository, RepositoryServiceBuilder, Transaction},
@@ -290,6 +290,9 @@ mod tests {
         async fn list_authors(&self, _: &dyn Transaction, _: Option<AuthorId>, _: Option<u64>) -> Result<Vec<Author>, Error> {
             unimplemented!()
         }
+        async fn find_by_name(&self, _: &dyn Transaction, _: &str) -> Result<Option<Author>, Error> {
+            unimplemented!()
+        }
     }
 
     struct MockSeriesRepository;
@@ -310,6 +313,9 @@ mod tests {
         async fn list_series(&self, _: &dyn Transaction, _: Option<SeriesId>, _: Option<u64>) -> Result<Vec<Series>, Error> {
             unimplemented!()
         }
+        async fn find_by_name(&self, _: &dyn Transaction, _: &str) -> Result<Option<Series>, Error> {
+            unimplemented!()
+        }
     }
 
     struct MockPublisherRepository;
@@ -328,6 +334,9 @@ mod tests {
             unimplemented!()
         }
         async fn list_publishers(&self, _: &dyn Transaction, _: Option<PublisherId>, _: Option<u64>) -> Result<Vec<Publisher>, Error> {
+            unimplemented!()
+        }
+        async fn find_by_name(&self, _: &dyn Transaction, _: &str) -> Result<Option<Publisher>, Error> {
             unimplemented!()
         }
     }
@@ -403,6 +412,18 @@ mod tests {
             unimplemented!()
         }
         async fn identifiers_for_book(&self, _: &dyn Transaction, _: BookId) -> Result<Vec<BookIdentifier>, Error> {
+            unimplemented!()
+        }
+        async fn find_file_by_hash(&self, _: &dyn Transaction, _: &str) -> Result<Option<BookFile>, Error> {
+            unimplemented!()
+        }
+        async fn add_book_file(&self, _: &dyn Transaction, _: BookId, _: FileFormat, _: i64, _: String) -> Result<BookFile, Error> {
+            unimplemented!()
+        }
+        async fn add_book_author(&self, _: &dyn Transaction, _: BookId, _: AuthorId, _: AuthorRole, _: i32) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn add_book_identifier(&self, _: &dyn Transaction, _: BookId, _: IdentifierType, _: String) -> Result<(), Error> {
             unimplemented!()
         }
     }

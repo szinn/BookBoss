@@ -105,6 +105,17 @@ impl SeriesRepository for SeriesRepositoryAdapter {
         self.find_by_id(transaction, token.id()).await
     }
 
+    async fn find_by_name(&self, transaction: &dyn Transaction, name: &str) -> Result<Option<Series>, Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        Ok(prelude::Series::find()
+            .filter(series::Column::Name.eq(name))
+            .one(transaction)
+            .await
+            .map_err(handle_dberr)?
+            .map(Into::into))
+    }
+
     async fn list_series(&self, transaction: &dyn Transaction, start_id: Option<SeriesId>, page_size: Option<u64>) -> Result<Vec<Series>, Error> {
         const DEFAULT_PAGE_SIZE: u64 = 50;
         const MAX_PAGE_SIZE: u64 = 50;

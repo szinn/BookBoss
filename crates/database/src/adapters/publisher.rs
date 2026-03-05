@@ -100,6 +100,17 @@ impl PublisherRepository for PublisherRepositoryAdapter {
         self.find_by_id(transaction, token.id()).await
     }
 
+    async fn find_by_name(&self, transaction: &dyn Transaction, name: &str) -> Result<Option<Publisher>, Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        Ok(prelude::Publishers::find()
+            .filter(publishers::Column::Name.eq(name))
+            .one(transaction)
+            .await
+            .map_err(handle_dberr)?
+            .map(Into::into))
+    }
+
     async fn list_publishers(&self, transaction: &dyn Transaction, start_id: Option<PublisherId>, page_size: Option<u64>) -> Result<Vec<Publisher>, Error> {
         const DEFAULT_PAGE_SIZE: u64 = 50;
         const MAX_PAGE_SIZE: u64 = 50;

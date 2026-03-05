@@ -16,8 +16,9 @@ pub trait LibraryStore: Send + Sync {
     /// `{library}/{token}/{slug}.{ext}`.
     fn book_file_path(&self, token: &BookToken, slug: &str, format: FileFormat) -> PathBuf;
 
-    /// Returns the path to a book's cover image: `{library}/{token}/cover.jpg`.
-    fn cover_path(&self, token: &BookToken) -> PathBuf;
+    /// Returns the path to a book's cover image:
+    /// `{library}/{token}/{filename}`.
+    fn cover_path(&self, token: &BookToken, filename: &str) -> PathBuf;
 
     /// Returns the path to a book's sidecar: `{library}/{token}/metadata.opf`.
     fn metadata_path(&self, token: &BookToken) -> PathBuf;
@@ -27,8 +28,9 @@ pub trait LibraryStore: Send + Sync {
     /// Moves or copies the source file into the book's directory.
     async fn store_book_file(&self, token: &BookToken, slug: &str, format: FileFormat, source: &Path) -> Result<(), Error>;
 
-    /// Writes raw bytes as the book's cover image.
-    async fn store_cover(&self, token: &BookToken, data: &[u8]) -> Result<(), Error>;
+    /// Writes raw bytes as the book's cover image. `filename` determines the
+    /// file name within the book's directory (e.g. `"cover.jpg"`).
+    async fn store_cover(&self, token: &BookToken, filename: &str, data: &[u8]) -> Result<(), Error>;
 
     /// Serialises `sidecar` and writes it as `metadata.opf` in the book's
     /// directory.
