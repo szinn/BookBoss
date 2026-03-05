@@ -18,4 +18,4 @@ tokio = { workspace = true }
 
 [dev-dependencies]
 serde_json = { workspace = true }
-tempfile = "3"
+tempfile = "3.26.0"
