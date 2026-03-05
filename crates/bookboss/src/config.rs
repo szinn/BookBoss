@@ -9,6 +9,19 @@ use serde::Deserialize;
 use crate::error::Error;
 
 #[derive(Debug, Deserialize)]
+pub struct ImportConfig {
+    pub watch_directory: PathBuf,
+    #[serde(default = "ImportConfig::default_poll_interval")]
+    pub poll_interval_secs: u64,
+}
+
+impl ImportConfig {
+    fn default_poll_interval() -> u64 {
+        60
+    }
+}
+
+#[derive(Debug, Deserialize)]
 pub struct LibraryConfig {
     pub library_path: PathBuf,
 }
@@ -20,6 +33,7 @@ pub struct Config {
     pub database: DatabaseConfig,
     #[serde(default)]
     pub frontend: FrontendConfig,
+    pub import: ImportConfig,
     pub library: LibraryConfig,
     #[serde(default)]
     pub metadata: MetadataConfig,
