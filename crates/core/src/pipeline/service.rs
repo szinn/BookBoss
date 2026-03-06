@@ -4,7 +4,7 @@ use crate::{
     Error,
     book::{AuthorRole, BookStatus, IdentifierType, MetadataSource, NewAuthor, NewBook, NewPublisher, NewSeries},
     import::{ImportJob, ImportSource, ImportStatus},
-    pipeline::{MetadataExtractor, MetadataProvider},
+    pipeline::{MetadataExtractor, MetadataProvider, model::ExtractedMetadata},
     repository::{RepositoryService, read_only_transaction, transaction},
     storage::{BookSidecar, LibraryStore, SidecarAuthor, SidecarFile, SidecarIdentifier, SidecarSeries},
 };
@@ -126,15 +126,38 @@ impl PipelineService for PipelineServiceImpl {
             .await?
         };
 
-        // ── 5. Enrich: try each provider in order, first success wins ─────────
+        // ── 5. Enrich: providers called lazily; stop once metadata + cover found
+        //
+        // Metadata comes from the first provider that returns a match.
+        // Cover is sought from the same provider first; if it has none, remaining
+        // providers are called in order until one supplies a cover. Providers
+        // after the first are skipped entirely once cover is also satisfied.
+        // The embedded EPUB cover is the final fallback if no provider has one.
         let (final_meta, cover_bytes, job_source) = {
-            let mut result = None;
+            let mut meta: Option<(ExtractedMetadata, ImportSource)> = None;
+            let mut cover: Option<Vec<u8>> = None;
+
             for provider in &self.providers {
+                let need_cover = cover.is_none();
+                let need_meta = meta.is_none();
+
+                if !need_meta && !need_cover {
+                    break;
+                }
+
                 if let Some(pb) = provider.enrich(&extracted).await? {
-                    let mut metadata = pb.metadata;
+                    if need_meta {
+                        meta = Some((pb.metadata, pb.source));
+                    }
+                    if need_cover {
+                        cover = pb.cover_bytes;
+                    }
+                }
+            }
+
+            match meta {
+                Some((mut metadata, source)) => {
                     // Preserve file-embedded identifiers not returned by the provider.
-                    // This ensures the ISBN we searched with is always attached to the
-                    // book even if the provider returns a different set of ISBNs.
                     if let Some(extracted_ids) = &extracted.identifiers {
                         let provider_ids = metadata.identifiers.get_or_insert_with(Vec::new);
                         let existing_types: std::collections::HashSet<IdentifierType> = provider_ids.iter().map(|id| id.identifier_type.clone()).collect();
@@ -144,14 +167,14 @@ impl PipelineService for PipelineServiceImpl {
                             }
                         }
                     }
-                    // Fall back to the embedded cover when the provider has none.
-                    let cover = pb.cover_bytes.or_else(|| extracted.cover_bytes.clone());
-                    result = Some((metadata, cover, pb.source));
-                    break;
+                    let cover = cover.or_else(|| extracted.cover_bytes.clone());
+                    (metadata, cover, source)
+                }
+                None => {
+                    let embedded_cover = extracted.cover_bytes.clone();
+                    (extracted, embedded_cover, ImportSource::Embedded)
                 }
             }
-            let embedded_cover = extracted.cover_bytes.clone();
-            result.unwrap_or((extracted, embedded_cover, ImportSource::Embedded))
         };
         let job_source = Some(job_source);
 
