@@ -12,14 +12,16 @@ pub mod storage;
 pub mod types;
 pub mod user;
 
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 pub use error::{Error, ErrorKind, RepositoryError};
+use tokio_graceful_shutdown::{IntoSubsystem, SubsystemBuilder, SubsystemHandle};
 
 use crate::{
     auth::{AuthService, AuthServiceImpl},
     book::{BookService, BookServiceImpl},
     import::{ImportJobService, service::ImportJobServiceImpl},
+    jobs::{JobRegistry, JobWorker},
     pipeline::PipelineService,
     repository::RepositoryService,
     storage::LibraryStore,
@@ -59,4 +61,32 @@ pub fn create_services(
     pipeline_service: Arc<dyn PipelineService>,
 ) -> Result<Arc<CoreServices>, Error> {
     Ok(Arc::new(CoreServices::new(repository_service, library_store, pipeline_service)))
+}
+
+pub struct CoreSubsystem {
+    registry: JobRegistry,
+    repository_service: Arc<RepositoryService>,
+    poll_interval: Duration,
+}
+
+impl IntoSubsystem<Error> for CoreSubsystem {
+    async fn run(self, subsys: &mut SubsystemHandle) -> Result<(), Error> {
+        let worker = JobWorker::new(
+            self.registry,
+            self.repository_service.repository().clone(),
+            self.repository_service.job_repository().clone(),
+            self.poll_interval,
+        );
+        subsys.start(SubsystemBuilder::new("Worker", worker.into_subsystem()));
+        subsys.on_shutdown_requested().await;
+        Ok(())
+    }
+}
+
+pub fn create_core_subsystem(registry: JobRegistry, repository_service: Arc<RepositoryService>, poll_interval: Duration) -> CoreSubsystem {
+    CoreSubsystem {
+        registry,
+        repository_service,
+        poll_interval,
+    }
 }

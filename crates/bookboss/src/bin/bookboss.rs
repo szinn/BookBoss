@@ -8,9 +8,10 @@ fn main() {
 async fn main() -> anyhow::Result<()> {
     use anyhow::Context;
     use bb_api::create_api_subsystem;
-    use bb_core::create_services;
+    use bb_core::{create_core_subsystem, create_services};
     use bb_database::{create_repository_service, open_database};
     use bb_frontend::server::launch_server_frontend;
+    use bb_import::{ProcessImportHandler, create_import_subsystem};
     use bookboss::{
         commands::{CommandLine, Commands},
         config::Config,
@@ -152,10 +153,21 @@ async fn main() -> anyhow::Result<()> {
             let server = {
                 use std::time::Duration;
 
+                use bb_core::jobs::JobRegistry;
+
+                let poll_interval = Duration::from_secs(config.import.poll_interval_secs);
+
+                let mut registry = JobRegistry::new();
+                registry.register(ProcessImportHandler::new(repository_service.clone(), services.pipeline_service.clone()));
+
                 let api_subsystem = create_api_subsystem(&config.api, services.clone());
+                let core_subsystem = create_core_subsystem(registry, repository_service.clone(), poll_interval);
+                let import_subsystem = create_import_subsystem(config.import.watch_directory.clone(), poll_interval, repository_service.clone());
 
                 Toplevel::new(async |s: &mut SubsystemHandle| {
                     s.start(SubsystemBuilder::new("Api", api_subsystem.into_subsystem()));
+                    s.start(SubsystemBuilder::new("Core", core_subsystem.into_subsystem()));
+                    s.start(SubsystemBuilder::new("Import", import_subsystem.into_subsystem()));
                 })
                 .catch_signals()
                 .handle_shutdown_requests(Duration::from_millis(1000))

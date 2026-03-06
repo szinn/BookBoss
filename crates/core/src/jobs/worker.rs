@@ -10,17 +10,17 @@ use crate::{
 
 pub struct JobWorker {
     registry: JobRegistry,
-    job_repo: Arc<dyn JobRepository>,
     repository: Arc<dyn Repository>,
+    job_repo: Arc<dyn JobRepository>,
     poll_interval: Duration,
 }
 
 impl JobWorker {
-    pub fn new(registry: JobRegistry, job_repo: Arc<dyn JobRepository>, repository: Arc<dyn Repository>, poll_interval: Duration) -> Self {
+    pub fn new(registry: JobRegistry, repository: Arc<dyn Repository>, job_repo: Arc<dyn JobRepository>, poll_interval: Duration) -> Self {
         Self {
             registry,
-            job_repo,
             repository,
+            job_repo,
             poll_interval,
         }
     }
