@@ -144,11 +144,14 @@ impl PipelineService for PipelineServiceImpl {
                             }
                         }
                     }
-                    result = Some((metadata, pb.cover_bytes, pb.source));
+                    // Fall back to the embedded cover when the provider has none.
+                    let cover = pb.cover_bytes.or_else(|| extracted.cover_bytes.clone());
+                    result = Some((metadata, cover, pb.source));
                     break;
                 }
             }
-            result.unwrap_or((extracted, None, ImportSource::Embedded))
+            let embedded_cover = extracted.cover_bytes.clone();
+            result.unwrap_or((extracted, embedded_cover, ImportSource::Embedded))
         };
         let job_source = Some(job_source);
 

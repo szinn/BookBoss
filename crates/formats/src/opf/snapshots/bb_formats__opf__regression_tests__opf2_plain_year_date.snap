@@ -35,4 +35,5 @@ ExtractedMetadata {
     ),
     series_name: None,
     series_number: None,
+    cover_bytes: None,
 }

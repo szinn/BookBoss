@@ -458,5 +458,92 @@ pub fn extract_metadata(xml: &[u8]) -> Result<ExtractedMetadata, Error> {
         identifiers: if identifiers.is_empty() { None } else { Some(identifiers) },
         series_name: None,
         series_number: None,
+        cover_bytes: None,
     })
+}
+
+/// Find the cover image href within an EPUB OPF document.
+///
+/// Handles both EPUB 2 (`<meta name="cover" content="item-id"/>` + manifest
+/// lookup) and EPUB 3 (`<item properties="cover-image"/>` in the manifest).
+/// Returns the href exactly as written in the manifest (caller must resolve it
+/// relative to the OPF file's directory within the ZIP archive).
+pub fn extract_cover_href(opf_xml: &[u8]) -> Option<String> {
+    use std::collections::HashMap;
+
+    use quick_xml::{Reader, events::Event};
+
+    let mut reader = Reader::from_reader(opf_xml);
+    reader.config_mut().trim_text(true);
+    let mut buf = Vec::new();
+
+    let mut cover_meta_id: Option<String> = None;
+    let mut manifest_items: HashMap<String, String> = HashMap::new();
+
+    loop {
+        buf.clear();
+        match reader.read_event_into(&mut buf) {
+            Ok(Event::Empty(ref e)) => {
+                match e.local_name().as_ref() {
+                    b"meta" => {
+                        // EPUB 2: <meta name="cover" content="item-id"/>
+                        let mut is_cover = false;
+                        let mut content = None;
+                        for attr in e.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"name" => {
+                                    if attr.decode_and_unescape_value(reader.decoder()).ok().as_deref() == Some("cover") {
+                                        is_cover = true;
+                                    }
+                                }
+                                b"content" => {
+                                    content = attr.decode_and_unescape_value(reader.decoder()).ok().map(|v| v.into_owned());
+                                }
+                                _ => {}
+                            }
+                        }
+                        if is_cover {
+                            cover_meta_id = content;
+                        }
+                    }
+                    b"item" => {
+                        let mut id = None;
+                        let mut href = None;
+                        let mut is_cover_image = false;
+                        for attr in e.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"id" => {
+                                    id = attr.decode_and_unescape_value(reader.decoder()).ok().map(|v| v.into_owned());
+                                }
+                                b"href" => {
+                                    href = attr.decode_and_unescape_value(reader.decoder()).ok().map(|v| v.into_owned());
+                                }
+                                b"properties" => {
+                                    // EPUB 3: properties may be a space-separated list
+                                    if let Ok(v) = attr.decode_and_unescape_value(reader.decoder()) {
+                                        if v.split_whitespace().any(|p| p == "cover-image") {
+                                            is_cover_image = true;
+                                        }
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                        if is_cover_image {
+                            return href; // EPUB 3: direct match
+                        }
+                        if let (Some(id), Some(href)) = (id, href) {
+                            manifest_items.insert(id, href);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            Ok(Event::Eof) | Err(_) => break,
+            _ => {}
+        }
+    }
+
+    // EPUB 2: resolve cover id against collected manifest items
+    cover_meta_id.and_then(|id| manifest_items.remove(&id))
 }

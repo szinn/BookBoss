@@ -33,6 +33,8 @@ pub struct ExtractedMetadata {
     pub identifiers: Option<Vec<ExtractedIdentifier>>,
     pub series_name: Option<String>,
     pub series_number: Option<Decimal>,
+    /// Cover image bytes extracted directly from the e-book file, if present.
+    pub cover_bytes: Option<Vec<u8>>,
 }
 
 /// Enriched metadata returned by an external metadata provider.

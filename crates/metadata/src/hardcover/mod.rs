@@ -135,6 +135,7 @@ impl HardcoverAdapter {
             identifiers,
             series_name,
             series_number,
+            cover_bytes: None,
         }
     }
 
