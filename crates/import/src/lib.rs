@@ -3,7 +3,12 @@ pub mod scanner;
 
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
-use bb_core::{Error, import::ImportStatus, jobs::JobRepositoryExt, repository::{RepositoryService, read_only_transaction, transaction}};
+use bb_core::{
+    Error,
+    import::ImportStatus,
+    jobs::JobRepositoryExt,
+    repository::{RepositoryService, read_only_transaction, transaction},
+};
 pub use handler::{ProcessImportHandler, ProcessImportPayload};
 pub use scanner::LibraryScanner;
 use tokio_graceful_shutdown::{IntoSubsystem, SubsystemBuilder, SubsystemHandle};
@@ -39,9 +44,7 @@ impl IntoSubsystem<Error> for ImportSubsystem {
             let ni = next_id;
             let batch = read_only_transaction(&**repo.repository(), |tx| {
                 let import_job_repo = import_job_repo.clone();
-                Box::pin(async move {
-                    import_job_repo.list_by_status(tx, ImportStatus::Pending, ni, None).await
-                })
+                Box::pin(async move { import_job_repo.list_by_status(tx, ImportStatus::Pending, ni, None).await })
             })
             .await?;
 

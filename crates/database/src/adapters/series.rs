@@ -4,7 +4,12 @@ use bb_core::{
     repository::Transaction,
 };
 use chrono::Utc;
-use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
+use sea_orm::{
+    ActiveModelTrait,
+    ActiveValue::Set,
+    ColumnTrait, EntityTrait, ExprTrait, QueryFilter, QueryOrder, QuerySelect,
+    sea_query::{BinOper, Expr, Func},
+};
 
 use crate::{
     entities::{prelude, series},
@@ -109,7 +114,7 @@ impl SeriesRepository for SeriesRepositoryAdapter {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
         Ok(prelude::Series::find()
-            .filter(series::Column::Name.eq(name))
+            .filter(Expr::expr(Func::lower(Expr::col(series::Column::Name))).binary(BinOper::Equal, Expr::value(name.to_lowercase())))
             .one(transaction)
             .await
             .map_err(handle_dberr)?
@@ -134,7 +139,7 @@ impl SeriesRepository for SeriesRepositoryAdapter {
             query = query.filter(series::Column::Id.gte(start_id as i64));
         }
 
-        let page_size = page_size.unwrap_or(DEFAULT_PAGE_SIZE).min(MAX_PAGE_SIZE);
+        let page_size = Ord::min(page_size.unwrap_or(DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
         query = query.limit(page_size);
 
         let rows = query.all(transaction).await.map_err(handle_dberr)?;

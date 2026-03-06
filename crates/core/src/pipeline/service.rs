@@ -55,6 +55,12 @@ fn detect_cover_filename(data: &[u8]) -> &'static str {
     }
 }
 
+/// Normalize a name string: trim edges and collapse interior whitespace runs
+/// to a single space. Ensures "A  B" and "A B" resolve to the same author.
+fn normalize_name(s: &str) -> String {
+    s.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
 /// Build a filesystem-safe slug from a title string.
 fn slugify(s: &str) -> String {
     let raw: String = s.chars().map(|c| if c.is_alphanumeric() { c.to_ascii_lowercase() } else { '-' }).collect();
@@ -131,8 +137,7 @@ impl PipelineService for PipelineServiceImpl {
                     // book even if the provider returns a different set of ISBNs.
                     if let Some(extracted_ids) = &extracted.identifiers {
                         let provider_ids = metadata.identifiers.get_or_insert_with(Vec::new);
-                        let existing_types: std::collections::HashSet<IdentifierType> =
-                            provider_ids.iter().map(|id| id.identifier_type.clone()).collect();
+                        let existing_types: std::collections::HashSet<IdentifierType> = provider_ids.iter().map(|id| id.identifier_type.clone()).collect();
                         for id in extracted_ids {
                             if !existing_types.contains(&id.identifier_type) {
                                 provider_ids.push(id.clone());
@@ -154,10 +159,12 @@ impl PipelineService for PipelineServiceImpl {
         let file_size = tokio::fs::metadata(&path).await.map(|m| m.len() as i64).unwrap_or(0);
 
         // ── 8. Determine title (fall back to filename stem) ───────────────────
-        let title = final_meta
-            .title
-            .clone()
-            .unwrap_or_else(|| path.file_stem().and_then(|s| s.to_str()).unwrap_or("Unknown").to_string());
+        let title = normalize_name(
+            &final_meta
+                .title
+                .clone()
+                .unwrap_or_else(|| path.file_stem().and_then(|s| s.to_str()).unwrap_or("Unknown").to_string()),
+        );
 
         // ── 9. Map ImportSource → MetadataSource for the Book record ──────────
         let book_metadata_source: Option<MetadataSource> = job_source.as_ref().map(|s| match s {
@@ -211,29 +218,23 @@ impl PipelineService for PipelineServiceImpl {
             Box::pin(async move {
                 // Find or create publisher
                 let publisher_id = match &fm.publisher {
-                    Some(name) => match publisher_repo.find_by_name(tx, name).await? {
-                        Some(p) => Some(p.id),
-                        None => Some(publisher_repo.add_publisher(tx, NewPublisher { name: name.clone() }).await?.id),
-                    },
+                    Some(name) => {
+                        let name = normalize_name(name);
+                        match publisher_repo.find_by_name(tx, &name).await? {
+                            Some(p) => Some(p.id),
+                            None => Some(publisher_repo.add_publisher(tx, NewPublisher { name }).await?.id),
+                        }
+                    }
                     None => None,
                 };
 
                 // Find or create series
                 let (series_id, series_number) = match &fm.series_name {
                     Some(name) => {
-                        let s = match series_repo.find_by_name(tx, name).await? {
+                        let name = normalize_name(name);
+                        let s = match series_repo.find_by_name(tx, &name).await? {
                             Some(s) => s,
-                            None => {
-                                series_repo
-                                    .add_series(
-                                        tx,
-                                        NewSeries {
-                                            name: name.clone(),
-                                            description: None,
-                                        },
-                                    )
-                                    .await?
-                            }
+                            None => series_repo.add_series(tx, NewSeries { name, description: None }).await?,
                         };
                         (Some(s.id), fm.series_number)
                     }
@@ -266,19 +267,10 @@ impl PipelineService for PipelineServiceImpl {
 
                 // Find or create each author, then link to book
                 for a in fm.authors.as_deref().unwrap_or(&[]) {
-                    let author = match author_repo.find_by_name(tx, &a.name).await? {
+                    let name = normalize_name(&a.name);
+                    let author = match author_repo.find_by_name(tx, &name).await? {
                         Some(ex) => ex,
-                        None => {
-                            author_repo
-                                .add_author(
-                                    tx,
-                                    NewAuthor {
-                                        name: a.name.clone(),
-                                        bio: None,
-                                    },
-                                )
-                                .await?
-                        }
+                        None => author_repo.add_author(tx, NewAuthor { name, bio: None }).await?,
                     };
                     let role = a.role.clone().unwrap_or(AuthorRole::Author);
                     book_repo.add_book_author(tx, book.id, author.id, role, a.sort_order).await?;
@@ -305,11 +297,7 @@ impl PipelineService for PipelineServiceImpl {
 
         // ── 12. Store book file (moves it into the library directory) ──────────
         let slug = {
-            let author_slug = final_meta
-                .authors
-                .as_deref()
-                .and_then(|a| a.first())
-                .map(|a| slugify(&a.name));
+            let author_slug = final_meta.authors.as_deref().and_then(|a| a.first()).map(|a| slugify(&a.name));
             match author_slug {
                 Some(a) => format!("{a}-{}", slugify(&book.title)),
                 None => slugify(&book.title),

@@ -133,6 +133,7 @@ auto-increments `version` and sets `updated_at`. When inserting, use `version: S
 hook bumps it to 1. Don't fight it.
 
 **Optimistic locking pattern:**
+
 ```rust
 let existing = Entity::find_by_id(id).one(db_tx).await?.ok_or(NotFound)?;
 if existing.version != record.version { return Err(VersionConflict); }
@@ -140,6 +141,7 @@ if existing.version != record.version { return Err(VersionConflict); }
 ```
 
 **Junction table filter (subquery pattern):**
+
 ```rust
 use sea_orm::sea_query::Query;
 if let Some(author_id) = filter.author_id {
@@ -152,12 +154,14 @@ if let Some(author_id) = filter.author_id {
 ```
 
 **Junction table inserts in tests:**
+
 ```rust
 let db_tx = TransactionImpl::get_db_transaction(&*tx).unwrap();
 book_authors::ActiveModel { book_id: Set(book.id as i64), ... }.insert(db_tx).await.unwrap();
 ```
 
 **Adding a new repository to `RepositoryService`:**
+
 1. Add field + accessor to `core/src/repository.rs` `RepositoryService`
 2. Create `database/src/adapters/<name>.rs` with adapter impl + tests
 3. Register in `database/src/adapters/mod.rs`
