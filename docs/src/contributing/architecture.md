@@ -12,6 +12,7 @@ crates/
 ├── formats/        # Adapter: e-book file format support (EPUB, OPF)
 ├── frontend/       # Adapter: Dioxus web UI, calls into core ports
 ├── metadata/       # Adapter: external metadata providers (Open Library, etc.)
+├── storage/        # Adapter: local filesystem library store
 ├── utils/          # Shared utilities (token encoding, etc.)
 ├── bookboss/       # Entry point: wires adapters to ports
 └── integration-tests/

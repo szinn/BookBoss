@@ -119,7 +119,8 @@ crates/
 ├── database/         # Adapter: SeaORM persistence (Postgres / MySQL / SQLite)
 ├── formats/          # Adapter: e-book file format support
 ├── frontend/         # Adapter: Dioxus web UI
-├── metadata/         # Adapter: book metadata
+├── metadata/         # Adapter: external metadata providers (Open Library, etc.)
+├── storage/          # Adapter: local filesystem library store
 ├── utils/            # Shared utilities
 ├── bookboss/         # Binary: wires adapters to ports
 └── integration-tests/
