@@ -304,7 +304,17 @@ impl PipelineService for PipelineServiceImpl {
         .await?;
 
         // ── 12. Store book file (moves it into the library directory) ──────────
-        let slug = slugify(&book.title);
+        let slug = {
+            let author_slug = final_meta
+                .authors
+                .as_deref()
+                .and_then(|a| a.first())
+                .map(|a| slugify(&a.name));
+            match author_slug {
+                Some(a) => format!("{a}-{}", slugify(&book.title)),
+                None => slugify(&book.title),
+            }
+        };
         self.library_store
             .store_book_file(&book.token, &slug, updated_job.file_format.clone(), &path)
             .await?;
