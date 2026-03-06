@@ -751,6 +751,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "bb-import"
+version = "0.1.12"
+dependencies = [
+ "async-trait",
+ "bb-core",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.18",
+ "tokio",
+ "tokio-graceful-shutdown",
+ "tracing",
+]
+
+[[package]]
 name = "bb-metadata"
 version = "0.1.12"
 dependencies = [
@@ -930,6 +946,7 @@ dependencies = [
  "bb-database",
  "bb-formats",
  "bb-frontend",
+ "bb-import",
  "bb-metadata",
  "bb-storage",
  "clap",

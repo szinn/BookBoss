@@ -28,10 +28,10 @@ See [Database Configuration](database.md) for connection string format and examp
 
 ## Import
 
-| Variable                                | Description                                          | Default |
-| --------------------------------------- | ---------------------------------------------------- | ------- |
-| `BOOKBOSS__IMPORT__WATCH_DIRECTORY`     | Directory to watch for new e-book files (**required**) | —     |
-| `BOOKBOSS__IMPORT__POLL_INTERVAL_SECS`  | How often (seconds) to scan the watch directory      | `60`    |
+| Variable                               | Description                                            | Default |
+| -------------------------------------- | ------------------------------------------------------ | ------- |
+| `BOOKBOSS__IMPORT__WATCH_DIRECTORY`    | Directory to watch for new e-book files (**required**) | —       |
+| `BOOKBOSS__IMPORT__POLL_INTERVAL_SECS` | How often (seconds) to scan the watch directory        | `60`    |
 
 ## API (gRPC)
 

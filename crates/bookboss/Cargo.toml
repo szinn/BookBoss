@@ -27,6 +27,7 @@ server = [
     "dep:bb-database",
     "dep:bb-formats",
     "dep:bb-frontend",
+    "dep:bb-import",
     "dep:bb-metadata",
     "dep:bb-storage",
     "dep:anyhow",
@@ -52,6 +53,7 @@ bb-core = { workspace = true, optional = true }
 bb-database = { workspace = true, optional = true }
 bb-formats = { workspace = true, optional = true }
 bb-frontend = { workspace = true, optional = true }
+bb-import = { workspace = true, optional = true }
 bb-metadata = { workspace = true, optional = true }
 bb-storage = { workspace = true, optional = true }
 
