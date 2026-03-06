@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+
+### Features
+
+- _(database)_ Add JobRepositoryAdapter with optimistic-locking claim loop - ([d6ec64a](https://github.com/szinn/BookBoss/commit/d6ec64a419f73cee44cd1f47a2b6dccc9cb0d92e))
+
 ## [0.1.12](https://github.com/szinn/BookBoss/compare/v0.1.11..v0.1.12) - 2026-03-06
 
 ### Features
@@ -13,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - _(core)_ Add job handler registry and worker subsystem - ([060c6b3](https://github.com/szinn/BookBoss/commit/060c6b3db06bd8b9112313f4b817214f378d1753))
 - _(core,database)_ Add job queue port traits and wire into RepositoryService - ([7d11484](https://github.com/szinn/BookBoss/commit/7d11484ada1f8559facc1189c8bedd36215d03b9))
 - _(database)_ Add jobs table migration and entity for job queue - ([d538345](https://github.com/szinn/BookBoss/commit/d538345a9ad104b193a491636749fd072eab035d))
-- _(deps)_ Update crate tempfile to 3.26.0 ([#24](https://github.com/szinn/BookBoss/issues/24)) - ([ee69133](https://github.com/szinn/BookBoss/commit/ee69133fd0c16ad639025095942c3be587d9176f))
 - _(grpc)_ Add reflection API - ([c982937](https://github.com/szinn/BookBoss/commit/c982937efdcbe985d39ead0f7b45bce9a3d0e1b6))
 
 ## [0.1.11](https://github.com/szinn/BookBoss/compare/v0.1.10..v0.1.11) - 2026-03-05
@@ -23,7 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - _(api,cli)_ Add grpc CLI command and fix system status endpoint - ([38d13c2](https://github.com/szinn/BookBoss/commit/38d13c2d54c533937cb442e101ea50539622cf42))
 - _(cli)_ Add dump-epub command for exploring EPUB metadata - ([7c42900](https://github.com/szinn/BookBoss/commit/7c42900ae069357c3a9a0a11f70cd6adf267f0c5))
 - _(core)_ Add PipelineService for M3.11 acquisition pipeline - ([85dae12](https://github.com/szinn/BookBoss/commit/85dae125f5445a4d77aa4fb5682d37f6e8bf15f1))
-- _(deps)_ Update crate quick-xml to 0.39.2 ([#18](https://github.com/szinn/BookBoss/issues/18)) - ([6d2213d](https://github.com/szinn/BookBoss/commit/6d2213dd94c711622ae9faeb6f0d41e668ddf4d0))
 - _(formats)_ Add read_opf_metadata_xml helper for diagnostics - ([4f24509](https://github.com/szinn/BookBoss/commit/4f2450996f83b2614a9e669f61f405528a305ed6))
 - _(formats)_ EPUB metadata extraction - ([af39d9f](https://github.com/szinn/BookBoss/commit/af39d9fb99f38714a2a673fe3d4f7b553557d4b4))
 - _(formats)_ OPF sidecar parse and write - ([0e08af3](https://github.com/szinn/BookBoss/commit/0e08af3e329595d7e5b476238b46581f7f223f31))
@@ -53,7 +57,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - _(core)_ Add LibraryStore port trait and BookSidecar struct (M3.2) - ([d6876ec](https://github.com/szinn/BookBoss/commit/d6876ec0d765880be614646afdf611851150e082))
 - _(core,database)_ Add ImportJobRepository port and adapter (M3.4) - ([89afb54](https://github.com/szinn/BookBoss/commit/89afb5437508b6903994ef35db74c5d98507973d))
 - _(database,core)_ Drop file_path from book_files (M3.1) - ([e785ee5](https://github.com/szinn/BookBoss/commit/e785ee57c22d94796c21eeab39d4d50aca33db67))
-- _(deps)_ Update crate tokio to 1.50.0 ([#14](https://github.com/szinn/BookBoss/issues/14)) - ([51f6d79](https://github.com/szinn/BookBoss/commit/51f6d79af9dc72a3a05f6d124a8bfb754cf6add6))
 - _(frontend)_ Add series detail page (M2.7) - ([0bdfaec](https://github.com/szinn/BookBoss/commit/0bdfaec7da13d990eaebc2e3fb7805ebc5730657))
 - _(frontend)_ Add author detail page (M2.6) - ([5cc4de8](https://github.com/szinn/BookBoss/commit/5cc4de8391f24c0cbc6d80632cd42e5d8239a99c))
 - _(frontend)_ Add book detail page at /library/books/:token (M2.5) - ([9b1e670](https://github.com/szinn/BookBoss/commit/9b1e67083a091305514567cfad3d688d2f49428e))

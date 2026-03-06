@@ -85,10 +85,9 @@ commit_preprocessors = [
     { pattern = '.*\[ci skip\].*', replace = "" },
 ]
 commit_parsers = [
-    { message = "^fix!?\\(deps\\)", skip = true },
-    { message = "^chore!?\\(deps\\)", skip = true },
-    { message = "^ci!?\\(renovate\\)", skip = true },
+    { message = "^*\\(deps\\)", skip = true },
     { message = "^.*\\(ignore\\)", skip = true },
+    { message = "^ci!?\\(renovate\\)", skip = true },
     { message = "^ignore", skip = true },
     { message = "^feat", group = "<!-- 0 -->Features" },
     { message = "^fix", group = "<!-- 1 -->Bug Fixes" },
@@ -98,7 +97,6 @@ commit_parsers = [
     { message = "^style", group = "<!-- 5 -->Stying" },
     { message = "^test", group = "<!-- 6 -->Testing" },
     { message = "^chore\\(release\\)", skip = true },
-    { message = "^feat!?\\(deps\\)", skip = true },
     { message = "^chore\\(pr\\)", skip = true },
     { message = "^chore\\(pull\\)", skip = true },
     { message = "^chore|^ci", group = "<!-- 7 -->Miscellaneous Tasks" },

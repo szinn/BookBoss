@@ -47,9 +47,9 @@ wiremock = "0.6.5"
 zip = "8.2.0"
 
 [workspace.dependencies.reqwest]
-version = "0.12"
+version = "0.13.2"
 default-features = false
-features = ["json", "rustls-tls"]
+features = ["json", "rustls"]
 
 [workspace.dependencies.argon2]
 version = "0.5.3"
