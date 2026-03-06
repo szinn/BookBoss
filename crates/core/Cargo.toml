@@ -23,6 +23,7 @@ derive_builder.workspace = true
 rust_decimal.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+tokio-graceful-shutdown.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 
