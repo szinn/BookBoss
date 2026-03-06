@@ -5,7 +5,7 @@ use bb_core::{
     repository::Transaction,
 };
 use chrono::Utc;
-use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
+use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, ExprTrait, QueryFilter, QueryOrder, QuerySelect, sea_query::Expr};
 
 use crate::{
     entities::{import_jobs, prelude},
@@ -225,11 +225,27 @@ impl ImportJobRepository for ImportJobRepositoryAdapter {
             query = query.filter(import_jobs::Column::Id.gte(start_id as i64));
         }
 
-        let page_size = page_size.unwrap_or(DEFAULT_PAGE_SIZE).min(MAX_PAGE_SIZE);
+        let page_size = Ord::min(page_size.unwrap_or(DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
         query = query.limit(page_size);
 
         let rows = query.all(transaction).await.map_err(handle_dberr)?;
         Ok(rows.into_iter().map(Into::into).collect())
+    }
+
+    async fn reset_in_progress_to_pending(&self, transaction: &dyn Transaction) -> Result<u64, Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+        let now = Utc::now();
+
+        let result = prelude::ImportJobs::update_many()
+            .col_expr(import_jobs::Column::Status, Expr::value("pending"))
+            .col_expr(import_jobs::Column::Version, Expr::col(import_jobs::Column::Version).add(1))
+            .col_expr(import_jobs::Column::UpdatedAt, Expr::value(now.fixed_offset()))
+            .filter(import_jobs::Column::Status.is_in(["extracting", "identifying"]))
+            .exec(transaction)
+            .await
+            .map_err(handle_dberr)?;
+
+        Ok(result.rows_affected)
     }
 }
 
@@ -525,5 +541,47 @@ mod tests {
         };
 
         assert!(matches!(svc.import_job_repository().update_job(&*tx, job).await, Err(Error::InvalidId(0))));
+    }
+
+    // ─── reset_in_progress_to_pending ────────────────────────────────────────
+
+    #[tokio::test]
+    async fn test_reset_in_progress_to_pending_resets_extracting_and_identifying() {
+        let svc = setup().await;
+        let tx = svc.repository().begin().await.unwrap();
+
+        let mut job_a = svc.import_job_repository().add_job(&*tx, new_job("/watch/a.epub")).await.unwrap();
+        let mut job_b = svc.import_job_repository().add_job(&*tx, new_job("/watch/b.epub")).await.unwrap();
+        let job_c = svc.import_job_repository().add_job(&*tx, new_job("/watch/c.epub")).await.unwrap();
+
+        job_a.status = ImportStatus::Extracting;
+        svc.import_job_repository().update_job(&*tx, job_a).await.unwrap();
+
+        job_b.status = ImportStatus::Identifying;
+        svc.import_job_repository().update_job(&*tx, job_b).await.unwrap();
+
+        let reset = svc.import_job_repository().reset_in_progress_to_pending(&*tx).await.unwrap();
+        assert_eq!(reset, 2);
+
+        let pending = svc
+            .import_job_repository()
+            .list_by_status(&*tx, ImportStatus::Pending, None, None)
+            .await
+            .unwrap();
+        assert_eq!(pending.len(), 3);
+
+        // job_c (already pending) must not be affected
+        let _ = job_c;
+    }
+
+    #[tokio::test]
+    async fn test_reset_in_progress_to_pending_returns_zero_when_none() {
+        let svc = setup().await;
+        let tx = svc.repository().begin().await.unwrap();
+
+        svc.import_job_repository().add_job(&*tx, new_job("/watch/a.epub")).await.unwrap();
+
+        let reset = svc.import_job_repository().reset_in_progress_to_pending(&*tx).await.unwrap();
+        assert_eq!(reset, 0);
     }
 }

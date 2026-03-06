@@ -18,4 +18,9 @@ pub trait ImportJobRepository: Send + Sync {
         start_id: Option<ImportJobId>,
         page_size: Option<u64>,
     ) -> Result<Vec<ImportJob>, Error>;
+
+    /// Reset any import jobs left in `Extracting` or `Identifying` state back
+    /// to `Pending`. Called on startup to recover from a previous crash.
+    /// Returns the number of jobs reset.
+    async fn reset_in_progress_to_pending(&self, transaction: &dyn Transaction) -> Result<u64, Error>;
 }

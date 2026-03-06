@@ -288,3 +288,27 @@ The initial UI rendered by the component on the client must be identical to the 
   ensuring the client has the data immediately for its first render.
 - Any code that relies on browser-specific APIs (like accessing `localStorage`) must be
   run _after_ hydration. Place this code inside a `use_effect` hook.
+
+# BookBoss Server Function Conventions
+
+- Use `#[get]` / `#[post]` / `#[put]` macros (not `#[server]`) for server functions
+- Axum extensions are declared in the **macro attribute**, NOT in the function signature:
+  ```rust
+  #[get("/api/v1/foo", auth_session: axum::Extension<AuthSession>, core_services: axum::Extension<Arc<CoreServices>>)]
+  ```
+- Function parameters (request args) are declared normally on the function itself
+- Server-side imports are gated:
+  ```rust
+  #[cfg(feature = "server")] use {crate::server::AuthSession, bb_core::CoreServices, std::sync::Arc};
+  ```
+- Add tracing stacked above the method macro:
+  ```rust
+  #[tracing::instrument(level = "trace", skip(core_services, auth_session))]
+  #[get("/api/v1/foo", ...)]
+  ```
+- `use_server_future(fn)?` returns `Resource<Result<T, E>>` after `?` unwraps the outer `RenderError`
+- **HTTP method rule**: `#[get]` only for zero-parameter fns (browser rejects GET with body).
+  Parameterized fns use `#[post]` for reads or `#[put]` for writes.
+  Called with: `use_server_future(move || get_book(token.clone()))?`
+- `navigator.push(Route::Foo {})` returns `Option<_>` — must add `;` in onclick closures or compiler error
+- `bb-core` is an optional dep in `bb-frontend`, gated by the `server` feature

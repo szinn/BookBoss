@@ -220,6 +220,10 @@ mod tests {
                 .clone()
                 .unwrap_or_else(|| Err(Error::MockNotConfigured("list_by_status")))
         }
+
+        async fn reset_in_progress_to_pending(&self, _: &dyn Transaction) -> Result<u64, Error> {
+            Ok(0)
+        }
     }
 
     // ─── Stub repositories (unused by ImportJobService) ───────────────────────

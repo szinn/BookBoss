@@ -16,6 +16,7 @@ pub fn init_logging() -> Result<()> {
         .add_directive("dioxus_signals=off".parse()?)
         .add_directive("hyper::proto=off".parse()?)
         .add_directive("hyper::client=off".parse()?)
+        .add_directive("hyper_util::client=off".parse()?)
         .add_directive("h2=off".parse()?)
         .add_directive("rustls=off".parse()?)
         .add_directive("tokio_util=off".parse()?)

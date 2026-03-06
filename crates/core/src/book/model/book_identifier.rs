@@ -1,6 +1,6 @@
 use crate::book::BookId;
 
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum IdentifierType {
     Isbn10,
     Isbn13,

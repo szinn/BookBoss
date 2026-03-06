@@ -434,6 +434,9 @@ mod tests {
         async fn list_by_status(&self, _: &dyn Transaction, _: ImportStatus, _: Option<ImportJobId>, _: Option<u64>) -> Result<Vec<ImportJob>, Error> {
             unimplemented!()
         }
+        async fn reset_in_progress_to_pending(&self, _: &dyn Transaction) -> Result<u64, Error> {
+            unimplemented!()
+        }
     }
 
     // ─── Helper ──────────────────────────────────────────────────────────────

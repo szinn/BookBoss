@@ -2,7 +2,7 @@ use std::{path::PathBuf, sync::Arc};
 
 use crate::{
     Error,
-    book::{AuthorRole, BookStatus, MetadataSource, NewAuthor, NewBook, NewPublisher, NewSeries},
+    book::{AuthorRole, BookStatus, IdentifierType, MetadataSource, NewAuthor, NewBook, NewPublisher, NewSeries},
     import::{ImportJob, ImportSource, ImportStatus},
     pipeline::{MetadataExtractor, MetadataProvider},
     repository::{RepositoryService, read_only_transaction, transaction},
@@ -65,6 +65,14 @@ fn slugify(s: &str) -> String {
 impl PipelineService for PipelineServiceImpl {
     #[tracing::instrument(level = "trace", skip(self))]
     async fn process_job(&self, mut job: ImportJob) -> Result<ImportJob, Error> {
+        // Guard: only process jobs in Pending state. A duplicate queue entry
+        // (e.g. from startup re-enqueue racing with a reset job) must not
+        // overwrite a job that is already mid-flight or complete.
+        if job.status != ImportStatus::Pending {
+            tracing::debug!(import_job_id = job.id, status = ?job.status, "skipping import job not in pending state");
+            return Ok(job);
+        }
+
         // ── 1. Hash dedup: reject if file is already in the library ───────────
         {
             let book_repo = self.repository_service.book_repository().clone();
@@ -117,7 +125,21 @@ impl PipelineService for PipelineServiceImpl {
             let mut result = None;
             for provider in &self.providers {
                 if let Some(pb) = provider.enrich(&extracted).await? {
-                    result = Some((pb.metadata, pb.cover_bytes, pb.source));
+                    let mut metadata = pb.metadata;
+                    // Preserve file-embedded identifiers not returned by the provider.
+                    // This ensures the ISBN we searched with is always attached to the
+                    // book even if the provider returns a different set of ISBNs.
+                    if let Some(extracted_ids) = &extracted.identifiers {
+                        let provider_ids = metadata.identifiers.get_or_insert_with(Vec::new);
+                        let existing_types: std::collections::HashSet<IdentifierType> =
+                            provider_ids.iter().map(|id| id.identifier_type.clone()).collect();
+                        for id in extracted_ids {
+                            if !existing_types.contains(&id.identifier_type) {
+                                provider_ids.push(id.clone());
+                            }
+                        }
+                    }
+                    result = Some((metadata, pb.cover_bytes, pb.source));
                     break;
                 }
             }
@@ -262,9 +284,12 @@ impl PipelineService for PipelineServiceImpl {
                     book_repo.add_book_author(tx, book.id, author.id, role, a.sort_order).await?;
                 }
 
-                // Add identifiers
+                // Add identifiers, deduplicating by type (keep first occurrence)
+                let mut seen_types = std::collections::HashSet::new();
                 for id in fm.identifiers.as_deref().unwrap_or(&[]) {
-                    book_repo.add_book_identifier(tx, book.id, id.identifier_type.clone(), id.value.clone()).await?;
+                    if seen_types.insert(id.identifier_type.clone()) {
+                        book_repo.add_book_identifier(tx, book.id, id.identifier_type.clone(), id.value.clone()).await?;
+                    }
                 }
 
                 // Advance import job to NeedsReview with candidate book linked

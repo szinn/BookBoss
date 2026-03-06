@@ -93,6 +93,15 @@ crates/core/src/
 (e.g. `use crate::user::UserId` in an order model for foreign-key relationships).
 Keep references one-directional when possible.
 
+### Subsystem Pattern (tokio-graceful-shutdown)
+
+Each crate that owns background work exposes a `XxxSubsystem` struct + `create_xxx_subsystem()` factory
+in its `lib.rs` — same pattern as `ApiSubsystem` in `bb-api`. The subsystem's `run()` starts its
+child subsystems via `subsys.start(SubsystemBuilder::new(...))` then awaits `on_shutdown_requested()`.
+`bookboss/main.rs` stays clean: build any shared state (e.g. `JobRegistry`), call the factories,
+pass results to `Toplevel`. Existing subsystems: `ApiSubsystem` (bb-api), `CoreSubsystem` (bb-core,
+owns `JobWorker`), `ImportSubsystem` (bb-import, owns `LibraryScanner`).
+
 ## Frontend
 
 The frontend is built using Dioxus. See @.claude/Dioxus.md for more info.
@@ -112,6 +121,51 @@ database-related commands. The following environment variables must be set:
 
 Secrets should be encrypted with `sops` and never committed.
 
+### SeaORM Adapter Patterns
+
+**Enum storage:** All domain enums stored as plain `String` columns (no DB CHECK constraints).
+Conversion functions are module-private (`book_status_to_str` / `str_to_book_status`).
+`From<Model> for DomainType` is infallible and panics on unknown values — acceptable since all
+writes go through adapters.
+
+**`ActiveModelBehavior` / `before_save`:** The `books` entity has a `before_save` hook that
+auto-increments `version` and sets `updated_at`. When inserting, use `version: Set(0)` — the
+hook bumps it to 1. Don't fight it.
+
+**Optimistic locking pattern:**
+```rust
+let existing = Entity::find_by_id(id).one(db_tx).await?.ok_or(NotFound)?;
+if existing.version != record.version { return Err(VersionConflict); }
+// set all mutable fields, then .update()
+```
+
+**Junction table filter (subquery pattern):**
+```rust
+use sea_orm::sea_query::Query;
+if let Some(author_id) = filter.author_id {
+    let mut subq = Query::select();
+    subq.column(book_authors::Column::BookId)
+        .from(book_authors::Entity)
+        .and_where(book_authors::Column::AuthorId.eq(author_id as i64));
+    query = query.filter(books::Column::Id.in_subquery(subq));
+}
+```
+
+**Junction table inserts in tests:**
+```rust
+let db_tx = TransactionImpl::get_db_transaction(&*tx).unwrap();
+book_authors::ActiveModel { book_id: Set(book.id as i64), ... }.insert(db_tx).await.unwrap();
+```
+
+**Adding a new repository to `RepositoryService`:**
+1. Add field + accessor to `core/src/repository.rs` `RepositoryService`
+2. Create `database/src/adapters/<name>.rs` with adapter impl + tests
+3. Register in `database/src/adapters/mod.rs`
+4. Import + wire into builder in `database/src/lib.rs`
+5. Add `Mock<Name>Repository` to **4** test helpers:
+   `core/src/auth/service.rs`, `core/src/book/service.rs`,
+   `core/src/user/service/user.rs`, `core/src/user/service/user_settings.rs`
+
 ## Workflows
 
 **After completing each task (end-of-task routine — run these as separate commands):**
@@ -120,6 +174,7 @@ Secrets should be encrypted with `sops` and never committed.
 2. `just clippy` — lint (run separately from fmt, not chained)
 3. `just component-tests` — verify tests pass
 4. `jj desc -m "type(scope): description\n\nbody"` — update working copy description
+5. Update `.scratchpad/implementation-plan.md` — mark completed tasks `✓` / `[x]`, note partial work in later tasks
 
 **Before committing (full pre-commit check):**
 
