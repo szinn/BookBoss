@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.12](https://github.com/szinn/BookBoss/compare/v0.1.11..v0.1.12) - 2026-03-06
+
+### Features
+
+- _(bookboss)_ Add ImportConfig with watch_directory and poll_interval_secs - ([fe22822](https://github.com/szinn/BookBoss/commit/fe228229e2a9e2a34630189d5867f3d3096e238b))
+- _(core)_ Add job handler registry and worker subsystem - ([060c6b3](https://github.com/szinn/BookBoss/commit/060c6b3db06bd8b9112313f4b817214f378d1753))
+- _(core,database)_ Add job queue port traits and wire into RepositoryService - ([7d11484](https://github.com/szinn/BookBoss/commit/7d11484ada1f8559facc1189c8bedd36215d03b9))
+- _(database)_ Add jobs table migration and entity for job queue - ([d538345](https://github.com/szinn/BookBoss/commit/d538345a9ad104b193a491636749fd072eab035d))
+- _(deps)_ Update crate tempfile to 3.26.0 ([#24](https://github.com/szinn/BookBoss/issues/24)) - ([ee69133](https://github.com/szinn/BookBoss/commit/ee69133fd0c16ad639025095942c3be587d9176f))
+- _(grpc)_ Add reflection API - ([c982937](https://github.com/szinn/BookBoss/commit/c982937efdcbe985d39ead0f7b45bce9a3d0e1b6))
+
 ## [0.1.11](https://github.com/szinn/BookBoss/compare/v0.1.10..v0.1.11) - 2026-03-05
 
 ### Features
