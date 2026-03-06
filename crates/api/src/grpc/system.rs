@@ -77,7 +77,7 @@ pub mod api {
 
     #[tracing::instrument(level = "trace")]
     pub async fn status(host: &str, port: u16) -> Result<String, Error> {
-        let server = format!("http://{}:{}", host, port);
+        let server = format!("{}:{}", host, port);
         let mut client = SystemServiceClient::connect(server)
             .await
             .map_err(|e| Error::from(ApiError::GrpcClient(e.to_string())))?;
