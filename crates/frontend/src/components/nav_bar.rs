@@ -49,7 +49,11 @@ pub(crate) fn NavBar() -> Element {
     let mut user_menu_open = use_signal(|| false);
     let mut view: Signal<BookDisplayView> = use_context();
     let route = use_route::<Route>();
-    let pending_count = use_server_future(get_pending_count)?;
+    let incoming_refresh: Signal<u32> = use_context();
+    let pending_count = use_server_future(move || {
+        let _rev = incoming_refresh();
+        get_pending_count()
+    })?;
 
     let is_library = matches!(route, Route::BooksPage {});
 

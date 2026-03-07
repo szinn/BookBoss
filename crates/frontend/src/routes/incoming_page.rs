@@ -146,6 +146,7 @@ fn LocalTime(iso: String) -> Element {
 pub(crate) fn IncomingPage() -> Element {
     let mut jobs = use_server_future(list_incoming_books)?;
     let mut rejecting: Signal<Option<String>> = use_signal(|| None);
+    let mut incoming_refresh: Signal<u32> = use_context();
 
     rsx! {
         div { class: "flex-1 flex flex-col overflow-hidden",
@@ -230,6 +231,7 @@ pub(crate) fn IncomingPage() -> Element {
                                                                     let result = reject_incoming_book(token).await;
                                                                     rejecting.set(None);
                                                                     if result.is_ok() {
+                                                                        *incoming_refresh.write() += 1;
                                                                         jobs.restart();
                                                                     }
                                                                 });

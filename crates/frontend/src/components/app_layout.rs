@@ -33,6 +33,10 @@ pub(crate) fn AppLayout() -> Element {
     });
     let _ = view;
 
+    // Shared counter bumped after approve/reject so NavBar re-fetches the pending
+    // count.
+    use_context_provider(|| Signal::new(0u32));
+
     rsx! {
         document::Stylesheet { href: asset!("/assets/tailwind.css") }
         document::Link { rel: "icon", href: asset!("/assets/favicon.ico") }

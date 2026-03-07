@@ -685,6 +685,7 @@ const ALL_IDENTIFIER_TYPES: &[(&str, &str)] = &[
 #[component]
 pub(crate) fn ReviewPage(token: String) -> Element {
     let nav = use_navigator();
+    let mut incoming_refresh: Signal<u32> = use_context();
     let review_data = use_server_future(move || get_review_data(token.clone()))?;
 
     match review_data() {
@@ -704,6 +705,7 @@ pub(crate) fn ReviewPage(token: String) -> Element {
                     data,
                     edit_mode: false,
                     on_back: move |_| {
+                        *incoming_refresh.write() += 1;
                         nav.push(crate::Route::IncomingPage {});
                     },
                 }
