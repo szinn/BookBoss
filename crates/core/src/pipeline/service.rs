@@ -31,20 +31,21 @@ pub trait PipelineService: Send + Sync {
     /// in priority order.
     fn list_provider_names(&self) -> Vec<&'static str>;
 
-    /// Fetches metadata from a named provider using the current book data for
-    /// the given import job as search context.
+    /// Fetches metadata from a named provider.
     ///
-    /// Returns `None` when the provider finds no match or has insufficient
-    /// data to query. Returns an error if the provider name is unknown or the
-    /// job cannot be found.
+    /// `title` and `identifiers` are used as search context. Returns `None`
+    /// when the provider finds no match or has insufficient data to query.
+    /// Returns an error if the provider name is unknown.
     ///
     /// If the result includes cover bytes they are written to the temp cover
-    /// store keyed by `job_token` for retrieval during `approve_job`.
+    /// store keyed by `cover_key` for later retrieval (e.g. during
+    /// `approve_job`).
     async fn fetch_from_provider(
         &self,
-        job_token: &ImportJobToken,
         provider_name: &str,
+        title: Option<String>,
         identifiers: Vec<(IdentifierType, String)>,
+        cover_key: &str,
         temp_dir: &std::path::Path,
     ) -> Result<Option<crate::pipeline::ProviderBook>, Error>;
 
@@ -488,12 +489,13 @@ impl PipelineService for PipelineServiceImpl {
         self.providers.iter().map(|p| p.name()).collect()
     }
 
-    #[tracing::instrument(level = "trace", skip(self, identifiers, temp_dir), fields(jobToken = %job_token, provider = provider_name))]
+    #[tracing::instrument(level = "trace", skip(self, identifiers, temp_dir), fields(coverKey = cover_key, provider = provider_name))]
     async fn fetch_from_provider(
         &self,
-        job_token: &ImportJobToken,
         provider_name: &str,
+        title: Option<String>,
         identifiers: Vec<(IdentifierType, String)>,
+        cover_key: &str,
         temp_dir: &std::path::Path,
     ) -> Result<Option<crate::pipeline::ProviderBook>, Error> {
         let provider = self
@@ -502,27 +504,6 @@ impl PipelineService for PipelineServiceImpl {
             .find(|p| p.name() == provider_name)
             .ok_or_else(|| Error::Validation(format!("unknown provider: {provider_name}")))?
             .clone();
-
-        // Load the job to locate the candidate book for its title.
-        let import_job_repo = self.repository_service.import_job_repository().clone();
-        let jt = job_token.clone();
-        let job = read_only_transaction(&**self.repository_service.repository(), |tx| {
-            Box::pin(async move { import_job_repo.find_by_token(tx, &jt).await })
-        })
-        .await?
-        .ok_or(Error::RepositoryError(RepositoryError::NotFound))?;
-
-        // Use caller-supplied identifiers; load only the title from the DB.
-        let title = if let Some(book_id) = job.candidate_book_id {
-            let book_repo = self.repository_service.book_repository().clone();
-            read_only_transaction(&**self.repository_service.repository(), |tx| {
-                Box::pin(async move { book_repo.find_by_id(tx, book_id).await })
-            })
-            .await?
-            .map(|b| b.title)
-        } else {
-            None
-        };
 
         let extracted = ExtractedMetadata {
             title,
@@ -541,15 +522,16 @@ impl PipelineService for PipelineServiceImpl {
 
         let result = provider.enrich(&extracted).await?;
 
-        // Persist cover bytes to temp store so approve_job can access them
-        // without a large round-trip through the frontend.
+        // Persist cover bytes to temp store keyed by cover_key so the caller
+        // (approve_job or save_book_metadata) can retrieve them without a
+        // round-trip through the frontend.
         if let Some(pb) = &result {
             if let Some(cover) = &pb.cover_bytes {
                 let cover_dir = temp_dir.join("bookboss-covers");
                 tokio::fs::create_dir_all(&cover_dir)
                     .await
                     .map_err(|e| Error::Infrastructure(format!("failed to create temp cover dir: {e}")))?;
-                let cover_path = cover_dir.join(job_token.to_string());
+                let cover_path = cover_dir.join(cover_key);
                 tokio::fs::write(&cover_path, cover)
                     .await
                     .map_err(|e| Error::Infrastructure(format!("failed to write temp cover: {e}")))?;

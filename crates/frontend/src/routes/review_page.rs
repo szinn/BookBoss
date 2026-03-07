@@ -349,7 +349,12 @@ async fn get_review_data(job_token: String) -> Result<BookReviewData, ServerFnEr
     auth_session: axum::Extension<AuthSession>,
     core_services: axum::Extension<Arc<CoreServices>>
 )]
-async fn fetch_provider_metadata(job_token: String, provider_name: String, identifiers: IdentifierMap) -> Result<Option<ProviderResult>, ServerFnError> {
+async fn fetch_provider_metadata(
+    job_token: String,
+    provider_name: String,
+    title: String,
+    identifiers: IdentifierMap,
+) -> Result<Option<ProviderResult>, ServerFnError> {
     let current_user = auth_session.current_user.clone().unwrap_or_default();
     if !Auth::<AuthUser, UserId, BackendSessionPool>::build([Method::POST], true)
         .requires(Rights::any([Rights::permission(Capability::ApproveImports.as_str())]))
@@ -368,9 +373,10 @@ async fn fetch_provider_metadata(job_token: String, provider_name: String, ident
         .filter_map(|(k, v)| key_to_identifier_type(&k).map(|t| (t, v)))
         .collect();
 
+    let title = if title.is_empty() { None } else { Some(title) };
     let result = core_services
         .pipeline_service
-        .fetch_from_provider(&token, &provider_name, parsed_identifiers, &temp_dir)
+        .fetch_from_provider(&provider_name, title, parsed_identifiers, &token.to_string(), &temp_dir)
         .await
         .map_err(|e| ServerFnError::new(e.to_string()))?;
 
@@ -684,10 +690,12 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                                                         fetching.set(Some(pname.clone()));
                                                         error_msg.set(None);
                                                         let current_ids = identifiers.read().clone();
+                                                        let current_title = title.read().clone();
                                                         spawn(async move {
                                                             match fetch_provider_metadata(
                                                                 jt,
                                                                 pname.clone(),
+                                                                current_title,
                                                                 current_ids,
                                                             )
                                                             .await

@@ -26,7 +26,8 @@ pub struct BookEdit {
     pub identifiers: Vec<(IdentifierType, String)>,
     /// If `true`, the cover fetched by `fetch_from_provider` replaces the
     /// existing cover. The bytes are held in the server-side temp store keyed
-    /// by the job token; no bytes are round-tripped through this struct.
+    /// by the cover key passed to `fetch_from_provider`; no bytes are
+    /// round-tripped through this struct.
     pub use_fetched_cover: bool,
 }
 

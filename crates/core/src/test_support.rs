@@ -64,9 +64,10 @@ impl PipelineService for NopPipelineService {
     }
     async fn fetch_from_provider(
         &self,
-        _job_token: &ImportJobToken,
         _provider_name: &str,
+        _title: Option<String>,
         _identifiers: Vec<(IdentifierType, String)>,
+        _cover_key: &str,
         _temp_dir: &std::path::Path,
     ) -> Result<Option<ProviderBook>, Error> {
         unimplemented!("NopPipelineService")
