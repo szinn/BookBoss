@@ -23,4 +23,7 @@ pub trait ImportJobRepository: Send + Sync {
     /// to `Pending`. Called on startup to recover from a previous crash.
     /// Returns the number of jobs reset.
     async fn reset_in_progress_to_pending(&self, transaction: &dyn Transaction) -> Result<u64, Error>;
+
+    /// Permanently deletes an import job record.
+    async fn delete_job(&self, transaction: &dyn Transaction, job_id: ImportJobId) -> Result<(), Error>;
 }

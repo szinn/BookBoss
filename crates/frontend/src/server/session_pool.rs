@@ -108,6 +108,7 @@ impl DatabasePool for BackendSessionPool {
 #[async_trait::async_trait]
 impl HasPermission<BackendSessionPool> for AuthUser {
     async fn has(&self, perm: &str, _pool: &Option<&BackendSessionPool>) -> bool {
+        tracing::trace!("User: {:?}", self);
         self.permissions.contains(Capability::SuperAdmin.as_str())
             || self.permissions.contains(perm)
             || (perm != Capability::SuperAdmin.as_str() && self.permissions.contains(Capability::Admin.as_str()))

@@ -7,7 +7,7 @@ use bb_core::{
     repository::Transaction,
 };
 use chrono::Utc;
-use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect, sea_query::Query};
+use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, ModelTrait, QueryFilter, QueryOrder, QuerySelect, sea_query::Query};
 
 use crate::{
     entities::{book_authors, book_files, book_genres, book_identifiers, book_tags, books, prelude},
@@ -453,6 +453,16 @@ impl BookRepository for BookRepositoryAdapter {
         };
 
         model.insert(transaction).await.map_err(handle_dberr)?;
+
+        Ok(())
+    }
+
+    async fn delete_book(&self, transaction: &dyn Transaction, book_id: BookId) -> Result<(), Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        if let Some(existing) = prelude::Books::find_by_id(book_id as i64).one(transaction).await.map_err(handle_dberr)? {
+            existing.delete(transaction).await.map_err(handle_dberr)?;
+        }
 
         Ok(())
     }

@@ -8,7 +8,7 @@ use async_trait::async_trait;
 use crate::{
     Error,
     book::{BookToken, FileFormat},
-    import::ImportJob,
+    import::{ImportJob, ImportJobToken},
     pipeline::PipelineService,
     storage::{BookSidecar, LibraryStore},
 };
@@ -54,6 +54,9 @@ pub struct NopPipelineService;
 #[async_trait]
 impl PipelineService for NopPipelineService {
     async fn process_job(&self, _job: ImportJob) -> Result<ImportJob, Error> {
+        unimplemented!("NopPipelineService")
+    }
+    async fn reject_job(&self, _job_token: ImportJobToken) -> Result<(), Error> {
         unimplemented!("NopPipelineService")
     }
 }

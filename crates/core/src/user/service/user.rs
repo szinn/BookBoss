@@ -441,6 +441,9 @@ mod tests {
         async fn add_book_identifier(&self, _: &dyn Transaction, _: BookId, _: IdentifierType, _: String) -> Result<(), Error> {
             unimplemented!()
         }
+        async fn delete_book(&self, _: &dyn Transaction, _: BookId) -> Result<(), Error> {
+            unimplemented!()
+        }
     }
 
     struct MockJobRepository;
@@ -485,6 +488,9 @@ mod tests {
             unimplemented!()
         }
         async fn reset_in_progress_to_pending(&self, _: &dyn Transaction) -> Result<u64, Error> {
+            unimplemented!()
+        }
+        async fn delete_job(&self, _: &dyn Transaction, _: ImportJobId) -> Result<(), Error> {
             unimplemented!()
         }
     }

@@ -1,9 +1,9 @@
 use std::{path::PathBuf, sync::Arc};
 
 use crate::{
-    Error,
+    Error, RepositoryError,
     book::{AuthorRole, BookStatus, IdentifierType, MetadataSource, NewAuthor, NewBook, NewPublisher, NewSeries},
-    import::{ImportJob, ImportSource, ImportStatus},
+    import::{ImportJob, ImportJobToken, ImportSource, ImportStatus},
     pipeline::{MetadataExtractor, MetadataProvider, model::ExtractedMetadata},
     repository::{RepositoryService, read_only_transaction, transaction},
     storage::{BookSidecar, LibraryStore, SidecarAuthor, SidecarFile, SidecarIdentifier, SidecarSeries},
@@ -17,6 +17,12 @@ pub trait PipelineService: Send + Sync {
     /// Returns the updated import job with `NeedsReview` status and
     /// `candidate_book_id` set, or `Rejected` if the file is a duplicate.
     async fn process_job(&self, job: ImportJob) -> Result<ImportJob, Error>;
+
+    /// Rejects a NeedsReview import job, cleaning up all associated artifacts:
+    /// removes the library directory, deletes the candidate book record, and
+    /// deletes the import job record so the file can be re-imported if dropped
+    /// again.
+    async fn reject_job(&self, job_token: ImportJobToken) -> Result<(), Error>;
 }
 
 pub struct PipelineServiceImpl {
@@ -364,5 +370,51 @@ impl PipelineService for PipelineServiceImpl {
         self.library_store.store_metadata(&book.token, &sidecar).await?;
 
         Ok(updated_job)
+    }
+
+    #[tracing::instrument(level = "trace", skip(self), fields(jobToken = %job_token))]
+    async fn reject_job(&self, job_token: ImportJobToken) -> Result<(), Error> {
+        let import_job_repo = self.repository_service.import_job_repository().clone();
+        let job = read_only_transaction(&**self.repository_service.repository(), |tx| {
+            Box::pin(async move { import_job_repo.find_by_token(tx, &job_token).await })
+        })
+        .await?
+        .ok_or(Error::RepositoryError(RepositoryError::NotFound))?;
+
+        if job.status != ImportStatus::NeedsReview {
+            return Err(Error::Validation(format!("cannot reject job with status {:?}", job.status)));
+        }
+
+        // Clean up library files and book record if a candidate book was staged.
+        if let Some(book_id) = job.candidate_book_id {
+            let book_repo = self.repository_service.book_repository().clone();
+            let book = read_only_transaction(&**self.repository_service.repository(), |tx| {
+                Box::pin(async move { book_repo.find_by_id(tx, book_id).await })
+            })
+            .await?;
+
+            if let Some(book) = book {
+                // Remove the library directory — idempotent if already missing.
+                self.library_store.delete_book(&book.token).await?;
+
+                // Delete the book record (cascades to book_authors, book_files,
+                // book_identifiers).
+                let book_repo = self.repository_service.book_repository().clone();
+                transaction(&**self.repository_service.repository(), |tx| {
+                    Box::pin(async move { book_repo.delete_book(tx, book_id).await })
+                })
+                .await?;
+            }
+        }
+
+        // Delete the import job so the scanner can re-import the file if dropped again.
+        let import_job_repo = self.repository_service.import_job_repository().clone();
+        let job_id = job.id;
+        transaction(&**self.repository_service.repository(), |tx| {
+            Box::pin(async move { import_job_repo.delete_job(tx, job_id).await })
+        })
+        .await?;
+
+        Ok(())
     }
 }

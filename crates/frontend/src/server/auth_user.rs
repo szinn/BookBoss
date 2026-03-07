@@ -60,6 +60,10 @@ impl Authentication<Self, UserId, BackendSessionPool> for AuthUser {
 }
 
 impl AuthUser {
+    pub(crate) fn id(&self) -> UserId {
+        self.id
+    }
+
     pub(crate) async fn get_book_display_view(&self, core: &CoreServices) -> BookDisplayView {
         if self.anonymous {
             return BookDisplayView::default();

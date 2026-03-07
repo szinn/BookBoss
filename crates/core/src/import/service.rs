@@ -13,6 +13,7 @@ use crate::{
 #[async_trait::async_trait]
 pub trait ImportJobService: Send + Sync {
     async fn list_pending(&self, start_id: Option<ImportJobId>, page_size: Option<u64>) -> Result<Vec<ImportJob>, Error>;
+    async fn list_needs_review(&self, start_id: Option<ImportJobId>, page_size: Option<u64>) -> Result<Vec<ImportJob>, Error>;
     async fn find_by_token(&self, token: &ImportJobToken) -> Result<Option<ImportJob>, Error>;
     async fn approve_job(&self, job: ImportJob, reviewer_id: UserId) -> Result<ImportJob, Error>;
     async fn reject_job(&self, job: ImportJob, reviewer_id: UserId) -> Result<ImportJob, Error>;
@@ -34,6 +35,13 @@ impl ImportJobService for ImportJobServiceImpl {
     async fn list_pending(&self, start_id: Option<ImportJobId>, page_size: Option<u64>) -> Result<Vec<ImportJob>, Error> {
         with_read_only_transaction!(self, import_job_repository, |tx| {
             import_job_repository.list_by_status(tx, ImportStatus::Pending, start_id, page_size).await
+        })
+    }
+
+    #[tracing::instrument(level = "trace", skip(self))]
+    async fn list_needs_review(&self, start_id: Option<ImportJobId>, page_size: Option<u64>) -> Result<Vec<ImportJob>, Error> {
+        with_read_only_transaction!(self, import_job_repository, |tx| {
+            import_job_repository.list_by_status(tx, ImportStatus::NeedsReview, start_id, page_size).await
         })
     }
 
@@ -223,6 +231,9 @@ mod tests {
 
         async fn reset_in_progress_to_pending(&self, _: &dyn Transaction) -> Result<u64, Error> {
             Ok(0)
+        }
+        async fn delete_job(&self, _: &dyn Transaction, _: ImportJobId) -> Result<(), Error> {
+            unimplemented!()
         }
     }
 
@@ -449,6 +460,9 @@ mod tests {
             unimplemented!()
         }
         async fn add_book_identifier(&self, _: &dyn Transaction, _: BookId, _: IdentifierType, _: String) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn delete_book(&self, _: &dyn Transaction, _: BookId) -> Result<(), Error> {
             unimplemented!()
         }
     }

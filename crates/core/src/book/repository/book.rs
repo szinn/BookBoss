@@ -38,4 +38,5 @@ pub trait BookRepository: Send + Sync {
         sort_order: i32,
     ) -> Result<(), Error>;
     async fn add_book_identifier(&self, transaction: &dyn Transaction, book_id: BookId, identifier_type: IdentifierType, value: String) -> Result<(), Error>;
+    async fn delete_book(&self, transaction: &dyn Transaction, book_id: BookId) -> Result<(), Error>;
 }

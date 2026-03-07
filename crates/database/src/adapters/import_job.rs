@@ -5,7 +5,7 @@ use bb_core::{
     repository::Transaction,
 };
 use chrono::Utc;
-use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, ExprTrait, QueryFilter, QueryOrder, QuerySelect, sea_query::Expr};
+use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, ExprTrait, ModelTrait, QueryFilter, QueryOrder, QuerySelect, sea_query::Expr};
 
 use crate::{
     entities::{import_jobs, prelude},
@@ -246,6 +246,16 @@ impl ImportJobRepository for ImportJobRepositoryAdapter {
             .map_err(handle_dberr)?;
 
         Ok(result.rows_affected)
+    }
+
+    async fn delete_job(&self, transaction: &dyn Transaction, job_id: ImportJobId) -> Result<(), Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        if let Some(existing) = prelude::ImportJobs::find_by_id(job_id as i64).one(transaction).await.map_err(handle_dberr)? {
+            existing.delete(transaction).await.map_err(handle_dberr)?;
+        }
+
+        Ok(())
     }
 }
 
