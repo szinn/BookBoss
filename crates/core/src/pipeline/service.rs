@@ -80,6 +80,87 @@ impl PipelineServiceImpl {
     }
 }
 
+/// Minimum side length (px) for a cover to be considered "good enough",
+/// after which the pipeline stops querying further providers for a better one.
+const GOOD_COVER_MIN_SIDE: u32 = 500;
+
+/// Parse image dimensions from raw bytes by inspecting format-specific headers.
+/// Supports PNG, GIF, WebP (VP8/VP8L/VP8X), and JPEG (SOF markers).
+/// Returns `None` if the format is unrecognised or the header is truncated.
+pub fn image_dimensions(data: &[u8]) -> Option<(u32, u32)> {
+    // PNG: 8-byte signature followed by IHDR (width at 16, height at 20)
+    if data.starts_with(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]) {
+        if data.len() >= 24 {
+            let w = u32::from_be_bytes([data[16], data[17], data[18], data[19]]);
+            let h = u32::from_be_bytes([data[20], data[21], data[22], data[23]]);
+            return Some((w, h));
+        }
+    }
+    // GIF: "GIF87a" / "GIF89a" + 2-byte LE width + 2-byte LE height at offset 6
+    if (data.starts_with(b"GIF87a") || data.starts_with(b"GIF89a")) && data.len() >= 10 {
+        let w = u16::from_le_bytes([data[6], data[7]]) as u32;
+        let h = u16::from_le_bytes([data[8], data[9]]) as u32;
+        return Some((w, h));
+    }
+    // WebP: RIFF....WEBP
+    if data.len() >= 30 && data.starts_with(b"RIFF") && &data[8..12] == b"WEBP" {
+        match &data[12..16] {
+            b"VP8 " => {
+                // Lossy: 14-bit LE width/height at offset 26/28 (mask 0x3FFF)
+                let w = (u16::from_le_bytes([data[26], data[27]]) & 0x3FFF) as u32;
+                let h = (u16::from_le_bytes([data[28], data[29]]) & 0x3FFF) as u32;
+                return Some((w, h));
+            }
+            b"VP8L" if data.len() >= 25 => {
+                // Lossless: packed bits at offset 21
+                let bits = u32::from_le_bytes([data[21], data[22], data[23], data[24]]);
+                let w = (bits & 0x3FFF) + 1;
+                let h = ((bits >> 14) & 0x3FFF) + 1;
+                return Some((w, h));
+            }
+            b"VP8X" => {
+                // Extended: canvas width-1 (3 bytes LE) at 24, height-1 at 27
+                let w = u32::from_le_bytes([data[24], data[25], data[26], 0]) + 1;
+                let h = u32::from_le_bytes([data[27], data[28], data[29], 0]) + 1;
+                return Some((w, h));
+            }
+            _ => {}
+        }
+    }
+    // JPEG: scan for SOF marker (0xFF 0xCx, excluding DHT/DAC/RST variants)
+    if data.starts_with(&[0xFF, 0xD8]) {
+        let mut i = 2usize;
+        while i + 3 < data.len() {
+            if data[i] != 0xFF {
+                break;
+            }
+            let marker = data[i + 1];
+            if matches!(marker, 0xC0..=0xCF) && !matches!(marker, 0xC4 | 0xC8 | 0xCC) {
+                if i + 8 < data.len() {
+                    let h = u16::from_be_bytes([data[i + 5], data[i + 6]]) as u32;
+                    let w = u16::from_be_bytes([data[i + 7], data[i + 8]]) as u32;
+                    return Some((w, h));
+                }
+            }
+            if i + 3 >= data.len() {
+                break;
+            }
+            let len = u16::from_be_bytes([data[i + 2], data[i + 3]]) as usize;
+            if len < 2 {
+                break;
+            }
+            i += 2 + len;
+        }
+    }
+    None
+}
+
+/// Returns the minimum side of an image's dimensions, used for quality
+/// comparison.
+fn cover_min_side(data: &[u8]) -> u32 {
+    image_dimensions(data).map(|(w, h)| w.min(h)).unwrap_or(0)
+}
+
 /// Detect a cover image filename from leading magic bytes.
 fn detect_cover_filename(data: &[u8]) -> &'static str {
     if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
@@ -164,31 +245,34 @@ impl PipelineService for PipelineServiceImpl {
             .await?
         };
 
-        // ── 5. Enrich: providers called lazily; stop once metadata + cover found
+        // ── 5. Enrich: find metadata + best-quality cover across all providers
         //
-        // Metadata comes from the first provider that returns a match.
-        // Cover is sought from the same provider first; if it has none, remaining
-        // providers are called in order until one supplies a cover. Providers
-        // after the first are skipped entirely once cover is also satisfied.
-        // The embedded EPUB cover is the final fallback if no provider has one.
+        // The embedded EPUB cover seeds `best_cover` before providers are tried.
+        // Each provider cover replaces the current best if its min-side is larger.
+        // The loop stops early once metadata is found AND the best cover's min-side
+        // meets GOOD_COVER_MIN_SIDE; otherwise every provider is visited so we end
+        // up with the highest-resolution cover available.
         let (final_meta, cover_bytes, job_source) = {
             let mut meta: Option<(ExtractedMetadata, ImportSource)> = None;
-            let mut cover: Option<Vec<u8>> = None;
+            let mut best_cover: Option<Vec<u8>> = extracted.cover_bytes.clone();
+            let mut best_min_side: u32 = best_cover.as_deref().map(cover_min_side).unwrap_or(0);
 
             for provider in &self.providers {
-                let need_cover = cover.is_none();
-                let need_meta = meta.is_none();
-
-                if !need_meta && !need_cover {
+                let cover_good_enough = best_min_side >= GOOD_COVER_MIN_SIDE;
+                if meta.is_some() && cover_good_enough {
                     break;
                 }
 
                 if let Some(pb) = provider.enrich(&extracted).await? {
-                    if need_meta {
+                    if meta.is_none() {
                         meta = Some((pb.metadata, pb.source));
                     }
-                    if need_cover {
-                        cover = pb.cover_bytes;
+                    if let Some(provider_cover) = pb.cover_bytes {
+                        let provider_min_side = cover_min_side(&provider_cover);
+                        if provider_min_side > best_min_side {
+                            best_min_side = provider_min_side;
+                            best_cover = Some(provider_cover);
+                        }
                     }
                 }
             }
@@ -205,13 +289,9 @@ impl PipelineService for PipelineServiceImpl {
                             }
                         }
                     }
-                    let cover = cover.or_else(|| extracted.cover_bytes.clone());
-                    (metadata, cover, source)
+                    (metadata, best_cover, source)
                 }
-                None => {
-                    let embedded_cover = extracted.cover_bytes.clone();
-                    (extracted, embedded_cover, ImportSource::Embedded)
-                }
+                None => (extracted, best_cover, ImportSource::Embedded),
             }
         };
         let job_source = Some(job_source);

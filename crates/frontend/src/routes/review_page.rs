@@ -28,6 +28,8 @@ pub(crate) struct BookReviewData {
     pub identifiers: IdentifierMap,
     /// Provider names in priority order (for rendering provider buttons).
     pub provider_names: Vec<String>,
+    /// Pixel dimensions (width, height) of the stored cover, if any.
+    pub cover_dimensions: Option<(u32, u32)>,
 }
 
 /// Metadata returned by a single provider fetch.
@@ -45,6 +47,8 @@ pub(crate) struct ProviderResult {
     pub identifiers: IdentifierMap,
     /// Base64 encoded cover from the provider, if any.
     pub cover_thumbnail: Option<String>,
+    /// Pixel dimensions (width, height) of the provider cover, if any.
+    pub cover_dimensions: Option<(u32, u32)>,
 }
 
 /// All edit fields submitted to the server on approval.
@@ -128,6 +132,59 @@ fn cover_to_base64(bytes: &[u8]) -> String {
 }
 
 #[cfg(feature = "server")]
+fn image_dimensions(data: &[u8]) -> Option<(u32, u32)> {
+    if data.starts_with(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]) && data.len() >= 24 {
+        let w = u32::from_be_bytes([data[16], data[17], data[18], data[19]]);
+        let h = u32::from_be_bytes([data[20], data[21], data[22], data[23]]);
+        return Some((w, h));
+    }
+    if (data.starts_with(b"GIF87a") || data.starts_with(b"GIF89a")) && data.len() >= 10 {
+        let w = u16::from_le_bytes([data[6], data[7]]) as u32;
+        let h = u16::from_le_bytes([data[8], data[9]]) as u32;
+        return Some((w, h));
+    }
+    if data.len() >= 30 && data.starts_with(b"RIFF") && &data[8..12] == b"WEBP" {
+        match &data[12..16] {
+            b"VP8 " => {
+                let w = (u16::from_le_bytes([data[26], data[27]]) & 0x3FFF) as u32;
+                let h = (u16::from_le_bytes([data[28], data[29]]) & 0x3FFF) as u32;
+                return Some((w, h));
+            }
+            b"VP8L" if data.len() >= 25 => {
+                let bits = u32::from_le_bytes([data[21], data[22], data[23], data[24]]);
+                return Some(((bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1));
+            }
+            b"VP8X" => {
+                let w = u32::from_le_bytes([data[24], data[25], data[26], 0]) + 1;
+                let h = u32::from_le_bytes([data[27], data[28], data[29], 0]) + 1;
+                return Some((w, h));
+            }
+            _ => {}
+        }
+    }
+    if data.starts_with(&[0xFF, 0xD8]) {
+        let mut i = 2usize;
+        while i + 3 < data.len() {
+            if data[i] != 0xFF {
+                break;
+            }
+            let marker = data[i + 1];
+            if matches!(marker, 0xC0..=0xCF) && !matches!(marker, 0xC4 | 0xC8 | 0xCC) && i + 8 < data.len() {
+                let h = u16::from_be_bytes([data[i + 5], data[i + 6]]) as u32;
+                let w = u16::from_be_bytes([data[i + 7], data[i + 8]]) as u32;
+                return Some((w, h));
+            }
+            let len = u16::from_be_bytes([data[i + 2], data[i + 3]]) as usize;
+            if len < 2 {
+                break;
+            }
+            i += 2 + len;
+        }
+    }
+    None
+}
+
+#[cfg(feature = "server")]
 fn provider_book_to_result(pb: ProviderBook) -> ProviderResult {
     let meta = &pb.metadata;
     let title = meta.title.clone().unwrap_or_default();
@@ -154,6 +211,7 @@ fn provider_book_to_result(pb: ProviderBook) -> ProviderResult {
         .collect();
     // Provider cover bytes take priority; fall back to embedded cover in metadata.
     let cover_bytes = pb.cover_bytes.as_deref().or_else(|| meta.cover_bytes.as_deref());
+    let cover_dimensions = cover_bytes.and_then(image_dimensions);
     let cover_thumbnail = cover_bytes.map(cover_to_base64);
     ProviderResult {
         title,
@@ -167,6 +225,7 @@ fn provider_book_to_result(pb: ProviderBook) -> ProviderResult {
         authors_csv,
         identifiers,
         cover_thumbnail,
+        cover_dimensions,
     }
 }
 
@@ -259,6 +318,14 @@ async fn get_review_data(job_token: String) -> Result<BookReviewData, ServerFnEr
 
     let provider_names = pipeline_service.list_provider_names().into_iter().map(|s| s.to_string()).collect();
 
+    // Read cover file to determine dimensions.
+    let cover_dimensions = if let Some(filename) = &book.cover_path {
+        let path = core_services.library_store.cover_path(&book.token, filename);
+        tokio::fs::read(&path).await.ok().and_then(|b| image_dimensions(&b))
+    } else {
+        None
+    };
+
     Ok(BookReviewData {
         job_token: job.token.to_string(),
         book_token: book.token.to_string(),
@@ -273,6 +340,7 @@ async fn get_review_data(job_token: String) -> Result<BookReviewData, ServerFnEr
         authors_csv: author_names.join(", "),
         identifiers,
         provider_names,
+        cover_dimensions,
     })
 }
 
@@ -457,6 +525,7 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
     let mut use_fetched_cover = use_signal(|| false);
     let cover_url = format!("/api/v1/covers/{}", data.book_token);
     let mut current_cover = use_signal(|| cover_url);
+    let mut current_cover_dimensions: Signal<Option<(u32, u32)>> = use_signal(|| data.cover_dimensions);
 
     // ── Provider fetch state ──────────────────────────────────────────────────
     let mut provider_result: Signal<Option<ProviderResult>> = use_signal(|| None);
@@ -624,12 +693,6 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                                                             .await
                                                             {
                                                                 Ok(result) => {
-                                                                    if let Some(ref pr) = result {
-                                                                        if let Some(ref thumb) = pr.cover_thumbnail {
-                                                                            current_cover.set(thumb.clone());
-                                                                            use_fetched_cover.set(true);
-                                                                        }
-                                                                    }
                                                                     provider_result.set(result);
                                                                 }
                                                                 Err(e) => {
@@ -1010,10 +1073,15 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                         tr {
                             td { class: "py-2 pr-4 text-gray-500 font-medium whitespace-nowrap align-top pt-3", "Cover" }
                             td { class: "py-2 pr-4",
-                                img {
-                                    class: "max-h-32 max-w-24 object-contain rounded shadow-sm",
-                                    src: "{current_cover}",
-                                    alt: "Current cover",
+                                div { class: "flex flex-col items-center gap-0.5",
+                                    img {
+                                        class: "max-h-32 max-w-24 object-contain rounded shadow-sm",
+                                        src: "{current_cover}",
+                                        alt: "Current cover",
+                                    }
+                                    if let Some((w, h)) = *current_cover_dimensions.read() {
+                                        span { class: "text-gray-400 text-xs", "{w} × {h}" }
+                                    }
                                 }
                             }
                             td { class: "py-2 pr-4 text-center align-top pt-3",
@@ -1023,9 +1091,12 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                                             class: "text-indigo-500 hover:text-indigo-700 cursor-pointer text-xs font-bold",
                                             title: "Use provider cover",
                                             onclick: move |_| {
-                                                if let Some(thumb) = provider_result.read().as_ref().and_then(|r| r.cover_thumbnail.clone()) {
-                                                    current_cover.set(thumb);
-                                                    use_fetched_cover.set(true);
+                                                if let Some(pr) = provider_result.read().as_ref() {
+                                                    if let Some(thumb) = pr.cover_thumbnail.clone() {
+                                                        current_cover.set(thumb);
+                                                        current_cover_dimensions.set(pr.cover_dimensions);
+                                                        use_fetched_cover.set(true);
+                                                    }
                                                 }
                                             },
                                             "←"
@@ -1036,10 +1107,15 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                             td { class: "py-2 align-top",
                                 if let Some(pr) = provider_result.read().as_ref() {
                                     if let Some(thumb) = &pr.cover_thumbnail {
-                                        img {
-                                            class: "max-h-32 max-w-24 object-contain rounded shadow-sm",
-                                            src: "{thumb}",
-                                            alt: "Provider cover",
+                                        div { class: "flex flex-col items-center gap-0.5",
+                                            img {
+                                                class: "max-h-32 max-w-24 object-contain rounded shadow-sm",
+                                                src: "{thumb}",
+                                                alt: "Provider cover",
+                                            }
+                                            if let Some((w, h)) = pr.cover_dimensions {
+                                                span { class: "text-gray-400 text-xs", "{w} × {h}" }
+                                            }
                                         }
                                     }
                                 }
