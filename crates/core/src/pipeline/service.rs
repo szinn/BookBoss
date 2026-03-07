@@ -69,7 +69,7 @@ fn slugify(s: &str) -> String {
 
 #[async_trait::async_trait]
 impl PipelineService for PipelineServiceImpl {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self, job), fields(jobToken = %job.token))]
     async fn process_job(&self, mut job: ImportJob) -> Result<ImportJob, Error> {
         // Guard: only process jobs in Pending state. A duplicate queue entry
         // (e.g. from startup re-enqueue racing with a reset job) must not

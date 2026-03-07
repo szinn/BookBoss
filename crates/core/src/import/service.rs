@@ -43,7 +43,7 @@ impl ImportJobService for ImportJobServiceImpl {
         with_read_only_transaction!(self, import_job_repository, |tx| import_job_repository.find_by_token(tx, &token).await)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self, job), fields(jobToken = %job.token))]
     async fn approve_job(&self, job: ImportJob, reviewer_id: UserId) -> Result<ImportJob, Error> {
         if job.status != ImportStatus::NeedsReview {
             return Err(Error::Validation(format!("cannot approve job with status {:?}", job.status)));
@@ -57,7 +57,7 @@ impl ImportJobService for ImportJobServiceImpl {
         with_transaction!(self, import_job_repository, |tx| import_job_repository.update_job(tx, approved).await)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self, job), fields(jobToken = %job.token))]
     async fn reject_job(&self, job: ImportJob, reviewer_id: UserId) -> Result<ImportJob, Error> {
         if job.status != ImportStatus::NeedsReview {
             return Err(Error::Validation(format!("cannot reject job with status {:?}", job.status)));

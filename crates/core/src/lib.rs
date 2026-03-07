@@ -78,7 +78,12 @@ impl IntoSubsystem<Error> for CoreSubsystem {
             self.poll_interval,
         );
         subsys.start(SubsystemBuilder::new("Worker", worker.into_subsystem()));
+
+        tracing::info!("CoreSubsystem started");
+
         subsys.on_shutdown_requested().await;
+        tracing::info!("CoreSubsystem shutting down");
+
         Ok(())
     }
 }

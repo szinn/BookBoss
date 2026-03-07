@@ -21,6 +21,8 @@ pub struct ImportSubsystem {
 
 impl IntoSubsystem<Error> for ImportSubsystem {
     async fn run(self, subsys: &mut SubsystemHandle) -> Result<(), Error> {
+        tracing::info!("ImportSubsystem starting...");
+
         // Crash recovery: reset any import jobs left in-progress from a previous crash.
         let repo = self.repository_service.clone();
         let reset = transaction(&**repo.repository(), |tx| {
@@ -88,7 +90,11 @@ impl IntoSubsystem<Error> for ImportSubsystem {
             self.repository_service.job_repository().clone(),
         );
         subsys.start(SubsystemBuilder::new("Scanner", scanner.into_subsystem()));
+        tracing::info!("ImportSubsystem started");
+
         subsys.on_shutdown_requested().await;
+        tracing::info!("ImportSubsystem shutdown");
+
         Ok(())
     }
 }
