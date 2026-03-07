@@ -1,6 +1,6 @@
 use bb_core::{
     Error, RepositoryError,
-    book::FileFormat,
+    book::{BookId, FileFormat},
     import::{ImportJob, ImportJobId, ImportJobRepository, ImportJobToken, ImportSource, ImportStatus, NewImportJob},
     repository::Transaction,
 };
@@ -246,6 +246,17 @@ impl ImportJobRepository for ImportJobRepositoryAdapter {
             .map_err(handle_dberr)?;
 
         Ok(result.rows_affected)
+    }
+
+    async fn find_by_candidate_book_id(&self, transaction: &dyn Transaction, book_id: BookId) -> Result<Option<ImportJob>, Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        Ok(prelude::ImportJobs::find()
+            .filter(import_jobs::Column::CandidateBookId.eq(book_id as i64))
+            .one(transaction)
+            .await
+            .map_err(handle_dberr)?
+            .map(Into::into))
     }
 
     async fn delete_job(&self, transaction: &dyn Transaction, job_id: ImportJobId) -> Result<(), Error> {

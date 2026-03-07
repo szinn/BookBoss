@@ -232,6 +232,9 @@ mod tests {
         async fn reset_in_progress_to_pending(&self, _: &dyn Transaction) -> Result<u64, Error> {
             Ok(0)
         }
+        async fn find_by_candidate_book_id(&self, _: &dyn Transaction, _: BookId) -> Result<Option<ImportJob>, Error> {
+            unimplemented!()
+        }
         async fn delete_job(&self, _: &dyn Transaction, _: ImportJobId) -> Result<(), Error> {
             unimplemented!()
         }
@@ -330,6 +333,12 @@ mod tests {
             unimplemented!()
         }
         async fn find_by_name(&self, _: &dyn Transaction, _: &str) -> Result<Option<Author>, Error> {
+            unimplemented!()
+        }
+        async fn count_authors(&self, _: &dyn Transaction) -> Result<u64, Error> {
+            unimplemented!()
+        }
+        async fn delete_author(&self, _: &dyn Transaction, _: AuthorId) -> Result<(), Error> {
             unimplemented!()
         }
     }
@@ -472,6 +481,12 @@ mod tests {
             unimplemented!()
         }
         async fn delete_book_identifiers(&self, _: &dyn Transaction, _: BookId) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn count_available_books(&self, _: &dyn Transaction) -> Result<u64, Error> {
+            unimplemented!()
+        }
+        async fn count_books_for_author(&self, _: &dyn Transaction, _: AuthorId) -> Result<u64, Error> {
             unimplemented!()
         }
     }

@@ -24,6 +24,9 @@ pub trait ImportJobRepository: Send + Sync {
     /// Returns the number of jobs reset.
     async fn reset_in_progress_to_pending(&self, transaction: &dyn Transaction) -> Result<u64, Error>;
 
+    /// Finds the import job whose `candidate_book_id` matches the given book.
+    async fn find_by_candidate_book_id(&self, transaction: &dyn Transaction, book_id: crate::book::BookId) -> Result<Option<ImportJob>, Error>;
+
     /// Permanently deletes an import job record.
     async fn delete_job(&self, transaction: &dyn Transaction, job_id: ImportJobId) -> Result<(), Error>;
 

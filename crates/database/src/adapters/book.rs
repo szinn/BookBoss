@@ -7,7 +7,9 @@ use bb_core::{
     repository::Transaction,
 };
 use chrono::Utc;
-use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, ModelTrait, QueryFilter, QueryOrder, QuerySelect, sea_query::Query};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, ModelTrait, PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, sea_query::Query,
+};
 
 use crate::{
     entities::{book_authors, book_files, book_genres, book_identifiers, book_tags, books, prelude},
@@ -489,6 +491,30 @@ impl BookRepository for BookRepositoryAdapter {
             .map_err(handle_dberr)?;
 
         Ok(())
+    }
+
+    async fn count_available_books(&self, transaction: &dyn Transaction) -> Result<u64, Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        let count = prelude::Books::find()
+            .filter(books::Column::Status.eq("available"))
+            .count(transaction)
+            .await
+            .map_err(handle_dberr)?;
+
+        Ok(count)
+    }
+
+    async fn count_books_for_author(&self, transaction: &dyn Transaction, author_id: AuthorId) -> Result<u64, Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        let count = prelude::BookAuthors::find()
+            .filter(book_authors::Column::AuthorId.eq(author_id as i64))
+            .count(transaction)
+            .await
+            .map_err(handle_dberr)?;
+
+        Ok(count)
     }
 }
 

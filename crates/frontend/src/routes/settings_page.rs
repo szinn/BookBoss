@@ -17,13 +17,10 @@ pub(crate) struct LibraryStats {
 }
 
 /// Returns library statistics for the About section.
-///
-/// TODO: Replace the hardcoded values with real counts once `LibraryService`
-/// is added to `CoreServices`.
 #[get(
     "/api/v1/library/stats",
     auth_session: axum::Extension<AuthSession>,
-    _core_services: axum::Extension<Arc<CoreServices>>
+    core_services: axum::Extension<Arc<CoreServices>>
 )]
 async fn get_library_stats() -> Result<LibraryStats, ServerFnError> {
     auth_session
@@ -32,7 +29,16 @@ async fn get_library_stats() -> Result<LibraryStats, ServerFnError> {
         .filter(|u| !u.username.is_empty())
         .ok_or_else(|| ServerFnError::new("Not authenticated"))?;
 
-    Ok(LibraryStats { books: 0, authors: 0 })
+    let stats = core_services
+        .library_service
+        .library_stats()
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+
+    Ok(LibraryStats {
+        books: stats.books,
+        authors: stats.authors,
+    })
 }
 
 // ---------------------------------------------------------------------------

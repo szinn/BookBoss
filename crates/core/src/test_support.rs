@@ -9,6 +9,7 @@ use crate::{
     Error,
     book::{BookToken, FileFormat, IdentifierType},
     import::{ImportJob, ImportJobToken},
+    library::{LibraryService, LibraryStats},
     pipeline::{BookEdit, PipelineService, ProviderBook},
     storage::{BookSidecar, LibraryStore},
 };
@@ -82,4 +83,20 @@ impl PipelineService for NopPipelineService {
 
 pub fn nop_pipeline_service() -> Arc<dyn PipelineService> {
     Arc::new(NopPipelineService)
+}
+
+pub struct NopLibraryService;
+
+#[async_trait]
+impl LibraryService for NopLibraryService {
+    async fn library_stats(&self) -> Result<LibraryStats, Error> {
+        unimplemented!("NopLibraryService")
+    }
+    async fn delete_book(&self, _token: &BookToken) -> Result<(), Error> {
+        unimplemented!("NopLibraryService")
+    }
+}
+
+pub fn nop_library_service() -> Arc<dyn LibraryService> {
+    Arc::new(NopLibraryService)
 }

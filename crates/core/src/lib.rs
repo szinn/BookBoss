@@ -4,6 +4,7 @@ pub mod device;
 pub mod error;
 pub mod import;
 pub mod jobs;
+pub mod library;
 pub mod pipeline;
 pub mod reading;
 pub mod repository;
@@ -22,6 +23,7 @@ use crate::{
     book::{BookService, BookServiceImpl},
     import::{ImportJobService, service::ImportJobServiceImpl},
     jobs::{JobRegistry, JobWorker},
+    library::{LibraryService, LibraryServiceImpl},
     pipeline::PipelineService,
     repository::RepositoryService,
     storage::LibraryStore,
@@ -38,6 +40,7 @@ pub struct CoreServices {
     pub book_service: Arc<dyn BookService>,
     pub import_job_service: Arc<dyn ImportJobService>,
     pub library_store: Arc<dyn LibraryStore>,
+    pub library_service: Arc<dyn LibraryService>,
     pub pipeline_service: Arc<dyn PipelineService>,
 }
 
@@ -49,6 +52,7 @@ impl CoreServices {
             user_setting_service: Arc::new(UserSettingServiceImpl::new(repository_service.clone())),
             book_service: Arc::new(BookServiceImpl::new(repository_service.clone())),
             import_job_service: Arc::new(ImportJobServiceImpl::new(repository_service.clone())),
+            library_service: Arc::new(LibraryServiceImpl::new(repository_service.clone(), library_store.clone())),
             library_store,
             pipeline_service,
         }

@@ -36,13 +36,16 @@ pub(crate) struct BookDetail {
     pub authors: Vec<AuthorDetail>,
     pub files: Vec<FileDetail>,
     pub identifiers: Vec<IdentifierDetail>,
+    pub can_delete: bool,
 }
 
 #[cfg(feature = "server")]
 use {
-    crate::server::AuthSession,
-    bb_core::CoreServices,
+    crate::server::{AuthSession, AuthUser, BackendSessionPool},
+    axum::http::Method,
+    axum_session_auth::{Auth, Rights},
     bb_core::book::{AuthorRole, AuthorToken, BookToken, FileFormat, IdentifierType, SeriesToken},
+    bb_core::{CoreServices, types::Capability, user::UserId},
     std::str::FromStr,
     std::sync::Arc,
 };
@@ -153,6 +156,12 @@ async fn get_book(token: String) -> Result<BookDetail, ServerFnError> {
         })
         .collect();
 
+    let current_user = auth_session.current_user.clone().unwrap_or_default();
+    let can_delete = Auth::<AuthUser, UserId, BackendSessionPool>::build([Method::POST], true)
+        .requires(Rights::any([Rights::permission(Capability::DeleteBook.as_str())]))
+        .validate(&current_user, &Method::POST, None)
+        .await;
+
     Ok(BookDetail {
         token: book.token.to_string(),
         title: book.title.clone(),
@@ -166,7 +175,33 @@ async fn get_book(token: String) -> Result<BookDetail, ServerFnError> {
         authors,
         files,
         identifiers,
+        can_delete,
     })
+}
+
+#[post(
+    "/api/v1/book/delete",
+    auth_session: axum::Extension<AuthSession>,
+    core_services: axum::Extension<Arc<CoreServices>>
+)]
+async fn delete_library_book(token: String) -> Result<(), ServerFnError> {
+    let current_user = auth_session.current_user.clone().unwrap_or_default();
+
+    if !Auth::<AuthUser, UserId, BackendSessionPool>::build([Method::POST], true)
+        .requires(Rights::any([Rights::permission(Capability::DeleteBook.as_str())]))
+        .validate(&current_user, &Method::POST, None)
+        .await
+    {
+        return Err(ServerFnError::new("Not authorized"));
+    }
+
+    let book_token = BookToken::from_str(&token).map_err(|_| ServerFnError::new("Invalid book token"))?;
+
+    core_services
+        .library_service
+        .delete_book(&book_token)
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))
 }
 
 fn format_file_size(bytes: i64) -> String {
@@ -183,7 +218,10 @@ fn format_file_size(bytes: i64) -> String {
 
 #[component]
 pub(crate) fn BookDetailPage(token: String) -> Element {
+    let nav = use_navigator();
     let book = use_server_future(move || get_book(token.clone()))?;
+    let mut show_confirm = use_signal(|| false);
+    let mut deleting = use_signal(|| false);
 
     rsx! {
         div { class: "flex-1 overflow-auto p-6",
@@ -197,6 +235,49 @@ pub(crate) fn BookDetailPage(token: String) -> Element {
                     div { class: "text-red-600 text-sm", "Failed to load book: {e}" }
                 },
                 Some(Ok(book)) => rsx! {
+                    // Delete confirmation modal
+                    if show_confirm() {
+                        div { class: "fixed inset-0 z-50 flex items-center justify-center bg-black/40",
+                            div { class: "bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4",
+                                h2 { class: "text-lg font-semibold text-gray-900 mb-2", "Delete Book?" }
+                                p { class: "text-sm text-gray-600 mb-6",
+                                    "This will permanently delete \"{book.title}\" and all its files. This cannot be undone."
+                                }
+                                div { class: "flex gap-3 justify-end",
+                                    button {
+                                        class: "px-4 py-2 text-sm font-medium rounded border border-gray-300 text-gray-700 hover:bg-gray-50",
+                                        autofocus: true,
+                                        onclick: move |_| show_confirm.set(false),
+                                        "No, Keep It"
+                                    }
+                                    button {
+                                        class: "px-4 py-2 text-sm font-medium rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50",
+                                        disabled: deleting(),
+                                        onclick: {
+                                            let bk = book.token.clone();
+                                            move |_| {
+                                                let bk = bk.clone();
+                                                deleting.set(true);
+                                                spawn(async move {
+                                                    match delete_library_book(bk).await {
+                                                        Ok(()) => {
+                                                            let _ = nav.push(Route::BooksPage {});
+                                                        }
+                                                        Err(_) => {
+                                                            deleting.set(false);
+                                                            show_confirm.set(false);
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        },
+                                        if deleting() { "Deleting…" } else { "Yes, Delete" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // Back link
                     Link {
                         to: Route::BooksPage {},
@@ -219,10 +300,19 @@ pub(crate) fn BookDetailPage(token: String) -> Element {
                         div { class: "flex-1 min-w-0",
                             div { class: "flex items-start justify-between gap-4 mb-2",
                                 h1 { class: "text-2xl font-bold text-gray-900", "{book.title}" }
-                                Link {
-                                    to: Route::EditMetadataPage { token: book.token.clone() },
-                                    class: "shrink-0 px-3 py-1 text-xs font-medium rounded border border-gray-300 text-gray-600 hover:bg-gray-50",
-                                    "Edit Metadata"
+                                div { class: "flex items-center gap-2 shrink-0",
+                                    Link {
+                                        to: Route::EditMetadataPage { token: book.token.clone() },
+                                        class: "px-3 py-1 text-xs font-medium rounded border border-gray-300 text-gray-600 hover:bg-gray-50",
+                                        "Edit Metadata"
+                                    }
+                                    if book.can_delete {
+                                        button {
+                                            class: "px-3 py-1 text-xs font-medium rounded border border-red-300 text-red-600 hover:bg-red-50",
+                                            onclick: move |_| show_confirm.set(true),
+                                            "Delete"
+                                        }
+                                    }
                                 }
                             }
 
