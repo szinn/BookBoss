@@ -7,7 +7,7 @@ use async_trait::async_trait;
 
 use crate::{
     Error,
-    book::{BookToken, FileFormat},
+    book::{BookToken, FileFormat, IdentifierType},
     import::{ImportJob, ImportJobToken},
     pipeline::{BookEdit, PipelineService, ProviderBook},
     storage::{BookSidecar, LibraryStore},
@@ -62,7 +62,13 @@ impl PipelineService for NopPipelineService {
     fn list_provider_names(&self) -> Vec<&'static str> {
         unimplemented!("NopPipelineService")
     }
-    async fn fetch_from_provider(&self, _job_token: &ImportJobToken, _provider_name: &str, _temp_dir: &std::path::Path) -> Result<Option<ProviderBook>, Error> {
+    async fn fetch_from_provider(
+        &self,
+        _job_token: &ImportJobToken,
+        _provider_name: &str,
+        _identifiers: Vec<(IdentifierType, String)>,
+        _temp_dir: &std::path::Path,
+    ) -> Result<Option<ProviderBook>, Error> {
         unimplemented!("NopPipelineService")
     }
     async fn approve_job(&self, _job_token: ImportJobToken, _edit: BookEdit, _temp_dir: &std::path::Path) -> Result<(), Error> {

@@ -44,6 +44,7 @@ pub trait PipelineService: Send + Sync {
         &self,
         job_token: &ImportJobToken,
         provider_name: &str,
+        identifiers: Vec<(IdentifierType, String)>,
         temp_dir: &std::path::Path,
     ) -> Result<Option<crate::pipeline::ProviderBook>, Error>;
 
@@ -407,11 +408,12 @@ impl PipelineService for PipelineServiceImpl {
         self.providers.iter().map(|p| p.name()).collect()
     }
 
-    #[tracing::instrument(level = "trace", skip(self, temp_dir), fields(jobToken = %job_token, provider = provider_name))]
+    #[tracing::instrument(level = "trace", skip(self, identifiers, temp_dir), fields(jobToken = %job_token, provider = provider_name))]
     async fn fetch_from_provider(
         &self,
         job_token: &ImportJobToken,
         provider_name: &str,
+        identifiers: Vec<(IdentifierType, String)>,
         temp_dir: &std::path::Path,
     ) -> Result<Option<crate::pipeline::ProviderBook>, Error> {
         let provider = self
@@ -421,7 +423,7 @@ impl PipelineService for PipelineServiceImpl {
             .ok_or_else(|| Error::Validation(format!("unknown provider: {provider_name}")))?
             .clone();
 
-        // Load the job and its candidate book's identifiers to build search context.
+        // Load the job to locate the candidate book for its title.
         let import_job_repo = self.repository_service.import_job_repository().clone();
         let jt = job_token.clone();
         let job = read_only_transaction(&**self.repository_service.repository(), |tx| {
@@ -430,39 +432,31 @@ impl PipelineService for PipelineServiceImpl {
         .await?
         .ok_or(Error::RepositoryError(RepositoryError::NotFound))?;
 
-        let extracted = if let Some(book_id) = job.candidate_book_id {
+        // Use caller-supplied identifiers; load only the title from the DB.
+        let title = if let Some(book_id) = job.candidate_book_id {
             let book_repo = self.repository_service.book_repository().clone();
-            let (book, identifiers) = read_only_transaction(&**self.repository_service.repository(), |tx| {
-                Box::pin(async move {
-                    let book = book_repo
-                        .find_by_id(tx, book_id)
-                        .await?
-                        .ok_or(Error::RepositoryError(RepositoryError::NotFound))?;
-                    let identifiers = book_repo.identifiers_for_book(tx, book_id).await?;
-                    Ok::<_, Error>((book, identifiers))
-                })
+            read_only_transaction(&**self.repository_service.repository(), |tx| {
+                Box::pin(async move { book_repo.find_by_id(tx, book_id).await })
             })
-            .await?;
-
-            ExtractedMetadata {
-                title: Some(book.title),
-                identifiers: if identifiers.is_empty() {
-                    None
-                } else {
-                    Some(
-                        identifiers
-                            .into_iter()
-                            .map(|i| ExtractedIdentifier {
-                                identifier_type: i.identifier_type,
-                                value: i.value,
-                            })
-                            .collect(),
-                    )
-                },
-                ..Default::default()
-            }
+            .await?
+            .map(|b| b.title)
         } else {
-            ExtractedMetadata::default()
+            None
+        };
+
+        let extracted = ExtractedMetadata {
+            title,
+            identifiers: if identifiers.is_empty() {
+                None
+            } else {
+                Some(
+                    identifiers
+                        .into_iter()
+                        .map(|(identifier_type, value)| ExtractedIdentifier { identifier_type, value })
+                        .collect(),
+                )
+            },
+            ..Default::default()
         };
 
         let result = provider.enrich(&extracted).await?;
