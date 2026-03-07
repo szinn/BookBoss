@@ -35,6 +35,7 @@ crates/core/src/
 ├── book/               # Books, authors, series, publishers, genres, tags, files
 ├── device/             # Device sync: Device, DeviceBook, DeviceSyncLog
 ├── import/             # Acquisition pipeline: ImportJob, ImportJobService
+├── jobs/               # Job queue: Job, JobRepository, JobWorker, JobRegistry, JobHandler
 ├── pipeline/           # Port traits: MetadataExtractor, MetadataProvider
 ├── reading/            # Per-user reading state: UserBookMetadata, ReadStatus
 ├── shelf/              # Shelves (manual + smart): Shelf, ShelfFilter
