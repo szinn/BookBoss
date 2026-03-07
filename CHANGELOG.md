@@ -5,11 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [0.1.14](https://github.com/szinn/BookBoss/compare/v0.1.12..v0.1.14) - 2026-03-07
 
 ### Features
 
+- _(bookboss)_ Wire scanner and worker subsystems into server startup - ([c919c74](https://github.com/szinn/BookBoss/commit/c919c741338360fab67117d8aa8cd0d369cb3516))
+- _(core)_ Add ApproveImports capability - ([6b4c2a2](https://github.com/szinn/BookBoss/commit/6b4c2a2a3203877cdeeda22573d7e37a692c8717))
+- _(core)_ Independent metadata and cover selection across providers - ([8c11159](https://github.com/szinn/BookBoss/commit/8c111596552513dd7a086ebde84681558e6f6a25))
+- _(core)_ Include first author in stored book file slug - ([9ef8b0b](https://github.com/szinn/BookBoss/commit/9ef8b0b39b21280a6ad08e6d83e3d2562ea08f2c))
+- _(core,database,frontend)_ Book review and approval page (M3.22) - ([e0a4065](https://github.com/szinn/BookBoss/commit/e0a406535550e772af0c979e1a19ad7d348965a7))
+- _(core,database,frontend)_ Incoming books list with reject cleanup - ([e0416a8](https://github.com/szinn/BookBoss/commit/e0416a838e295a7582d3f27a863b8d66f88de288))
+- _(core,frontend)_ Best-resolution cover selection; review page dimensions - ([20b99d4](https://github.com/szinn/BookBoss/commit/20b99d4afe4753d226969c267f2e767cfb6bf2eb))
+- _(core,frontend)_ Provider search uses current form identifiers - ([db6b936](https://github.com/szinn/BookBoss/commit/db6b936515e82c3003a43df477bb11a0ee34e3a8))
+- _(database)_ Case-insensitive find_by_name across entity adapters - ([b7d22f8](https://github.com/szinn/BookBoss/commit/b7d22f8ae60fae0e73e2dfc7905eadbd203147c1))
 - _(database)_ Add JobRepositoryAdapter with optimistic-locking claim loop - ([d6ec64a](https://github.com/szinn/BookBoss/commit/d6ec64a419f73cee44cd1f47a2b6dccc9cb0d92e))
+- _(formats,core)_ Extract cover image from EPUB file - ([3cbf48c](https://github.com/szinn/BookBoss/commit/3cbf48cdd9141eda19dd503f678d9f684d278993))
+- _(frontend)_ Simplify cover serving — token-only endpoint with blank fallback - ([996e565](https://github.com/szinn/BookBoss/commit/996e5658201ddf1c90631933a92aba1dc35d0b79))
+- _(frontend,import)_ Pending count badge on Incoming nav link; fix tracing field - ([4b3e40e](https://github.com/szinn/BookBoss/commit/4b3e40ede88006fbe7aedfacea9add489171e72b))
+- _(import)_ Add bb-import crate with scanner subsystem and process_import handler - ([8b0f9b4](https://github.com/szinn/BookBoss/commit/8b0f9b454bc2fa98dd8683696ec3adb1e5aa8e08))
+
+### Bug Fixes
+
+- _(api)_ Enable TLS for gRPC client connections - ([75a660c](https://github.com/szinn/BookBoss/commit/75a660c85189a0b84960243475b8617e72b4f440))
+- _(import,core)_ Pipeline robustness and startup recovery - ([30d4825](https://github.com/szinn/BookBoss/commit/30d48251d2c1080b36346d64f645e2db0cb5e8c5))
+
+### Documentation
+
+- Add storage crate and M3 config vars to README and docs - ([84e56ea](https://github.com/szinn/BookBoss/commit/84e56ea158d1a29a78061df9c6a64d955a82fe19))
+
+### Miscellaneous Tasks
+
+- _(core,import)_ Improve subsystem and pipeline tracing - ([6396e4d](https://github.com/szinn/BookBoss/commit/6396e4d18d5649a886bf72289ebf642478e2bab8))
 
 ## [0.1.12](https://github.com/szinn/BookBoss/compare/v0.1.11..v0.1.12) - 2026-03-06
 
