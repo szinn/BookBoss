@@ -93,7 +93,7 @@ use {
 // ─────────────────────────────────────────────────────
 
 #[cfg(feature = "server")]
-fn identifier_type_key(t: &IdentifierType) -> &'static str {
+pub(crate) fn identifier_type_key(t: &IdentifierType) -> &'static str {
     match t {
         IdentifierType::Isbn13 => "Isbn13",
         IdentifierType::Isbn10 => "Isbn10",
@@ -132,7 +132,7 @@ fn cover_to_base64(bytes: &[u8]) -> String {
 }
 
 #[cfg(feature = "server")]
-fn image_dimensions(data: &[u8]) -> Option<(u32, u32)> {
+pub(crate) fn image_dimensions(data: &[u8]) -> Option<(u32, u32)> {
     if data.starts_with(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]) && data.len() >= 24 {
         let w = u32::from_be_bytes([data[16], data[17], data[18], data[19]]);
         let h = u32::from_be_bytes([data[20], data[21], data[22], data[23]]);
@@ -468,6 +468,205 @@ async fn reject_review_book(job_token: String) -> Result<(), ServerFnError> {
     Ok(())
 }
 
+// ── Edit-metadata server functions
+// ────────────────────────────────────────────
+
+#[post(
+    "/api/v1/books/edit/data",
+    auth_session: axum::Extension<AuthSession>,
+    core_services: axum::Extension<Arc<CoreServices>>
+)]
+pub(crate) async fn get_book_for_edit(book_token: String) -> Result<BookReviewData, ServerFnError> {
+    let current_user = auth_session.current_user.clone().unwrap_or_default();
+    if !Auth::<AuthUser, UserId, BackendSessionPool>::build([Method::POST], true)
+        .requires(Rights::any([Rights::permission(Capability::EditBook.as_str())]))
+        .validate(&current_user, &Method::POST, None)
+        .await
+    {
+        return Err(ServerFnError::new("Forbidden"));
+    }
+
+    let book_service = &core_services.book_service;
+    let pipeline_service = &core_services.pipeline_service;
+
+    let token = BookToken::from_str(&book_token).map_err(|_| ServerFnError::new("Invalid book token"))?;
+    let book = book_service
+        .find_book_by_token(&token)
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?
+        .ok_or_else(|| ServerFnError::new("Book not found"))?;
+
+    // Authors sorted by sort_order
+    let book_author_links = {
+        let mut links = book_service.authors_for_book(book.id).await.map_err(|e| ServerFnError::new(e.to_string()))?;
+        links.sort_by_key(|a| a.sort_order);
+        links
+    };
+    let mut author_names = Vec::with_capacity(book_author_links.len());
+    for ba in &book_author_links {
+        if let Some(author) = book_service
+            .find_author_by_token(&AuthorToken::new(ba.author_id))
+            .await
+            .map_err(|e| ServerFnError::new(e.to_string()))?
+        {
+            author_names.push(author.name);
+        }
+    }
+
+    // Series name
+    let series_name = if let Some(sid) = book.series_id {
+        book_service
+            .find_series_by_token(&SeriesToken::new(sid))
+            .await
+            .map_err(|e| ServerFnError::new(e.to_string()))?
+            .map(|s| s.name)
+            .unwrap_or_default()
+    } else {
+        String::new()
+    };
+
+    // Publisher name
+    let publisher_name = if let Some(pid) = book.publisher_id {
+        book_service
+            .find_publisher_by_token(&PublisherToken::new(pid))
+            .await
+            .map_err(|e| ServerFnError::new(e.to_string()))?
+            .map(|p| p.name)
+            .unwrap_or_default()
+    } else {
+        String::new()
+    };
+
+    // Identifiers
+    let raw_identifiers = book_service
+        .identifiers_for_book(book.id)
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+    let identifiers: IdentifierMap = raw_identifiers
+        .iter()
+        .map(|i| (identifier_type_key(&i.identifier_type).to_string(), i.value.clone()))
+        .collect();
+
+    let provider_names = pipeline_service.list_provider_names().into_iter().map(|s| s.to_string()).collect();
+
+    // Cover dimensions
+    let cover_dimensions = if let Some(filename) = &book.cover_path {
+        let path = core_services.library_store.cover_path(&book.token, filename);
+        tokio::fs::read(&path).await.ok().and_then(|b| image_dimensions(&b))
+    } else {
+        None
+    };
+
+    Ok(BookReviewData {
+        job_token: String::new(),
+        book_token: book.token.to_string(),
+        title: book.title,
+        description: book.description.unwrap_or_default(),
+        published_date: book.published_date.map(|y| y.to_string()).unwrap_or_default(),
+        language: book.language.unwrap_or_default(),
+        series_name,
+        series_number: book.series_number.as_ref().map(|n| n.to_string()).unwrap_or_default(),
+        publisher_name,
+        page_count: book.page_count.map(|p| p.to_string()).unwrap_or_default(),
+        authors_csv: author_names.join(", "),
+        identifiers,
+        provider_names,
+        cover_dimensions,
+    })
+}
+
+#[post(
+    "/api/v1/books/edit/fetch",
+    auth_session: axum::Extension<AuthSession>,
+    core_services: axum::Extension<Arc<CoreServices>>
+)]
+async fn fetch_provider_for_edit(
+    book_token: String,
+    provider_name: String,
+    title: String,
+    identifiers: IdentifierMap,
+) -> Result<Option<ProviderResult>, ServerFnError> {
+    let current_user = auth_session.current_user.clone().unwrap_or_default();
+    if !Auth::<AuthUser, UserId, BackendSessionPool>::build([Method::POST], true)
+        .requires(Rights::any([Rights::permission(Capability::EditBook.as_str())]))
+        .validate(&current_user, &Method::POST, None)
+        .await
+    {
+        return Err(ServerFnError::new("Forbidden"));
+    }
+
+    let temp_dir = std::env::temp_dir();
+
+    let parsed_identifiers: Vec<(IdentifierType, String)> = identifiers
+        .into_iter()
+        .filter(|(_, v)| !v.is_empty())
+        .filter_map(|(k, v)| key_to_identifier_type(&k).map(|t| (t, v)))
+        .collect();
+
+    let title = if title.is_empty() { None } else { Some(title) };
+    let result = core_services
+        .pipeline_service
+        .fetch_from_provider(&provider_name, title, parsed_identifiers, &book_token, &temp_dir)
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+
+    Ok(result.map(provider_book_to_result))
+}
+
+#[put(
+    "/api/v1/books/edit",
+    auth_session: axum::Extension<AuthSession>,
+    core_services: axum::Extension<Arc<CoreServices>>
+)]
+async fn save_library_book(book_token: String, fields: BookEditFields) -> Result<(), ServerFnError> {
+    let current_user = auth_session.current_user.clone().unwrap_or_default();
+    if !Auth::<AuthUser, UserId, BackendSessionPool>::build([Method::PUT], true)
+        .requires(Rights::any([Rights::permission(Capability::EditBook.as_str())]))
+        .validate(&current_user, &Method::PUT, None)
+        .await
+    {
+        return Err(ServerFnError::new("Forbidden"));
+    }
+
+    let token = BookToken::from_str(&book_token).map_err(|_| ServerFnError::new("Invalid book token"))?;
+
+    let authors: Vec<String> = fields.authors_csv.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect();
+
+    let identifiers: Vec<(IdentifierType, String)> = fields
+        .identifiers
+        .into_iter()
+        .filter(|(_, v)| !v.is_empty())
+        .filter_map(|(k, v)| key_to_identifier_type(&k).map(|t| (t, v)))
+        .collect();
+
+    let edit = BookEdit {
+        title: fields.title,
+        description: if fields.description.is_empty() { None } else { Some(fields.description) },
+        published_date: fields.published_date.parse::<i32>().ok(),
+        language: if fields.language.is_empty() { None } else { Some(fields.language) },
+        series_name: if fields.series_name.is_empty() { None } else { Some(fields.series_name) },
+        series_number: Decimal::from_str(&fields.series_number).ok(),
+        publisher_name: if fields.publisher_name.is_empty() {
+            None
+        } else {
+            Some(fields.publisher_name)
+        },
+        page_count: fields.page_count.parse::<i32>().ok(),
+        authors,
+        identifiers,
+        use_fetched_cover: fields.use_fetched_cover,
+    };
+
+    let temp_dir = std::env::temp_dir();
+    core_services
+        .pipeline_service
+        .edit_book(&token, edit, &book_token, &temp_dir)
+        .await
+        .map_err(|e| ServerFnError::new(e.to_string()))?;
+
+    Ok(())
+}
+
 // ── Identifier definitions (client + server)
 // ──────────────────────────────────
 
@@ -503,6 +702,7 @@ pub(crate) fn ReviewPage(token: String) -> Element {
             rsx! {
                 ReviewEditor {
                     data,
+                    edit_mode: false,
                     on_back: move |_| {
                         nav.push(crate::Route::IncomingPage {});
                     },
@@ -516,7 +716,7 @@ pub(crate) fn ReviewPage(token: String) -> Element {
 // ────────────────────────────────────────────────
 
 #[component]
-fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
+pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: EventHandler<()>) -> Element {
     // ── Edit state ────────────────────────────────────────────────────────────
     let mut title = use_signal(|| data.title.clone());
     let mut description = use_signal(|| data.description.clone());
@@ -540,6 +740,10 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
     let mut error_msg: Signal<Option<String>> = use_signal(|| None);
 
     let job_token = data.job_token.clone();
+    let book_token_for_edit = data.book_token.clone();
+    // cover_key identifies the temp cover file: job token for review, book token
+    // for edit.
+    let cover_key = if edit_mode { data.book_token.clone() } else { data.job_token.clone() };
 
     rsx! {
         div { class: "flex-1 flex flex-col overflow-hidden",
@@ -549,9 +753,11 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                     button {
                         class: "text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer",
                         onclick: move |_| on_back.call(()),
-                        "← Incoming"
+                        if edit_mode { "← Book" } else { "← Incoming" }
                     }
-                    h1 { class: "text-xl font-semibold text-gray-900", "Review Book" }
+                    h1 { class: "text-xl font-semibold text-gray-900",
+                        if edit_mode { "Edit Metadata" } else { "Review Book" }
+                    }
                 }
                 // ── Action buttons ────────────────────────────────────────────
                 div { class: "flex items-center gap-3",
@@ -571,52 +777,54 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                             }
                         }
                     }
-                    {
-                        let is_busy = *action_busy.read();
-                        let reject_class = if is_busy {
-                            "px-4 py-2 rounded border border-red-300 text-sm font-medium text-red-600 opacity-40 cursor-not-allowed"
-                        } else {
-                            "px-4 py-2 rounded border border-red-300 text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer"
-                        };
-                        let jt = job_token.clone();
-                        rsx! {
-                            button {
-                                class: "{reject_class}",
-                                disabled: is_busy,
-                                onclick: move |_| {
-                                    let jt = jt.clone();
-                                    action_busy.set(true);
-                                    error_msg.set(None);
-                                    spawn(async move {
-                                        match reject_review_book(jt).await {
-                                            Ok(()) => on_back.call(()),
-                                            Err(e) => {
-                                                error_msg.set(Some(e.to_string()));
-                                                action_busy.set(false);
+                    if !edit_mode {
+                        {
+                            let is_busy = *action_busy.read();
+                            let reject_class = if is_busy {
+                                "px-4 py-2 rounded border border-red-300 text-sm font-medium text-red-600 opacity-40 cursor-not-allowed"
+                            } else {
+                                "px-4 py-2 rounded border border-red-300 text-sm font-medium text-red-600 hover:bg-red-50 cursor-pointer"
+                            };
+                            let jt = job_token.clone();
+                            rsx! {
+                                button {
+                                    class: "{reject_class}",
+                                    disabled: is_busy,
+                                    onclick: move |_| {
+                                        let jt = jt.clone();
+                                        action_busy.set(true);
+                                        error_msg.set(None);
+                                        spawn(async move {
+                                            match reject_review_book(jt).await {
+                                                Ok(()) => on_back.call(()),
+                                                Err(e) => {
+                                                    error_msg.set(Some(e.to_string()));
+                                                    action_busy.set(false);
+                                                }
                                             }
-                                        }
-                                    });
-                                },
-                                "Reject"
+                                        });
+                                    },
+                                    "Reject"
+                                }
                             }
                         }
                     }
                     {
                         let is_busy = *action_busy.read();
-                        let approve_class = if is_busy {
+                        let primary_class = if is_busy {
                             "px-4 py-2 rounded bg-indigo-400 text-sm font-medium text-white cursor-not-allowed"
                         } else {
                             "px-4 py-2 rounded bg-indigo-600 text-sm font-medium text-white hover:bg-indigo-700 cursor-pointer"
                         };
                         let jt = job_token.clone();
+                        let bk = book_token_for_edit.clone();
                         rsx! {
                             button {
-                                class: "{approve_class}",
+                                class: "{primary_class}",
                                 disabled: is_busy,
                                 onclick: move |_| {
-                                    let jt = jt.clone();
                                     let fields = BookEditFields {
-                                        job_token: jt,
+                                        job_token: jt.clone(),
                                         title: title.read().clone(),
                                         description: description.read().clone(),
                                         published_date: published_date.read().clone(),
@@ -631,8 +839,14 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                                     };
                                     action_busy.set(true);
                                     error_msg.set(None);
+                                    let bk = bk.clone();
                                     spawn(async move {
-                                        match approve_book(fields).await {
+                                        let result = if edit_mode {
+                                            save_library_book(bk, fields).await
+                                        } else {
+                                            approve_book(fields).await
+                                        };
+                                        match result {
                                             Ok(()) => on_back.call(()),
                                             Err(e) => {
                                                 error_msg.set(Some(e.to_string()));
@@ -641,7 +855,11 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                                         }
                                     });
                                 },
-                                if *action_busy.read() { "Approving…" } else { "Approve" }
+                                if edit_mode {
+                                    if *action_busy.read() { "Saving…" } else { "Save" }
+                                } else {
+                                    if *action_busy.read() { "Approving…" } else { "Approve" }
+                                }
                             }
                         }
                     }
@@ -669,7 +887,7 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                                     for pname in data.provider_names.clone() {
                                         {
                                             let pname = pname.clone();
-                                            let jt = job_token.clone();
+                                            let ck = cover_key.clone();
                                             let is_fetching_this =
                                                 fetching.read().as_deref() == Some(pname.as_str());
                                             let is_busy_any =
@@ -686,26 +904,33 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                                                     disabled: is_busy_any,
                                                     onclick: move |_| {
                                                         let pname = pname.clone();
-                                                        let jt = jt.clone();
+                                                        let ck = ck.clone();
                                                         fetching.set(Some(pname.clone()));
                                                         error_msg.set(None);
                                                         let current_ids = identifiers.read().clone();
                                                         let current_title = title.read().clone();
                                                         spawn(async move {
-                                                            match fetch_provider_metadata(
-                                                                jt,
-                                                                pname.clone(),
-                                                                current_title,
-                                                                current_ids,
-                                                            )
-                                                            .await
-                                                            {
-                                                                Ok(result) => {
-                                                                    provider_result.set(result);
-                                                                }
+                                                            let result = if edit_mode {
+                                                                fetch_provider_for_edit(
+                                                                    ck,
+                                                                    pname.clone(),
+                                                                    current_title,
+                                                                    current_ids,
+                                                                )
+                                                                .await
+                                                            } else {
+                                                                fetch_provider_metadata(
+                                                                    ck,
+                                                                    pname.clone(),
+                                                                    current_title,
+                                                                    current_ids,
+                                                                )
+                                                                .await
+                                                            };
+                                                            match result {
+                                                                Ok(r) => provider_result.set(r),
                                                                 Err(e) => {
-                                                                    error_msg
-                                                                        .set(Some(e.to_string()));
+                                                                    error_msg.set(Some(e.to_string()));
                                                                     provider_result.set(None);
                                                                 }
                                                             }

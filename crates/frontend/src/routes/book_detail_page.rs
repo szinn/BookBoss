@@ -217,7 +217,14 @@ pub(crate) fn BookDetailPage(token: String) -> Element {
 
                         // Main info
                         div { class: "flex-1 min-w-0",
-                            h1 { class: "text-2xl font-bold text-gray-900 mb-2", "{book.title}" }
+                            div { class: "flex items-start justify-between gap-4 mb-2",
+                                h1 { class: "text-2xl font-bold text-gray-900", "{book.title}" }
+                                Link {
+                                    to: Route::EditMetadataPage { token: book.token.clone() },
+                                    class: "shrink-0 px-3 py-1 text-xs font-medium rounded border border-gray-300 text-gray-600 hover:bg-gray-50",
+                                    "Edit Metadata"
+                                }
+                            }
 
                             // Authors
                             if !book.authors.is_empty() {

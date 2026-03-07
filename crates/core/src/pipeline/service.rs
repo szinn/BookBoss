@@ -2,7 +2,7 @@ use std::{path::PathBuf, sync::Arc};
 
 use crate::{
     Error, RepositoryError,
-    book::{AuthorRole, BookStatus, IdentifierType, MetadataSource, NewAuthor, NewBook, NewPublisher, NewSeries},
+    book::{AuthorRole, BookStatus, BookToken, IdentifierType, MetadataSource, NewAuthor, NewBook, NewPublisher, NewSeries},
     import::{ImportJob, ImportJobToken, ImportSource, ImportStatus},
     pipeline::{
         MetadataExtractor, MetadataProvider,
@@ -56,6 +56,14 @@ pub trait PipelineService: Send + Sync {
     /// File renames (when title or primary author changed) and sidecar rewrites
     /// are performed as part of this operation.
     async fn approve_job(&self, job_token: ImportJobToken, edit: BookEdit, temp_dir: &std::path::Path) -> Result<(), Error>;
+
+    /// Saves edits directly to an existing library book without going through
+    /// the import pipeline. Intended for editing books already in the library.
+    ///
+    /// `cover_key` is the key used to look up any fetched cover bytes in the
+    /// temp store (written there by `fetch_from_provider`). File renames and
+    /// sidecar rewrites are performed when the title or primary author changes.
+    async fn edit_book(&self, book_token: &BookToken, edit: BookEdit, cover_key: &str, temp_dir: &std::path::Path) -> Result<(), Error>;
 }
 
 pub struct PipelineServiceImpl {
@@ -728,6 +736,235 @@ impl PipelineService for PipelineServiceImpl {
         }
 
         // ── 7. Rewrite metadata sidecar ───────────────────────────────────────
+        let sidecar_authors: Vec<SidecarAuthor> = edit
+            .authors
+            .iter()
+            .filter(|n| !n.is_empty())
+            .enumerate()
+            .map(|(i, name)| SidecarAuthor {
+                name: normalize_name(name),
+                role: AuthorRole::Author,
+                sort_order: i as i32,
+                file_as: None,
+            })
+            .collect();
+
+        let sidecar_identifiers: Vec<SidecarIdentifier> = {
+            let mut seen = std::collections::HashSet::new();
+            edit.identifiers
+                .iter()
+                .filter(|(t, v)| !v.is_empty() && seen.insert(t.clone()))
+                .map(|(t, v)| SidecarIdentifier {
+                    identifier_type: t.clone(),
+                    value: v.clone(),
+                })
+                .collect()
+        };
+
+        let book_file = {
+            let book_repo3 = self.repository_service.book_repository().clone();
+            read_only_transaction(&**self.repository_service.repository(), |tx| {
+                Box::pin(async move { book_repo3.files_for_book(tx, book_id).await })
+            })
+            .await?
+            .into_iter()
+            .next()
+        };
+
+        let sidecar = BookSidecar {
+            title: normalize_name(&edit.title),
+            authors: sidecar_authors,
+            description: edit.description,
+            publisher: edit.publisher_name,
+            published_date: edit.published_date,
+            language: edit.language,
+            identifiers: sidecar_identifiers,
+            series: edit.series_name.filter(|n| !n.is_empty()).map(|name| SidecarSeries {
+                name,
+                number: edit.series_number,
+            }),
+            genres: vec![],
+            tags: vec![],
+            rating: None,
+            status: BookStatus::Available,
+            metadata_source: None,
+            files: book_file
+                .map(|f| {
+                    vec![SidecarFile {
+                        format: f.format,
+                        hash: f.file_hash,
+                    }]
+                })
+                .unwrap_or_default(),
+        };
+        self.library_store.store_metadata(&book.token, &sidecar).await?;
+
+        Ok(())
+    }
+
+    #[tracing::instrument(level = "trace", skip(self, edit, temp_dir), fields(bookToken = %book_token))]
+    async fn edit_book(&self, book_token: &BookToken, edit: BookEdit, cover_key: &str, temp_dir: &std::path::Path) -> Result<(), Error> {
+        // ── 1. Load book and compute old slug for rename detection ─────────────
+        let book_repo = self.repository_service.book_repository().clone();
+        let bt = *book_token;
+        let (book, old_authors) = read_only_transaction(&**self.repository_service.repository(), |tx| {
+            let br = book_repo.clone();
+            Box::pin(async move {
+                let book = br.find_by_token(tx, &bt).await?.ok_or(Error::RepositoryError(RepositoryError::NotFound))?;
+                let book_id = book.id;
+                let authors = br.authors_for_book(tx, book_id).await?;
+                Ok::<_, Error>((book, authors))
+            })
+        })
+        .await?;
+
+        let book_id = book.id;
+
+        let old_first_author_id = old_authors.iter().min_by_key(|a| a.sort_order).map(|a| a.author_id);
+        let old_first_author_name = if let Some(author_id) = old_first_author_id {
+            let author_repo = self.repository_service.author_repository().clone();
+            read_only_transaction(&**self.repository_service.repository(), |tx| {
+                Box::pin(async move { author_repo.find_by_id(tx, author_id).await.map(|a| a.map(|a| a.name)) })
+            })
+            .await?
+        } else {
+            None
+        };
+
+        let old_slug = match &old_first_author_name {
+            Some(name) => format!("{}-{}", slugify(name), slugify(&book.title)),
+            None => slugify(&book.title),
+        };
+
+        // ── 2. Read temp cover if requested ───────────────────────────────────
+        let cover_data: Option<(Vec<u8>, String)> = if edit.use_fetched_cover {
+            let cover_path = temp_dir.join("bookboss-covers").join(cover_key);
+            match tokio::fs::read(&cover_path).await {
+                Ok(data) => {
+                    let filename = detect_cover_filename(&data).to_string();
+                    Some((data, filename))
+                }
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                    tracing::warn!(cover_key, "use_fetched_cover requested but no temp cover file found; skipping");
+                    None
+                }
+                Err(e) => return Err(Error::Infrastructure(format!("failed to read temp cover: {e}"))),
+            }
+        } else {
+            None
+        };
+
+        // ── 3. DB transaction: update book ────────────────────────────────────
+        let book_repo2 = self.repository_service.book_repository().clone();
+        let author_repo = self.repository_service.author_repository().clone();
+        let series_repo = self.repository_service.series_repository().clone();
+        let publisher_repo = self.repository_service.publisher_repository().clone();
+        let cover_filename = cover_data.as_ref().map(|(_, f)| f.clone());
+        let edit_c = edit.clone();
+        let book_version = book.version;
+
+        transaction(&**self.repository_service.repository(), |tx| {
+            Box::pin(async move {
+                // Resolve series
+                let (series_id, series_number) = match &edit_c.series_name {
+                    Some(name) if !name.is_empty() => {
+                        let name = normalize_name(name);
+                        let s = match series_repo.find_by_name(tx, &name).await? {
+                            Some(s) => s,
+                            None => series_repo.add_series(tx, NewSeries { name, description: None }).await?,
+                        };
+                        (Some(s.id), edit_c.series_number)
+                    }
+                    _ => (None, None),
+                };
+
+                // Resolve publisher
+                let publisher_id = match &edit_c.publisher_name {
+                    Some(name) if !name.is_empty() => {
+                        let name = normalize_name(name);
+                        match publisher_repo.find_by_name(tx, &name).await? {
+                            Some(p) => Some(p.id),
+                            None => Some(publisher_repo.add_publisher(tx, NewPublisher { name }).await?.id),
+                        }
+                    }
+                    _ => None,
+                };
+
+                // Update book record
+                let mut updated_book = book_repo2
+                    .find_by_id(tx, book_id)
+                    .await?
+                    .ok_or(Error::RepositoryError(RepositoryError::NotFound))?;
+                if updated_book.version != book_version {
+                    return Err(Error::RepositoryError(RepositoryError::Conflict));
+                }
+                updated_book.title = normalize_name(&edit_c.title);
+                updated_book.description = edit_c.description;
+                updated_book.published_date = edit_c.published_date;
+                updated_book.language = edit_c.language;
+                updated_book.series_id = series_id;
+                updated_book.series_number = series_number;
+                updated_book.publisher_id = publisher_id;
+                updated_book.page_count = edit_c.page_count;
+                if let Some(filename) = cover_filename {
+                    updated_book.cover_path = Some(filename);
+                }
+                book_repo2.update_book(tx, updated_book).await?;
+
+                // Replace authors
+                book_repo2.delete_book_authors(tx, book_id).await?;
+                for (sort_order, name) in edit_c.authors.iter().enumerate() {
+                    let name = normalize_name(name);
+                    if name.is_empty() {
+                        continue;
+                    }
+                    let author = match author_repo.find_by_name(tx, &name).await? {
+                        Some(a) => a,
+                        None => author_repo.add_author(tx, NewAuthor { name, bio: None }).await?,
+                    };
+                    book_repo2
+                        .add_book_author(tx, book_id, author.id, AuthorRole::Author, sort_order as i32)
+                        .await?;
+                }
+
+                // Replace identifiers (deduplicate by type, keep first)
+                book_repo2.delete_book_identifiers(tx, book_id).await?;
+                let mut seen_types = std::collections::HashSet::new();
+                for (id_type, value) in &edit_c.identifiers {
+                    if value.is_empty() {
+                        continue;
+                    }
+                    if seen_types.insert(id_type.clone()) {
+                        book_repo2.add_book_identifier(tx, book_id, id_type.clone(), value.clone()).await?;
+                    }
+                }
+
+                Ok(())
+            })
+        })
+        .await?;
+
+        // ── 4. Store fetched cover ─────────────────────────────────────────────
+        if let Some((cover_bytes, cover_filename)) = cover_data {
+            self.library_store.store_cover(&book.token, &cover_filename, &cover_bytes).await?;
+            let cover_path = temp_dir.join("bookboss-covers").join(cover_key);
+            let _ = tokio::fs::remove_file(&cover_path).await;
+        }
+
+        // ── 5. Rename book files if slug changed ──────────────────────────────
+        let new_first_author = edit.authors.first().map(|a| normalize_name(a));
+        let new_slug = match &new_first_author {
+            Some(name) if !name.is_empty() => {
+                format!("{}-{}", slugify(name), slugify(&normalize_name(&edit.title)))
+            }
+            _ => slugify(&normalize_name(&edit.title)),
+        };
+
+        if old_slug != new_slug {
+            self.library_store.rename_book_files(&book.token, &old_slug, &new_slug).await?;
+        }
+
+        // ── 6. Rewrite metadata sidecar ───────────────────────────────────────
         let sidecar_authors: Vec<SidecarAuthor> = edit
             .authors
             .iter()

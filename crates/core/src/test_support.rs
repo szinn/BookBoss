@@ -75,6 +75,9 @@ impl PipelineService for NopPipelineService {
     async fn approve_job(&self, _job_token: ImportJobToken, _edit: BookEdit, _temp_dir: &std::path::Path) -> Result<(), Error> {
         unimplemented!("NopPipelineService")
     }
+    async fn edit_book(&self, _book_token: &BookToken, _edit: BookEdit, _cover_key: &str, _temp_dir: &std::path::Path) -> Result<(), Error> {
+        unimplemented!("NopPipelineService")
+    }
 }
 
 pub fn nop_pipeline_service() -> Arc<dyn PipelineService> {
