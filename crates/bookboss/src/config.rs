@@ -11,13 +11,19 @@ use crate::error::Error;
 #[derive(Debug, Deserialize)]
 pub struct ImportConfig {
     pub watch_directory: PathBuf,
-    #[serde(default = "ImportConfig::default_poll_interval")]
-    pub poll_interval_secs: u64,
+    #[serde(default = "ImportConfig::default_scan_interval")]
+    pub scan_interval_secs: u64,
+    #[serde(default = "ImportConfig::default_worker_poll_interval")]
+    pub worker_poll_interval_secs: u64,
 }
 
 impl ImportConfig {
-    fn default_poll_interval() -> u64 {
+    fn default_scan_interval() -> u64 {
         60
+    }
+
+    fn default_worker_poll_interval() -> u64 {
+        5
     }
 }
 

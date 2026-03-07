@@ -155,14 +155,15 @@ async fn main() -> anyhow::Result<()> {
 
                 use bb_core::jobs::JobRegistry;
 
-                let poll_interval = Duration::from_secs(config.import.poll_interval_secs);
+                let scan_interval = Duration::from_secs(config.import.scan_interval_secs);
+                let worker_poll_interval = Duration::from_secs(config.import.worker_poll_interval_secs);
 
                 let mut registry = JobRegistry::new();
                 registry.register(ProcessImportHandler::new(repository_service.clone(), services.pipeline_service.clone()));
 
                 let api_subsystem = create_api_subsystem(&config.api, services.clone());
-                let core_subsystem = create_core_subsystem(registry, repository_service.clone(), poll_interval);
-                let import_subsystem = create_import_subsystem(config.import.watch_directory.clone(), poll_interval, repository_service.clone());
+                let core_subsystem = create_core_subsystem(registry, repository_service.clone(), worker_poll_interval);
+                let import_subsystem = create_import_subsystem(config.import.watch_directory.clone(), scan_interval, repository_service.clone());
 
                 Toplevel::new(async |s: &mut SubsystemHandle| {
                     s.start(SubsystemBuilder::new("Api", api_subsystem.into_subsystem()));
