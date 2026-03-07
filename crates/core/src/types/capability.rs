@@ -8,6 +8,7 @@ pub type Capabilities = HashSet<Capability>;
 pub enum Capability {
     SuperAdmin,
     Admin,
+    ApproveImports,
     ConvertBook,
     DeleteBook,
     EditBook,
@@ -18,6 +19,7 @@ impl Capability {
         match self {
             Self::SuperAdmin => "SuperAdmin",
             Self::Admin => "Admin",
+            Self::ApproveImports => "ApproveImports",
             Self::ConvertBook => "ConvertBook",
             Self::DeleteBook => "DeleteBook",
             Self::EditBook => "EditBook",
