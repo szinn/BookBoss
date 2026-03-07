@@ -444,6 +444,12 @@ mod tests {
         async fn delete_book(&self, _: &dyn Transaction, _: BookId) -> Result<(), Error> {
             unimplemented!()
         }
+        async fn delete_book_authors(&self, _: &dyn Transaction, _: BookId) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn delete_book_identifiers(&self, _: &dyn Transaction, _: BookId) -> Result<(), Error> {
+            unimplemented!()
+        }
     }
 
     struct MockJobRepository;
@@ -491,6 +497,9 @@ mod tests {
             unimplemented!()
         }
         async fn delete_job(&self, _: &dyn Transaction, _: ImportJobId) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn approve_job(&self, _: &dyn Transaction, _: ImportJobId) -> Result<(), Error> {
             unimplemented!()
         }
     }

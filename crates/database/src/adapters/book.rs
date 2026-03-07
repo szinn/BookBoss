@@ -466,6 +466,30 @@ impl BookRepository for BookRepositoryAdapter {
 
         Ok(())
     }
+
+    async fn delete_book_authors(&self, transaction: &dyn Transaction, book_id: BookId) -> Result<(), Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        prelude::BookAuthors::delete_many()
+            .filter(book_authors::Column::BookId.eq(book_id as i64))
+            .exec(transaction)
+            .await
+            .map_err(handle_dberr)?;
+
+        Ok(())
+    }
+
+    async fn delete_book_identifiers(&self, transaction: &dyn Transaction, book_id: BookId) -> Result<(), Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+
+        prelude::BookIdentifiers::delete_many()
+            .filter(book_identifiers::Column::BookId.eq(book_id as i64))
+            .exec(transaction)
+            .await
+            .map_err(handle_dberr)?;
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]

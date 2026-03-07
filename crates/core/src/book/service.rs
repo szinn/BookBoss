@@ -18,6 +18,7 @@ pub trait BookService: Send + Sync {
     async fn find_author_by_token(&self, token: &AuthorToken) -> Result<Option<Author>, Error>;
     async fn list_series(&self, start_id: Option<SeriesId>, page_size: Option<u64>) -> Result<Vec<Series>, Error>;
     async fn find_series_by_token(&self, token: &SeriesToken) -> Result<Option<Series>, Error>;
+    async fn find_publisher_by_token(&self, token: &crate::book::PublisherToken) -> Result<Option<crate::book::Publisher>, Error>;
 }
 
 pub(crate) struct BookServiceImpl {
@@ -79,6 +80,11 @@ impl BookService for BookServiceImpl {
     async fn find_series_by_token(&self, token: &SeriesToken) -> Result<Option<Series>, Error> {
         let token = *token;
         with_read_only_transaction!(self, series_repository, |tx| series_repository.find_by_token(tx, &token).await)
+    }
+
+    async fn find_publisher_by_token(&self, token: &crate::book::PublisherToken) -> Result<Option<crate::book::Publisher>, Error> {
+        let token = *token;
+        with_read_only_transaction!(self, publisher_repository, |tx| publisher_repository.find_by_token(tx, &token).await)
     }
 }
 
@@ -480,6 +486,12 @@ mod tests {
         async fn delete_book(&self, _: &dyn Transaction, _: BookId) -> Result<(), Error> {
             unimplemented!()
         }
+        async fn delete_book_authors(&self, _: &dyn Transaction, _: BookId) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn delete_book_identifiers(&self, _: &dyn Transaction, _: BookId) -> Result<(), Error> {
+            unimplemented!()
+        }
     }
 
     struct MockJobRepository;
@@ -527,6 +539,9 @@ mod tests {
             unimplemented!()
         }
         async fn delete_job(&self, _: &dyn Transaction, _: ImportJobId) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn approve_job(&self, _: &dyn Transaction, _: ImportJobId) -> Result<(), Error> {
             unimplemented!()
         }
     }

@@ -9,7 +9,7 @@ use crate::{
     Error,
     book::{BookToken, FileFormat},
     import::{ImportJob, ImportJobToken},
-    pipeline::PipelineService,
+    pipeline::{BookEdit, PipelineService, ProviderBook},
     storage::{BookSidecar, LibraryStore},
 };
 
@@ -57,6 +57,15 @@ impl PipelineService for NopPipelineService {
         unimplemented!("NopPipelineService")
     }
     async fn reject_job(&self, _job_token: ImportJobToken) -> Result<(), Error> {
+        unimplemented!("NopPipelineService")
+    }
+    fn list_provider_names(&self) -> Vec<&'static str> {
+        unimplemented!("NopPipelineService")
+    }
+    async fn fetch_from_provider(&self, _job_token: &ImportJobToken, _provider_name: &str, _temp_dir: &std::path::Path) -> Result<Option<ProviderBook>, Error> {
+        unimplemented!("NopPipelineService")
+    }
+    async fn approve_job(&self, _job_token: ImportJobToken, _edit: BookEdit, _temp_dir: &std::path::Path) -> Result<(), Error> {
         unimplemented!("NopPipelineService")
     }
 }

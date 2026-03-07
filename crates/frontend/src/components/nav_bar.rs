@@ -72,6 +72,9 @@ pub(crate) fn NavBar() -> Element {
                 Link { to: Route::BooksPage {}, class: "text-sm hover:text-indigo-200",
                     "Library"
                 }
+                Link { to: Route::IncomingPage {}, class: "text-sm hover:text-indigo-200",
+                    "Incoming"
+                }
             }
             div { class: "flex items-center gap-4",
                 // View toggle: shows the icon for the OTHER view (what you'll switch to)

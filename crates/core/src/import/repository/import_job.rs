@@ -26,4 +26,7 @@ pub trait ImportJobRepository: Send + Sync {
 
     /// Permanently deletes an import job record.
     async fn delete_job(&self, transaction: &dyn Transaction, job_id: ImportJobId) -> Result<(), Error>;
+
+    /// Sets the job status to `Approved`.
+    async fn approve_job(&self, transaction: &dyn Transaction, job_id: ImportJobId) -> Result<(), Error>;
 }

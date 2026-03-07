@@ -257,6 +257,24 @@ impl ImportJobRepository for ImportJobRepositoryAdapter {
 
         Ok(())
     }
+
+    async fn approve_job(&self, transaction: &dyn Transaction, job_id: ImportJobId) -> Result<(), Error> {
+        let transaction = TransactionImpl::get_db_transaction(transaction)?;
+        let now = Utc::now();
+
+        let existing = prelude::ImportJobs::find_by_id(job_id as i64)
+            .one(transaction)
+            .await
+            .map_err(handle_dberr)?
+            .ok_or(Error::RepositoryError(RepositoryError::NotFound))?;
+
+        let mut updater: import_jobs::ActiveModel = existing.into();
+        updater.status = Set(import_status_to_str(&ImportStatus::Approved).to_owned());
+        updater.reviewed_at = Set(Some(now.into()));
+        updater.update(transaction).await.map_err(handle_dberr)?;
+
+        Ok(())
+    }
 }
 
 // ── Tests ────────────────────────────────────────────────────────────────────

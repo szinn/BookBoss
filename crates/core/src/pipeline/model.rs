@@ -5,6 +5,31 @@ use crate::{
     import::ImportSource,
 };
 
+/// Edits submitted by the user during the import review step.
+///
+/// Carries all mutable book fields. The pipeline's `approve_job` method
+/// commits these to the database and transitions the book to `Available`.
+#[derive(Debug, Clone)]
+pub struct BookEdit {
+    pub title: String,
+    pub description: Option<String>,
+    pub published_date: Option<i32>,
+    pub language: Option<String>,
+    pub series_name: Option<String>,
+    pub series_number: Option<Decimal>,
+    pub publisher_name: Option<String>,
+    pub page_count: Option<i32>,
+    /// Primary authors in display order (comma-separated in UI, split before
+    /// submission).
+    pub authors: Vec<String>,
+    /// Identifiers keyed by type; duplicates within the same type are ignored.
+    pub identifiers: Vec<(IdentifierType, String)>,
+    /// If `true`, the cover fetched by `fetch_from_provider` replaces the
+    /// existing cover. The bytes are held in the server-side temp store keyed
+    /// by the job token; no bytes are round-tripped through this struct.
+    pub use_fetched_cover: bool,
+}
+
 #[derive(Debug, Clone)]
 pub struct ExtractedAuthor {
     pub name: String,

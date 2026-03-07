@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use crate::Route;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub(crate) struct IncomingBookSummary {
     pub job_token: String,
@@ -203,7 +205,11 @@ pub(crate) fn IncomingPage() -> Element {
                                                 LocalTime { iso: item.detected_at.clone() }
                                             }
                                             td { class: "px-6 py-4 text-right flex items-center justify-end gap-3",
-                                                span { class: "text-indigo-600 font-medium cursor-pointer hover:text-indigo-800", "Review" }
+                                                Link {
+                                                    to: Route::ReviewPage { token: item.job_token.clone() },
+                                                    class: "px-3 py-1 rounded border border-indigo-300 text-sm font-medium text-indigo-600 hover:bg-indigo-50",
+                                                    "Review"
+                                                }
                                                 {
                                                     let token = item.job_token.clone();
                                                     let is_rejecting = rejecting.read().as_deref() == Some(&token);
