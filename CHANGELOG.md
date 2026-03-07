@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.15](https://github.com/szinn/BookBoss/compare/v0.1.14..v0.1.15) - 2026-03-07
+
+### Features
+
+- _(core,frontend)_ Add LibraryService with stats and delete book - ([0a2152e](https://github.com/szinn/BookBoss/commit/0a2152e8a8e1289eb67249d29890869967d80fef))
+- _(core,frontend)_ Edit metadata page for library books - ([ae1425a](https://github.com/szinn/BookBoss/commit/ae1425a41f91999a6246a8e021f34799558ba949))
+- _(import)_ Separate scan and worker poll intervals - ([6261611](https://github.com/szinn/BookBoss/commit/62616111a1b8b16eb5012c2eee2ff538b5413a75))
+
+### Bug Fixes
+
+- _(frontend)_ Refresh NavBar pending count after approve/reject - ([5f086fe](https://github.com/szinn/BookBoss/commit/5f086fefb7aa5f8c4935d3a5e445619f42dcbc3c))
+
+### Refactor
+
+- _(core)_ Decouple fetch_from_provider from ImportJobToken - ([acdd94d](https://github.com/szinn/BookBoss/commit/acdd94dc9b810be00aa55d31c8b9cb8bc64e2855))
+
+### Documentation
+
+- _(claude)_ Restructure CLAUDE.md files for clarity and reuse - ([2869eb3](https://github.com/szinn/BookBoss/commit/2869eb3bc99ca4a0c2fc65eac5cc8e72c2f303a7))
+- _(user)_ Update import configuration reference - ([2746432](https://github.com/szinn/BookBoss/commit/27464325887dd9aeab0e03aac0692455444650fe))
+
 ## [0.1.14](https://github.com/szinn/BookBoss/compare/v0.1.12..v0.1.14) - 2026-03-07
 
 ### Features
