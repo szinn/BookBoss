@@ -31,23 +31,11 @@ fn BookCard(book: BookSummary) -> Element {
         div {
             class: "flex flex-col cursor-pointer",
             onclick: move |_| { navigator.push(Route::BookDetailPage { token: token.clone() }); },
-            match book.cover_path {
-                Some(ref path) => rsx! {
-                    img {
-                        src: "{path}",
-                        alt: "{book.title}",
-                        class: "w-full object-cover rounded shadow-sm",
-                        style: "aspect-ratio: 2/3",
-                    }
-                },
-                None => rsx! {
-                    img {
-                        src: asset!("/assets/BlankCover.png"),
-                        alt: "{book.title}",
-                        class: "w-full object-cover rounded shadow-sm",
-                        style: "aspect-ratio: 2/3",
-                    }
-                },
+            img {
+                src: "/api/v1/covers/{book.token}",
+                alt: "{book.title}",
+                class: "w-full object-cover rounded shadow-sm",
+                style: "aspect-ratio: 2/3",
             }
             div { class: "mt-1 px-0.5",
                 p { class: "text-xs font-semibold text-gray-900 leading-tight line-clamp-2",

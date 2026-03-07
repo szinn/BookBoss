@@ -128,7 +128,7 @@ impl LibraryScanner {
 
                 job_repo.enqueue(tx, &ProcessImportPayload { import_job_id: job.id }).await?;
 
-                tracing::info!(import_job_id = job.id, "queued import job");
+                tracing::info!(import_job_token = job.token, "queued import job");
                 Ok(())
             })
         })

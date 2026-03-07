@@ -30,7 +30,6 @@ pub(crate) struct BookDetail {
     pub published_date: Option<i32>,
     pub language: Option<String>,
     pub page_count: Option<i32>,
-    pub cover_path: Option<String>,
     pub series_token: Option<String>,
     pub series_name: Option<String>,
     pub series_number: Option<String>,
@@ -161,7 +160,6 @@ async fn get_book(token: String) -> Result<BookDetail, ServerFnError> {
         published_date: book.published_date,
         language: book.language.clone(),
         page_count: book.page_count,
-        cover_path: book.cover_path.clone(),
         series_token,
         series_name,
         series_number: book.series_number.as_ref().map(|n| n.to_string()),
@@ -209,23 +207,11 @@ pub(crate) fn BookDetailPage(token: String) -> Element {
                     div { class: "flex gap-8",
                         // Cover
                         div { class: "shrink-0",
-                            match book.cover_path {
-                                Some(ref path) => rsx! {
-                                    img {
-                                        src: "{path}",
-                                        alt: "{book.title}",
-                                        class: "w-36 rounded shadow-md",
-                                        style: "aspect-ratio: 2/3; object-fit: cover",
-                                    }
-                                },
-                                None => rsx! {
-                                    img {
-                                        src: asset!("/assets/BlankCover.png"),
-                                        alt: "{book.title}",
-                                        class: "w-36 rounded shadow-md",
-                                        style: "aspect-ratio: 2/3; object-fit: cover",
-                                    }
-                                },
+                            img {
+                                src: "/api/v1/covers/{book.token}",
+                                alt: "{book.title}",
+                                class: "w-36 rounded shadow-md",
+                                style: "aspect-ratio: 2/3; object-fit: cover",
                             }
                         }
 

@@ -14,6 +14,7 @@ pub(crate) type IdentifierMap = HashMap<String, String>;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub(crate) struct BookReviewData {
     pub job_token: String,
+    pub book_token: String,
     pub title: String,
     pub description: String,
     pub published_date: String,
@@ -25,8 +26,6 @@ pub(crate) struct BookReviewData {
     /// Comma-separated author names in sort order.
     pub authors_csv: String,
     pub identifiers: IdentifierMap,
-    /// Base64 encoded cover thumbnail, if the book has a stored cover.
-    pub cover_thumbnail: Option<String>,
     /// Provider names in priority order (for rendering provider buttons).
     pub provider_names: Vec<String>,
 }
@@ -258,25 +257,11 @@ async fn get_review_data(job_token: String) -> Result<BookReviewData, ServerFnEr
         .map(|i| (identifier_type_key(&i.identifier_type).to_string(), i.value.clone()))
         .collect();
 
-    // Cover thumbnail from library store
-    let cover_thumbnail = if let Some(filename) = &book.cover_path {
-        let store = &core_services.library_store;
-        let path = store.cover_path(&book.token, filename);
-        match tokio::fs::read(&path).await {
-            Ok(bytes) => {
-                let bytes: Vec<u8> = bytes;
-                Some(cover_to_base64(&bytes))
-            }
-            Err(_) => None,
-        }
-    } else {
-        None
-    };
-
     let provider_names = pipeline_service.list_provider_names().into_iter().map(|s| s.to_string()).collect();
 
     Ok(BookReviewData {
         job_token: job.token.to_string(),
+        book_token: book.token.to_string(),
         title: book.title,
         description: book.description.unwrap_or_default(),
         published_date: book.published_date.map(|y| y.to_string()).unwrap_or_default(),
@@ -287,7 +272,6 @@ async fn get_review_data(job_token: String) -> Result<BookReviewData, ServerFnEr
         page_count: book.page_count.map(|p| p.to_string()).unwrap_or_default(),
         authors_csv: author_names.join(", "),
         identifiers,
-        cover_thumbnail,
         provider_names,
     })
 }
@@ -465,7 +449,8 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
     let mut authors_csv = use_signal(|| data.authors_csv.clone());
     let mut identifiers: Signal<IdentifierMap> = use_signal(|| data.identifiers.clone());
     let mut use_fetched_cover = use_signal(|| false);
-    let mut current_cover = use_signal(|| data.cover_thumbnail.clone());
+    let cover_url = format!("/api/v1/covers/{}", data.book_token);
+    let mut current_cover = use_signal(|| cover_url);
 
     // ── Provider fetch state ──────────────────────────────────────────────────
     let mut provider_result: Signal<Option<ProviderResult>> = use_signal(|| None);
@@ -632,10 +617,8 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                                                             {
                                                                 Ok(result) => {
                                                                     if let Some(ref pr) = result {
-                                                                        if pr.cover_thumbnail.is_some() {
-                                                                            current_cover.set(
-                                                                                pr.cover_thumbnail.clone(),
-                                                                            );
+                                                                        if let Some(ref thumb) = pr.cover_thumbnail {
+                                                                            current_cover.set(thumb.clone());
                                                                             use_fetched_cover.set(true);
                                                                         }
                                                                     }
@@ -1019,14 +1002,10 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                         tr {
                             td { class: "py-2 pr-4 text-gray-500 font-medium whitespace-nowrap align-top pt-3", "Cover" }
                             td { class: "py-2 pr-4",
-                                if let Some(thumb) = current_cover.read().as_ref() {
-                                    img {
-                                        class: "max-h-32 max-w-24 object-contain rounded shadow-sm",
-                                        src: "{thumb}",
-                                        alt: "Current cover",
-                                    }
-                                } else {
-                                    span { class: "text-gray-400 text-xs italic", "No cover" }
+                                img {
+                                    class: "max-h-32 max-w-24 object-contain rounded shadow-sm",
+                                    src: "{current_cover}",
+                                    alt: "Current cover",
                                 }
                             }
                             td { class: "py-2 pr-4 text-center align-top pt-3",
@@ -1036,9 +1015,10 @@ fn ReviewEditor(data: BookReviewData, on_back: EventHandler<()>) -> Element {
                                             class: "text-indigo-500 hover:text-indigo-700 cursor-pointer text-xs font-bold",
                                             title: "Use provider cover",
                                             onclick: move |_| {
-                                                let thumb = provider_result.read().as_ref().and_then(|r| r.cover_thumbnail.clone());
-                                                current_cover.set(thumb);
-                                                use_fetched_cover.set(true);
+                                                if let Some(thumb) = provider_result.read().as_ref().and_then(|r| r.cover_thumbnail.clone()) {
+                                                    current_cover.set(thumb);
+                                                    use_fetched_cover.set(true);
+                                                }
                                             },
                                             "←"
                                         }

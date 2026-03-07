@@ -16,6 +16,7 @@ use tower_http::{
 
 use crate::{BookBossFrontend, FrontendConfig};
 
+pub(crate) mod covers;
 pub(crate) mod session_pool;
 
 pub(crate) use session_pool::{AuthSession, BackendSessionPool};
@@ -65,7 +66,7 @@ pub fn launch_server_frontend(config: &FrontendConfig, core_services: Arc<CoreSe
                             .map(|v| v.to_str().unwrap_or_default())
                             .unwrap_or_default();
 
-                        tracing::info_span!(
+                        tracing::trace_span!(
                             "",
                             request_id = ?request_id,
                         )
@@ -74,7 +75,10 @@ pub fn launch_server_frontend(config: &FrontendConfig, core_services: Arc<CoreSe
                     .layer(SessionLayer::new(session_store))
                     .layer(AuthSessionLayer::<AuthUser, UserId, BackendSessionPool, BackendSessionPool>::new(Some(backend_pool)).with_config(auth_config));
 
-                let router = dioxus::server::router(BookBossFrontend).layer(Extension(core_services)).layer(middleware);
+                let router = dioxus::server::router(BookBossFrontend)
+                    .route("/api/v1/covers/{book_token}", axum::routing::get(covers::serve_cover))
+                    .layer(Extension(core_services))
+                    .layer(middleware);
 
                 Ok(router)
             }
