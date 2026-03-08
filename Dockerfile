@@ -57,7 +57,7 @@ RUN /usr/local/cargo/bin/dx bundle --server --package bookboss --release --targe
 RUN ldd target/dx/bookboss/release/web/bookboss || true
 
 FROM ubuntu:latest@sha256:d1e2e92c075e5ca139d51a140fff46f84315c0fdce203eab2807c7e495eff4f9 AS certs
-RUN addgroup --gid 1000 bookboss && useradd -g 1000 -M -u 1000 -s /usr/sbin/nologin bookboss
+RUN groupadd --gid 1234 bookboss && useradd -g 1234 -M -u 1234 -s /usr/sbin/nologin bookboss
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 RUN update-ca-certificates
 
