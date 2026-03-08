@@ -6,6 +6,7 @@
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum MetadataSource {
     Hardcover,
+    GoogleBooks,
     OpenLibrary,
     /// Metadata was hand-entered or edited by an admin. Do not auto-re-fetch.
     Manual,

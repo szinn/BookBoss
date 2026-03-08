@@ -30,6 +30,7 @@ pub enum ImportSource {
     /// Metadata extracted from the file itself (EPUB OPF, MOBI headers).
     Embedded,
     Hardcover,
+    GoogleBooks,
     OpenLibrary,
 }
 

@@ -44,6 +44,7 @@ fn import_source_to_str(s: &ImportSource) -> &'static str {
     match s {
         ImportSource::Embedded => "embedded",
         ImportSource::Hardcover => "hardcover",
+        ImportSource::GoogleBooks => "google_books",
         ImportSource::OpenLibrary => "open_library",
     }
 }
@@ -52,6 +53,7 @@ fn str_to_import_source(s: &str) -> ImportSource {
     match s {
         "embedded" => ImportSource::Embedded,
         "hardcover" => ImportSource::Hardcover,
+        "google_books" => ImportSource::GoogleBooks,
         "open_library" => ImportSource::OpenLibrary,
         other => panic!("unknown import source: {other}"),
     }

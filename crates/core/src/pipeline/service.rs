@@ -324,6 +324,7 @@ impl PipelineService for PipelineServiceImpl {
             ImportSource::Embedded => MetadataSource::Manual,
             ImportSource::OpenLibrary => MetadataSource::OpenLibrary,
             ImportSource::Hardcover => MetadataSource::Hardcover,
+            ImportSource::GoogleBooks => MetadataSource::GoogleBooks,
         });
 
         // ── 10. Pre-build sidecar sub-structures from final_meta ──────────────

@@ -39,6 +39,7 @@ fn str_to_book_status(s: &str) -> Result<BookStatus, Error> {
 fn metadata_source_to_str(ms: &MetadataSource) -> &'static str {
     match ms {
         MetadataSource::Hardcover => "hardcover",
+        MetadataSource::GoogleBooks => "google_books",
         MetadataSource::OpenLibrary => "open_library",
         MetadataSource::Manual => "manual",
     }
@@ -47,6 +48,7 @@ fn metadata_source_to_str(ms: &MetadataSource) -> &'static str {
 fn str_to_metadata_source(s: &str) -> Result<MetadataSource, Error> {
     match s {
         "hardcover" => Ok(MetadataSource::Hardcover),
+        "google_books" => Ok(MetadataSource::GoogleBooks),
         "open_library" => Ok(MetadataSource::OpenLibrary),
         "manual" => Ok(MetadataSource::Manual),
         _ => Err(Error::RepositoryError(RepositoryError::Database(format!("unknown metadata source: {s}")))),
