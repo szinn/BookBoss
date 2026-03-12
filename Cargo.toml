@@ -25,7 +25,7 @@ bb-utils = { path = "crates/utils" }
 testcontainers = "0.27.1"
 
 anyhow = "1.0.102"
-mimalloc = "0.1"
+mimalloc = "0.1.48"
 base64 = "0.22.1"
 async-trait = "0.1.89"
 axum = "0.8.8"
