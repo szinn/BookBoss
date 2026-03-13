@@ -157,7 +157,7 @@ version = "0.15.0"
 features = ["postgres", "mariadb", "mysql"]
 
 [workspace.dependencies.tracing-subscriber]
-version = "0.3.22"
+version = "0.3.23"
 features = ["std", "fmt", "registry", "env-filter", "json"]
 
 [workspace.lints.rust]
