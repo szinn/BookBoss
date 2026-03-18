@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.5](https://github.com/szinn/BookBoss/compare/v0.4.4..v0.4.5) - 2026-03-18
+
+### Features
+
+- _(frontend)_ Make author and series names clickable links in book cards - ([41cdc46](https://github.com/szinn/BookBoss/commit/41cdc46280c9a5a03804031b921259b909477dae))
+
+### Bug Fixes
+
+- _(core)_ Use trait parameter names in mock AuthorRepository/ImportJobRepository impls - ([ebade68](https://github.com/szinn/BookBoss/commit/ebade682e722349cfd51609da55627b72a68691e))
+
+### Refactor
+
+- _(core)_ Move string conversions onto enum types - ([5a8fb25](https://github.com/szinn/BookBoss/commit/5a8fb25357c5c69ef5a644bacd2a35e3f7be2d21))
+- _(core,database,frontend,formats,storage)_ Move string conversions onto types - ([2d0ca79](https://github.com/szinn/BookBoss/commit/2d0ca79bc143f0391a384e4dfaaf818279fe8c29))
+- _(frontend)_ Extract shared server function helpers - ([cdee53a](https://github.com/szinn/BookBoss/commit/cdee53a15faf85da4bdcb682e95db955ee9b8d17))
+
+### Documentation
+
+- _(readme)_ Update feature list - ([678ffd2](https://github.com/szinn/BookBoss/commit/678ffd281f75a9615a49756e11b3b74915d90b76))
+
 ## [0.4.4](https://github.com/szinn/BookBoss/compare/v0.4.3..v0.4.4) - 2026-03-16
 
 ### Features
