@@ -1,5 +1,7 @@
 # BookBoss
 
+[![Quillx](https://raw.githubusercontent.com/qainsights/Quillx/main/badges/quillx-3.svg)](https://github.com/qainsights/Quillx) This project is human-directed, AI co-authored, human-reviewed, and human-tested.
+
 **Take control of your digital library.**
 
 BookBoss is a self-hosted digital library manager built in Rust. It provides a
