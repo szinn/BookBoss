@@ -23,7 +23,7 @@ bb-storage = { path = "crates/storage" }
 bb-utils = { path = "crates/utils" }
 
 testcontainers = "0.27.1"
-mockall = "0.13"
+mockall = "0.14.0"
 
 anyhow = "1.0.102"
 image = "0.25.10"
