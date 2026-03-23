@@ -12,7 +12,7 @@
 
 services:
   db:
-    image: postgres:17
+    image: postgres:17@sha256:b994732fcf33f73776c65d3a5bf1f80c00120ba5007e8ab90307b1a743c1fc16
     environment:
       POSTGRES_USER: bookboss
       POSTGRES_PASSWORD: bookboss
@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
 
   bookboss:
-    image: ghcr.io/szinn/bookboss:latest
+    image: ghcr.io/szinn/bookboss:latest@sha256:c2fa84b39d6b2e9018e5533af8737863a4d644d97ed0f6f8ff3ce26d2f2d120f
     ports:
       - "8080:8080" # Web UI
       - "8081:8081" # gRPC API
