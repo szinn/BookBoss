@@ -14,7 +14,7 @@
 
 services:
   bookboss:
-    image: ghcr.io/szinn/bookboss:latest
+    image: ghcr.io/szinn/bookboss:latest@sha256:c2fa84b39d6b2e9018e5533af8737863a4d644d97ed0f6f8ff3ce26d2f2d120f
     ports:
       - "8080:8080" # Web UI
       - "8081:8081" # gRPC API

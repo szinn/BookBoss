@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0](https://github.com/szinn/BookBoss/compare/v0.6.1..v0.7.0) - 2026-03-23
+
+### Features
+
+- _(core)_ Add health task to purge expired sessions daily - ([6f7e883](https://github.com/szinn/BookBoss/commit/6f7e8834f11544277a5bd38d3910fcf52cbf959b))
+- _(frontend)_ Make series tile covers link to series detail page - ([4097c92](https://github.com/szinn/BookBoss/commit/4097c9239639f67d315bc37182e877ca5c2918b1))
+- _(frontend)_ Add HTTP response compression middleware - ([ebd420e](https://github.com/szinn/BookBoss/commit/ebd420ea3fe223a80edf02fdc639d2114be304dd))
+
+### Bug Fixes
+
+- _(formats)_ Handle XML entity references in OPF text content - ([14339e4](https://github.com/szinn/BookBoss/commit/14339e447658359555d595e3e89e476e7b9a2ae3))
+- _(formats)_ Preserve EPUB cover declarations during enrichment - ([04bf4a9](https://github.com/szinn/BookBoss/commit/04bf4a9dbafe276bfff95b2f90ce56a882c6d95f))
+- _(frontend)_ Sort series tile covers by series number before limiting - ([c8376fd](https://github.com/szinn/BookBoss/commit/c8376fd68cb0df4cf320353f75ad20ae00024c95))
+- _(frontend)_ Close delete-book modal immediately on confirm - ([edba9fb](https://github.com/szinn/BookBoss/commit/edba9fba56ab9a6efb632c62358e016e45e5ed99))
+- _(frontend)_ Sort health tasks alphabetically by name - ([662b07c](https://github.com/szinn/BookBoss/commit/662b07c9f790ca67844aa76f75332477e1519d81))
+
+### Refactor
+
+- _(core)_ Remove unused preferred_format from Device model - ([e7f4bdb](https://github.com/szinn/BookBoss/commit/e7f4bdbb0f48e1c3c4768bb7f4bed29e85fafcc5))
+
+### Documentation
+
+- Flesh out installation guide and add Trash documentation - ([d07a83c](https://github.com/szinn/BookBoss/commit/d07a83c9a0e9d21102e1c7a5ed1dce14d2dafdae))
+
 ## [0.6.1](https://github.com/szinn/BookBoss/compare/v0.6.0..v0.6.1) - 2026-03-23
 
 ### Features

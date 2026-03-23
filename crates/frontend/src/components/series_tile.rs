@@ -23,8 +23,9 @@ pub(crate) fn SeriesTile(data: SeriesTileData) -> Element {
     rsx! {
         div { class: "flex flex-col items-center",
             // Fanned cover art container — extra width for rotated side covers
-            div {
-                class: "relative w-[160px] h-[180px]",
+            Link {
+                to: Route::SeriesDetailPage { token: data.token.clone() },
+                class: "relative w-[160px] h-[180px] block cursor-pointer",
 
                 if covers.is_empty() {
                     // Placeholder when no covers
