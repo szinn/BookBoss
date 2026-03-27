@@ -99,7 +99,7 @@ default-features = false
 features = ["json", "rustls", "gzip"]
 
 [workspace.dependencies.rust_decimal]
-version = "1.40.0"
+version = "1.41.0"
 features = ["serde-str"]
 
 [workspace.dependencies.sea-orm]
