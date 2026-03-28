@@ -74,7 +74,7 @@ version = "4.6.0"
 features = ["cargo", "derive", "env"]
 
 [workspace.dependencies.dioxus-server]
-version = "0.7.3"
+version = "0.7.4"
 features = ["router"]
 
 [workspace.dependencies.dioxus]
