@@ -180,10 +180,11 @@ async fn list_books(sort: crate::components::SortOrder) -> Result<ListBooksRespo
         .await
         .map_err(|e| ServerFnError::new(e.to_string()))?;
 
-    // Load per-user reading state for all books in one query.
+    // Load per-user reading state scoped to the fetched books (avoids page limits).
+    let book_ids: Vec<bb_core::book::BookId> = books.iter().map(|b| b.id).collect();
     let reading_metas = core_services
         .reading_service
-        .list_for_user(user_id, None)
+        .list_for_user_and_books(user_id, &book_ids)
         .await
         .map_err(|e| ServerFnError::new(e.to_string()))?;
     let reading_map: HashMap<u64, ReadingStateDto> = reading_metas

@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/bookboss", "crates/integration-tests"]
 
 [workspace.package]
-version = "0.7.5"
+version = "0.7.6"
 edition = "2024"
 rust-version = "1.85"
 description = "Take control of your digital library"
@@ -74,7 +74,7 @@ version = "4.6.0"
 features = ["cargo", "derive", "env"]
 
 [workspace.dependencies.dioxus-server]
-version = "0.7.3"
+version = "0.7.4"
 features = ["router"]
 
 [workspace.dependencies.dioxus]

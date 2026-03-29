@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.6](https://github.com/szinn/BookBoss/compare/v0.7.5..v0.7.6) - 2026-03-28
+
+### Bug Fixes
+
+- _(database)_ Remove 50-book limit from list_books - ([302ff43](https://github.com/szinn/BookBoss/commit/302ff43099b797f358517a424dffe71cb2a7d3c7))
+
 ## [0.7.5](https://github.com/szinn/BookBoss/compare/v0.7.4..v0.7.5) - 2026-03-28
 
 ### Features

@@ -150,15 +150,6 @@ impl BookRepository for BookRepositoryAdapter {
     }
 
     async fn list_books(&self, transaction: &dyn Transaction, filter: &BookQuery, offset: Option<u64>, page_size: Option<u64>) -> Result<Vec<Book>, Error> {
-        const DEFAULT_PAGE_SIZE: u64 = 50;
-        const MAX_PAGE_SIZE: u64 = 50;
-
-        if let Some(page_size) = page_size {
-            if page_size < 1 {
-                return Err(Error::InvalidPageSize(page_size));
-            }
-        }
-
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
         let mut query = prelude::Books::find().filter(books::Column::Status.eq("available"));
@@ -195,8 +186,13 @@ impl BookRepository for BookRepositoryAdapter {
 
         let mut query = if let Some(offset) = offset { query.offset(offset) } else { query };
 
-        let page_size = page_size.unwrap_or(DEFAULT_PAGE_SIZE).min(MAX_PAGE_SIZE);
-        query = query.limit(page_size);
+        // SQLite requires LIMIT when OFFSET is present; use i64::MAX to mean "no
+        // effective limit"
+        match (offset, page_size) {
+            (_, Some(page_size)) => query = query.limit(page_size),
+            (Some(_), None) => query = query.limit(i64::MAX as u64),
+            (None, None) => {}
+        }
 
         let rows = query.all(transaction).await.map_err(handle_dberr)?;
         Ok(rows.into_iter().map(Into::into).collect())
@@ -1118,17 +1114,6 @@ mod tests {
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].id, all[1].id);
-    }
-
-    #[tokio::test]
-    async fn test_list_books_page_size_zero_returns_error() {
-        let svc = setup().await;
-        let tx = svc.repository().begin().await.unwrap();
-
-        assert!(matches!(
-            svc.book_repository().list_books(&*tx, &BookQuery::default(), None, Some(0)).await,
-            Err(Error::InvalidPageSize(0))
-        ));
     }
 
     // ─── authors_for_book ────────────────────────────────────────────────────

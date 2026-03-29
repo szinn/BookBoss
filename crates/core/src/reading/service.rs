@@ -43,6 +43,10 @@ pub trait ReadingService: Send + Sync {
     /// status.
     async fn list_for_user(&self, user_id: UserId, status: Option<ReadStatus>) -> Result<Vec<UserBookMetadata>, Error>;
 
+    /// Returns reading state rows for a user restricted to the given book IDs.
+    /// Books with no row are simply absent from the result (no row ≡ Unread).
+    async fn list_for_user_and_books(&self, user_id: UserId, book_ids: &[BookId]) -> Result<Vec<UserBookMetadata>, Error>;
+
     /// Applies a device-reported reading state update.
     ///
     /// The state machine transitions (`date_started`, `date_finished`,
@@ -238,6 +242,13 @@ impl ReadingService for ReadingServiceImpl {
     async fn list_for_user(&self, user_id: UserId, status: Option<ReadStatus>) -> Result<Vec<UserBookMetadata>, Error> {
         with_read_only_transaction!(self, user_book_metadata_repository, |tx| {
             user_book_metadata_repository.list_for_user(tx, user_id, status, None, None).await
+        })
+    }
+
+    async fn list_for_user_and_books(&self, user_id: UserId, book_ids: &[BookId]) -> Result<Vec<UserBookMetadata>, Error> {
+        let book_ids = book_ids.to_vec();
+        with_read_only_transaction!(self, user_book_metadata_repository, |tx| {
+            user_book_metadata_repository.list_for_user_and_books(tx, user_id, &book_ids).await
         })
     }
 

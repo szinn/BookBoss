@@ -58,9 +58,10 @@ async fn get_series(token: String) -> Result<SeriesPageData, ServerFnError> {
         (None, None) => std::cmp::Ordering::Equal,
     });
 
+    let book_ids: Vec<bb_core::book::BookId> = books.iter().map(|b| b.id).collect();
     let reading_metas = core_services
         .reading_service
-        .list_for_user(current_user.id(), None)
+        .list_for_user_and_books(current_user.id(), &book_ids)
         .await
         .map_err(|e| ServerFnError::new(e.to_string()))?;
     let reading_map: HashMap<u64, _> = reading_metas
