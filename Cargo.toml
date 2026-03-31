@@ -83,7 +83,7 @@ version = "0.7.4"
 features = ["fullstack", "router"]
 
 [workspace.dependencies.hyper]
-version = "1.8.1"
+version = "1.9.0"
 features = ["full"]
 
 [workspace.dependencies.hyper-util]
