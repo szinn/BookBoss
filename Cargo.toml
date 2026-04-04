@@ -25,7 +25,7 @@ testcontainers = "0.27.2"
 mockall = "0.14.0"
 
 anyhow = "1.0.102"
-md-5 = "0.10"
+md-5 = "0.11.0"
 image = "0.25.10"
 mimalloc = "0.1.48"
 base64 = "0.22.1"
