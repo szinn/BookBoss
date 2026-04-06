@@ -2468,9 +2468,9 @@ dependencies = [
 
 [[package]]
 name = "dioxus-server"
-version = "0.7.4"
+version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d04f3e741d9b866f38c20f368fdf84226b27ca341fa0108cf2e0bf6cdb40c7e7"
+checksum = "c72c721e222c257d28423d2b571bcc4d1e7e8a3d4074baa1c8b05242d4d46d12"
 dependencies = [
  "anyhow",
  "async-trait",
