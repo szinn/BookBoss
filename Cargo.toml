@@ -80,7 +80,7 @@ version = "0.7.5"
 features = ["router"]
 
 [workspace.dependencies.dioxus]
-version = "0.7.4"
+version = "0.7.5"
 features = ["fullstack", "router"]
 
 [workspace.dependencies.hyper]
