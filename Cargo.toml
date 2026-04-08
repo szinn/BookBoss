@@ -140,7 +140,7 @@ version = "1.0.228"
 features = ["derive"]
 
 [workspace.dependencies.tokio]
-version = "1.51.0"
+version = "1.51.1"
 default-features = false
 features = ["full"]
 
