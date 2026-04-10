@@ -15,7 +15,7 @@ pipx.uvx = true
 "node" = "24"
 "npm:renovate" = "latest"
 "npm:tailwindcss" = "4.2.2"
-"prettier" = "3.8.1"
+"prettier" = "3.8.2"
 "protobuf" = "33.5"
 "tailwindcss" = "4.2.1"
 
