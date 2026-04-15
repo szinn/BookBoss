@@ -25,7 +25,7 @@ bb-utils = { path = "crates/utils" }
 
 # Test support
 mockall = "0.14.0"
-testcontainers = "0.27.2"
+testcontainers = "0.27.3"
 testcontainers-modules = { version = "0.15.0", features = [
     "postgres",
     "mariadb",
