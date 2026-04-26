@@ -49,7 +49,7 @@ sha2 = "0.11.0"
 image = "0.25.10"
 
 # Memory management
-mimalloc = "0.1.49"
+mimalloc = "0.1.50"
 
 # Async
 async-stream = "0.3.6"
