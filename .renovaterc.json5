@@ -1,75 +1,117 @@
 {
   extends: [
-    "config:recommended",
-    ":dependencyDashboard",
-    ":disableRateLimiting",
-    "docker:enableMajor",
-    "helpers:pinGitHubActionDigests",
-    ":automergeDigest",
-    ":enablePreCommit",
-    ":semanticCommits",
-    ":automergeBranch"
+    'config:recommended',
+    ':dependencyDashboard',
+    ':disableRateLimiting',
+    'docker:enableMajor',
+    'helpers:pinGitHubActionDigests',
+    ':automergeDigest',
+    ':enablePreCommit',
+    ':semanticCommits',
+    ':automergeBranch',
   ],
-  timezone: "America/Toronto",
-  dependencyDashboardTitle: "Renovate Dashboard",
-  suppressNotifications: ["prIgnoreNotification"],
+  timezone: 'America/Toronto',
+  dependencyDashboardTitle: 'Renovate Dashboard',
+  suppressNotifications: [
+    'prIgnoreNotification',
+  ],
   commitBodyTable: true,
-  prBodyTemplate: "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}",
+  prBodyTemplate: '{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}',
   packageRules: [
     {
-      matchManagers: ["github-actions"],
-      matchUpdateTypes: ["minor", "patch", "digest"],
-      addLabels: ["ci"],
-      automerge: false
+      matchManagers: [
+        'github-actions',
+      ],
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+        'digest',
+      ],
+      addLabels: [
+        'ci',
+      ],
+      automerge: false,
     },
     {
-      matchManagers: ["github-actions"],
-      addLabels: ["ci"],
-      semanticCommitScope: "deps",
-      automerge: false
+      matchManagers: [
+        'github-actions',
+      ],
+      addLabels: [
+        'ci',
+      ],
+      semanticCommitScope: 'deps',
+      automerge: false,
     },
     {
-      matchManagers: ["cargo"],
-      addLabels: ["dependency"],
-      commitMessageTopic: "Crate {{depName}}",
-      semanticCommitScope: "deps",
-      rangeStrategy: "bump"
+      matchManagers: [
+        'cargo',
+      ],
+      addLabels: [
+        'dependency',
+      ],
+      commitMessageTopic: 'Crate {{depName}}',
+      semanticCommitScope: 'deps',
+      rangeStrategy: 'bump',
     },
     {
-      matchDatasources: ["docker"],
-      addLabels: ["docker"],
-      commitMessageTopic: "Docker image {{depName}}",
-      semanticCommitScope: "deps",
-      automerge: false
+      matchDatasources: [
+        'docker',
+      ],
+      addLabels: [
+        'docker',
+      ],
+      commitMessageTopic: 'Docker image {{depName}}',
+      semanticCommitScope: 'deps',
+      automerge: false,
     },
     {
-      matchUpdateTypes: ["major"],
-      labels: ["type/major"],
-      semanticCommitType: "feat!"
+      matchUpdateTypes: [
+        'major',
+      ],
+      labels: [
+        'type/major',
+      ],
+      semanticCommitType: 'feat!',
     },
     {
-      matchUpdateTypes: ["minor"],
-      labels: ["type/minor"],
-      semanticCommitType: "feat"
+      matchUpdateTypes: [
+        'minor',
+      ],
+      labels: [
+        'type/minor',
+      ],
+      semanticCommitType: 'feat',
     },
     {
-      matchUpdateTypes: ["patch"],
-      labels: ["type/patch"],
-      semanticCommitType: "fix"
+      matchUpdateTypes: [
+        'patch',
+      ],
+      labels: [
+        'type/patch',
+      ],
+      semanticCommitType: 'fix',
     },
     {
-      matchDatasources: ["mise"],
-      allowedVersions: "<4",
-      matchPackageNames: ["/npm:tailwindcss/"]
+      matchDatasources: [
+        'mise',
+      ],
+      allowedVersions: '<4',
+      matchPackageNames: [
+        '/npm:tailwindcss/',
+      ],
     },
     {
-      description: "Dioxus Group",
-      matchDatasources: ["cargo"],
-      matchPackagePatterns: ["dioxus"],
-      groupName: "Dioxus",
+      description: 'Dioxus Group',
+      matchDatasources: [
+        'cargo',
+      ],
+      groupName: 'Dioxus',
       group: {
-        commitMessageTopic: "{{{groupName}}} group"
-      }
-    }
-  ]
+        commitMessageTopic: '{{{groupName}}} group',
+      },
+      matchPackageNames: [
+        '/dioxus/',
+      ],
+    },
+  ],
 }
