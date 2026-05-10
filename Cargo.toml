@@ -112,10 +112,10 @@ tracing-subscriber = { version = "0.3.23", features = [
 # gRPC
 prost = "0.14.3"
 prost-types = "0.14.3"
-tonic = { version = "0.14.5", features = ["tls-native-roots", "tls-ring"] }
-tonic-prost = "0.14.5"
-tonic-prost-build = "0.14.5"
-tonic-reflection = "0.14.5"
+tonic = { version = "0.14.6", features = ["tls-native-roots", "tls-ring"] }
+tonic-prost = "0.14.6"
+tonic-prost-build = "0.14.6"
+tonic-reflection = "0.14.6"
 
 # Format utilities
 quick-xml = "0.39.2"
