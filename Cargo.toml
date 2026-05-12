@@ -54,17 +54,17 @@ mimalloc = "0.1.50"
 # Async
 async-stream = "0.3.6"
 async-trait = "0.1.89"
-tokio = { version = "1.52.1", default-features = false, features = ["full"] }
+tokio = { version = "1.52.3", default-features = false, features = ["full"] }
 tokio-graceful-shutdown = "0.19.3"
 tokio-stream = "0.1.18"
 tokio-util = { version = "0.7.18", default-features = false, features = ["rt"] }
 
 # Web
 axum = "0.8.9"
-axum_session = { version = "0.20.0", default-features = false }
+axum_session = { version = "0.20.1", default-features = false }
 axum_session_auth = { version = "0.20.0", default-features = false }
 dioxus = { version = "0.7.9", features = ["fullstack", "router"] }
-dioxus-server = { version = "0.7.7", features = ["router"] }
+dioxus-server = { version = "0.7.9", features = ["router"] }
 hyper = { version = "1.9.0", features = ["full"] }
 hyper-util = { version = "0.1.20", features = [
     "tokio",
@@ -77,7 +77,7 @@ reqwest = { version = "0.13.3", default-features = false, features = [
     "gzip",
 ] }
 tower = "0.5.3"
-tower-http = { version = "0.6.8", features = [
+tower-http = { version = "0.6.10", features = [
     "compression-full",
     "limit",
     "request-id",
@@ -85,7 +85,10 @@ tower-http = { version = "0.6.8", features = [
 ] }
 
 # OpenID Connect
-openidconnect = { version = "4.0.1", default-features = false, features = ["reqwest", "rustls-tls"] }
+openidconnect = { version = "4.0.1", default-features = false, features = [
+    "reqwest",
+    "rustls-tls",
+] }
 
 # Config
 config = "0.15.22"
@@ -93,7 +96,7 @@ config = "0.15.22"
 # Utility
 chrono = { version = "0.4.44", features = ["serde"] }
 derive_builder = "0.20.2"
-rust_decimal = { version = "1.41.0", features = ["serde-str"] }
+rust_decimal = { version = "1.42.0", features = ["serde-str"] }
 rust_decimal_macros = "1.40.0"
 tempfile = "3.27.0"
 
@@ -112,13 +115,13 @@ tracing-subscriber = { version = "0.3.23", features = [
 # gRPC
 prost = "0.14.3"
 prost-types = "0.14.3"
-tonic = { version = "0.14.5", features = ["tls-native-roots", "tls-ring"] }
-tonic-prost = "0.14.5"
-tonic-prost-build = "0.14.5"
-tonic-reflection = "0.14.5"
+tonic = { version = "0.14.6", features = ["tls-native-roots", "tls-ring"] }
+tonic-prost = "0.14.6"
+tonic-prost-build = "0.14.6"
+tonic-reflection = "0.14.6"
 
 # Format utilities
-quick-xml = "0.39.2"
+quick-xml = "0.39.4"
 zip = "8.6.0"
 
 # Serialization

@@ -1,4 +1,4 @@
-FROM rust:1@sha256:a9cfb755b33f5bb872610cbdb25da61f527416b28fc9c052bbce4bef93e7799a AS chef
+FROM rust:1@sha256:5b1e3484ddcd22a3738c0ec34a5e98bf19382eb295fb6db54295e62379119040 AS chef
 
 # ARG TARGETPLATFORM
 # ARG TARGETARCH
@@ -62,7 +62,7 @@ RUN /usr/local/cargo/bin/dx bundle --server --package bookboss --release --targe
 # Sanity check: should say "not a dynamic executable"
 RUN ldd target/dx/bookboss/release/web/bookboss || true
 
-FROM ubuntu:latest@sha256:c4a8d5503dfb2a3eb8ab5f807da5bc69a85730fb49b5cfca2330194ebcc41c7b AS certs
+FROM ubuntu:latest@sha256:f3d28607ddd78734bb7f71f117f3c6706c666b8b76cbff7c9ff6e5718d46ff64 AS certs
 RUN groupadd --gid 1234 bookboss && useradd -g 1234 -M -u 1234 -s /usr/sbin/nologin bookboss
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 RUN update-ca-certificates

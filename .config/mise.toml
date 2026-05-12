@@ -8,7 +8,7 @@
 "cargo:mdbook" = "0.5.2"
 "colima" = "0.10.1"
 "git-cliff" = "2.13.1"
-"npm:tailwindcss" = "4.2.4"
+"npm:tailwindcss" = "4.3.0"
 "prettier" = "3.8.3"
 "protobuf" = "34.1"
 "tailwindcss" = "4.2.1"
