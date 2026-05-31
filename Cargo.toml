@@ -65,7 +65,7 @@ axum_session = { version = "0.20.1", default-features = false }
 axum_session_auth = { version = "0.20.0", default-features = false }
 dioxus = { version = "0.7.9", features = ["fullstack", "router"] }
 dioxus-server = { version = "0.7.9", features = ["router"] }
-hyper = { version = "1.9.0", features = ["full"] }
+hyper = { version = "1.10.1", features = ["full"] }
 hyper-util = { version = "0.1.20", features = [
     "tokio",
     "server-auto",
