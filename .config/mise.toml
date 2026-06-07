@@ -6,7 +6,7 @@
 "cargo:cargo-nextest" = "0.9.126"
 "cargo:dioxus-cli" = "0.7.9"
 "cargo:mdbook" = "0.5.2"
-"colima" = "0.10.1"
+"colima" = "0.10.3"
 "git-cliff" = "2.13.1"
 "npm:tailwindcss" = "4.3.0"
 "prettier" = "3.8.3"
