@@ -157,7 +157,7 @@ sqlx = "0.8.6"
 clap = { version = "4.6.1", features = ["cargo", "derive", "env"] }
 
 # Testing
-insta = { version = "1.47.2", features = ["filters"] }
+insta = { version = "1.48.0", features = ["filters"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
