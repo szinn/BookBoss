@@ -96,7 +96,7 @@ config = "0.15.23"
 # Utility
 chrono = { version = "0.4.45", features = ["serde"] }
 derive_builder = "0.20.2"
-rust_decimal = { version = "1.42.0", features = ["serde-str"] }
+rust_decimal = { version = "1.42.1", features = ["serde-str"] }
 rust_decimal_macros = "1.40.0"
 tempfile = "3.27.0"
 
