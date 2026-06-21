@@ -101,7 +101,7 @@ rust_decimal_macros = "1.40.0"
 tempfile = "3.27.0"
 
 # Logging
-log = "0.4.32"
+log = "0.4.33"
 tracing = { version = "0.1.44", features = ["log"] }
 tracing-log = "0.2.0"
 tracing-subscriber = { version = "0.3.23", features = [
