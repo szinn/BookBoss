@@ -91,7 +91,7 @@ openidconnect = { version = "4.0.1", default-features = false, features = [
 ] }
 
 # Config
-config = "0.15.24"
+config = "0.15.25"
 
 # Utility
 chrono = { version = "0.4.45", features = ["serde"] }
