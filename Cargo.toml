@@ -38,7 +38,7 @@ anyhow = "1.0.103"
 thiserror = "2.0.18"
 
 # Crypto
-aes-gcm = "0.10.3"
+aes-gcm = "0.11.0"
 argon2 = { version = "0.5.3", features = ["std"] }
 base64 = "0.22.1"
 md-5 = "0.11.0"
