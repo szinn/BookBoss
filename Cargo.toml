@@ -121,7 +121,7 @@ tonic-prost-build = "0.14.6"
 tonic-reflection = "0.14.6"
 
 # Format utilities
-quick-xml = "0.40.1"
+quick-xml = "0.41.0"
 zip = "8.6.0"
 
 # Serialization
