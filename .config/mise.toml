@@ -1,7 +1,7 @@
 [tools]
 "buf" = "1.71.0"
 "cargo:cargo-audit" = "0.22.1"
-"cargo:cargo-deny" = "0.19.0"
+"cargo:cargo-deny" = "0.20.0"
 "cargo:cargo-insta" = "1.43.1"
 "cargo:cargo-nextest" = "0.9.126"
 "cargo:dioxus-cli" = "0.7.9"
