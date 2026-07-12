@@ -9,7 +9,7 @@
 "colima" = "0.10.3"
 "git-cliff" = "2.13.1"
 "npm:tailwindcss" = "4.3.2"
-"prettier" = "3.9.4"
+"prettier" = "3.9.5"
 "protobuf" = "35.1"
 "tailwindcss" = "4.2.1"
 
