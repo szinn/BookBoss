@@ -53,7 +53,7 @@ mimalloc = "0.1.52"
 
 # Async
 async-stream = "0.3.6"
-async-trait = "0.1.89"
+async-trait = "0.1.91"
 tokio = { version = "1.52.3", default-features = false, features = ["full"] }
 tokio-graceful-shutdown = "0.19.3"
 tokio-stream = "0.1.18"
