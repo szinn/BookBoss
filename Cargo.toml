@@ -40,7 +40,7 @@ thiserror = "2.0.18"
 # Crypto
 aes-gcm = "0.11.0"
 argon2 = { version = "0.5.3", features = ["std"] }
-base64 = "0.22.1"
+base64 = "0.23.0"
 md-5 = "0.11.0"
 rand = "0.10.2"
 sha2 = "0.11.0"
