@@ -12,7 +12,7 @@
 
 services:
   db:
-    image: mysql:9
+    image: mysql:26
     environment:
       MYSQL_ROOT_PASSWORD: bookboss
       MYSQL_DATABASE: bookboss
