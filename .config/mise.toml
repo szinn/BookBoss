@@ -1,6 +1,6 @@
 [tools]
 "buf" = "1.72.0"
-"cargo:cargo-audit" = "0.22.1"
+"cargo:cargo-audit" = "0.22.2"
 "cargo:cargo-deny" = "0.20.0"
 "cargo:cargo-insta" = "1.43.1"
 "cargo:cargo-nextest" = "0.9.126"
