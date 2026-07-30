@@ -1,5 +1,5 @@
 [tools]
-"buf" = "1.71.0"
+"buf" = "1.72.0"
 "cargo:cargo-audit" = "0.22.1"
 "cargo:cargo-deny" = "0.20.0"
 "cargo:cargo-insta" = "1.43.1"
@@ -10,6 +10,8 @@
 "git-cliff" = "2.13.1"
 "npm:tailwindcss" = "4.3.3"
 "prettier" = "3.9.5"
+"npm:tailwindcss" = "4.3.2"
+"prettier" = "3.9.6"
 "protobuf" = "35.1"
 "tailwindcss" = "4.2.1"
 
