@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.33](https://github.com/szinn/BookBoss/compare/v0.8.32..v0.8.33) - 2026-08-02
+
+### Bug Fixes
+
+- _(database)_ Treat SQLite busy/locked errors as transient - ([1ce0129](https://github.com/szinn/BookBoss/commit/1ce01297e64783b1e6ccbb879bde555c83f1344b))
+
 ## [0.8.32](https://github.com/szinn/BookBoss/compare/v0.8.31..v0.8.32) - 2026-08-02
 
 ### Bug Fixes
