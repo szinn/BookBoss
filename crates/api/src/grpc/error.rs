@@ -106,4 +106,13 @@ mod tests {
 
         assert_eq!(status.code(), Code::Unavailable);
     }
+
+    #[test]
+    fn test_busy_error_maps_to_unavailable() {
+        let error = Error::RepositoryError(RepositoryError::Busy("database is locked".into()));
+
+        let status = map_core_error(error);
+
+        assert_eq!(status.code(), Code::Unavailable);
+    }
 }

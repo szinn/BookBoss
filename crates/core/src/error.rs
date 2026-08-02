@@ -74,7 +74,10 @@ impl Error {
     /// a restart; subsystems should retry rather than propagating these.
     #[must_use]
     pub fn is_transient(&self) -> bool {
-        matches!(self, Self::RepositoryError(RepositoryError::Connection(_)) | Self::StorageUnavailable(_))
+        matches!(
+            self,
+            Self::RepositoryError(RepositoryError::Connection(_) | RepositoryError::Busy(_)) | Self::StorageUnavailable(_)
+        )
     }
 }
 
@@ -102,6 +105,11 @@ pub enum RepositoryError {
     /// exhausted). Transient — callers should retry.
     #[error("Connection Error: {0}")]
     Connection(String),
+
+    /// Database temporarily locked by another writer (e.g. SQLite
+    /// SQLITE_BUSY/SQLITE_LOCKED). Transient — callers should retry.
+    #[error("Database busy: {0}")]
+    Busy(String),
 }
 
 impl RepositoryError {
@@ -113,7 +121,7 @@ impl RepositoryError {
             Self::Conflict => ErrorKind::Conflict,
             Self::Constraint(_) => ErrorKind::InvalidInput,
             Self::ReadOnly | Self::Database(_) | Self::QueryCanceled => ErrorKind::Internal,
-            Self::Connection(_) => ErrorKind::ServiceUnavailable,
+            Self::Connection(_) | Self::Busy(_) => ErrorKind::ServiceUnavailable,
         }
     }
 }
@@ -151,6 +159,18 @@ mod tests {
     #[test]
     fn storage_unavailable_kind_is_service_unavailable() {
         let e = Error::StorageUnavailable("x".into());
+        assert_eq!(e.kind(), ErrorKind::ServiceUnavailable);
+    }
+
+    #[test]
+    fn is_transient_busy_error() {
+        let e = Error::RepositoryError(RepositoryError::Busy("database is locked".into()));
+        assert!(e.is_transient());
+    }
+
+    #[test]
+    fn busy_kind_is_service_unavailable() {
+        let e = RepositoryError::Busy("database is locked".into());
         assert_eq!(e.kind(), ErrorKind::ServiceUnavailable);
     }
 }
