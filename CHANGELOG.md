@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.32](https://github.com/szinn/BookBoss/compare/v0.8.31..v0.8.32) - 2026-08-02
+
+### Bug Fixes
+
+- _(core)_ Update opds encryption for aes-gcm 0.11 API - ([3a46da8](https://github.com/szinn/BookBoss/commit/3a46da800051527c0c37a111c6ceeaa92cce4400))
+
 ## [0.8.30](https://github.com/szinn/BookBoss/compare/v0.8.29..v0.8.30) - 2026-05-25
 
 ### Bug Fixes
@@ -861,7 +867,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Refactor
 
-- _(core)_ Replace hand-rolled Mock\* structs with mockall - ([2070198](https://github.com/szinn/BookBoss/commit/207019886270c0770be940972cb538d49503cf62))
+- _(core)_ Replace hand-rolled Mock* structs with mockall - ([2070198](https://github.com/szinn/BookBoss/commit/207019886270c0770be940972cb538d49503cf62))
 - _(core)_ Move string conversions onto enum types - ([5a8fb25](https://github.com/szinn/BookBoss/commit/5a8fb25357c5c69ef5a644bacd2a35e3f7be2d21))
 - _(core,database,frontend,formats,storage)_ Move string conversions onto types - ([2d0ca79](https://github.com/szinn/BookBoss/commit/2d0ca79bc143f0391a384e4dfaaf818279fe8c29))
 - _(frontend)_ Extract shared server function helpers - ([cdee53a](https://github.com/szinn/BookBoss/commit/cdee53a15faf85da4bdcb682e95db955ee9b8d17))
