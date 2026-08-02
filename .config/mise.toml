@@ -4,7 +4,7 @@
 "cargo:cargo-deny" = "0.20.2"
 "cargo:cargo-insta" = "1.48.0"
 "cargo:cargo-nextest" = "0.9.140"
-"cargo:dioxus-cli" = "0.7.9"
+"cargo:dioxus-cli" = "0.7.10"
 "cargo:mdbook" = "0.5.4"
 "colima" = "0.10.3"
 "git-cliff" = "2.13.1"
