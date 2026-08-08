@@ -1,9 +1,10 @@
-use bb_utils::{define_token_prefix, token::Token};
 use chrono::{DateTime, Utc};
+
+use crate::token::{Token, TokenAlphabet, define_token_prefix};
 
 define_token_prefix!(TagTokenPrefix, "T_");
 pub type TagId = u64;
-pub type TagToken = Token<TagTokenPrefix, TagId, { i64::MAX as u128 }>;
+pub type TagToken = Token<TagTokenPrefix, TagId, TokenAlphabet, { i64::MAX as u128 }>;
 
 #[derive(Debug, Clone)]
 pub struct Tag {

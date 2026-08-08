@@ -1,13 +1,15 @@
 use std::{fmt, str::FromStr};
 
-use bb_utils::{define_token_prefix, token::Token};
 use chrono::{DateTime, Utc};
 
-use crate::user::UserId;
+use crate::{
+    token::{Token, TokenAlphabet, define_token_prefix},
+    user::UserId,
+};
 
 define_token_prefix!(DeviceTokenPrefix, "DV_");
 pub type DeviceId = u64;
-pub type DeviceToken = Token<DeviceTokenPrefix, DeviceId, { i64::MAX as u128 }>;
+pub type DeviceToken = Token<DeviceTokenPrefix, DeviceId, TokenAlphabet, { i64::MAX as u128 }>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum OnRemovalAction {

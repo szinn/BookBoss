@@ -1,9 +1,10 @@
-use bb_utils::{define_token_prefix, token::Token};
 use chrono::{DateTime, Utc};
+
+use crate::token::{Token, TokenAlphabet, define_token_prefix};
 
 define_token_prefix!(LibraryTokenPrefix, "LB_");
 pub type LibraryId = u64;
-pub type LibraryToken = Token<LibraryTokenPrefix, LibraryId, { i64::MAX as u128 }>;
+pub type LibraryToken = Token<LibraryTokenPrefix, LibraryId, TokenAlphabet, { i64::MAX as u128 }>;
 
 /// The hard-coded ID of the "All Books" system library.
 /// Must match the value seeded in migration 33.

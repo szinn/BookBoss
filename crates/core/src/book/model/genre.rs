@@ -1,9 +1,10 @@
-use bb_utils::{define_token_prefix, token::Token};
 use chrono::{DateTime, Utc};
+
+use crate::token::{Token, TokenAlphabet, define_token_prefix};
 
 define_token_prefix!(GenreTokenPrefix, "G_");
 pub type GenreId = u64;
-pub type GenreToken = Token<GenreTokenPrefix, GenreId, { i64::MAX as u128 }>;
+pub type GenreToken = Token<GenreTokenPrefix, GenreId, TokenAlphabet, { i64::MAX as u128 }>;
 
 #[derive(Debug, Clone)]
 pub struct Genre {

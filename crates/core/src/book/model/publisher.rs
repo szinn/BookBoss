@@ -1,9 +1,10 @@
-use bb_utils::{define_token_prefix, token::Token};
 use chrono::{DateTime, Utc};
+
+use crate::token::{Token, TokenAlphabet, define_token_prefix};
 
 define_token_prefix!(PublisherTokenPrefix, "P_");
 pub type PublisherId = u64;
-pub type PublisherToken = Token<PublisherTokenPrefix, PublisherId, { i64::MAX as u128 }>;
+pub type PublisherToken = Token<PublisherTokenPrefix, PublisherId, TokenAlphabet, { i64::MAX as u128 }>;
 
 #[derive(Debug, Clone)]
 pub struct Publisher {

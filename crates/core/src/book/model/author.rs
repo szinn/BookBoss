@@ -1,13 +1,15 @@
 use std::{fmt, str::FromStr};
 
-use bb_utils::{define_token_prefix, token::Token};
 use chrono::{DateTime, Utc};
 
-use crate::book::BookId;
+use crate::{
+    book::BookId,
+    token::{Token, TokenAlphabet, define_token_prefix},
+};
 
 define_token_prefix!(AuthorTokenPrefix, "A_");
 pub type AuthorId = u64;
-pub type AuthorToken = Token<AuthorTokenPrefix, AuthorId, { i64::MAX as u128 }>;
+pub type AuthorToken = Token<AuthorTokenPrefix, AuthorId, TokenAlphabet, { i64::MAX as u128 }>;
 
 #[derive(Debug, Clone)]
 pub struct Author {

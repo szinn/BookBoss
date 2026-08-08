@@ -1,11 +1,16 @@
-use bb_utils::{define_token_prefix, token::Token};
 use chrono::{DateTime, Utc};
 
-use crate::{device::DeviceId, filter::BookFilter, library::LibraryId, user::UserId};
+use crate::{
+    device::DeviceId,
+    filter::BookFilter,
+    library::LibraryId,
+    token::{Token, TokenAlphabet, define_token_prefix},
+    user::UserId,
+};
 
 define_token_prefix!(ShelfTokenPrefix, "SH_");
 pub type ShelfId = u64;
-pub type ShelfToken = Token<ShelfTokenPrefix, ShelfId, { i64::MAX as u128 }>;
+pub type ShelfToken = Token<ShelfTokenPrefix, ShelfId, TokenAlphabet, { i64::MAX as u128 }>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ShelfType {

@@ -1,11 +1,13 @@
 use std::{fmt, str::FromStr};
 
-use bb_utils::{define_token_prefix, token::Token};
 use chrono::{DateTime, Utc};
 use derive_builder::Builder;
 use rust_decimal::Decimal;
 
-use crate::book::{AuthorId, FileFormat, GenreId, MetadataSource, SeriesId, TagId};
+use crate::{
+    book::{AuthorId, FileFormat, GenreId, MetadataSource, SeriesId, TagId},
+    token::{Token, TokenAlphabet, define_token_prefix},
+};
 
 // ── Slug / filename helpers
 // ───────────────────────────────────────────────────
@@ -63,7 +65,7 @@ mod slug_tests {
 
 define_token_prefix!(BookTokenPrefix, "BK_");
 pub type BookId = u64;
-pub type BookToken = Token<BookTokenPrefix, BookId, { i64::MAX as u128 }>;
+pub type BookToken = Token<BookTokenPrefix, BookId, TokenAlphabet, { i64::MAX as u128 }>;
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum BookStatus {

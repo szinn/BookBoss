@@ -1,9 +1,10 @@
-use bb_utils::{define_token_prefix, token::Token};
 use chrono::{DateTime, Utc};
+
+use crate::token::{Token, TokenAlphabet, define_token_prefix};
 
 define_token_prefix!(SeriesTokenPrefix, "SR_");
 pub type SeriesId = u64;
-pub type SeriesToken = Token<SeriesTokenPrefix, SeriesId, { i64::MAX as u128 }>;
+pub type SeriesToken = Token<SeriesTokenPrefix, SeriesId, TokenAlphabet, { i64::MAX as u128 }>;
 
 #[derive(Debug, Clone)]
 pub struct Series {

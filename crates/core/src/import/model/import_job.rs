@@ -1,16 +1,16 @@
 use std::{fmt, str::FromStr};
 
-use bb_utils::{define_token_prefix, token::Token};
 use chrono::{DateTime, Utc};
 
 use crate::{
     book::{BookId, FileFormat},
+    token::{Token, TokenAlphabet, define_token_prefix},
     user::UserId,
 };
 
 define_token_prefix!(ImportJobTokenPrefix, "IJ_");
 pub type ImportJobId = u64;
-pub type ImportJobToken = Token<ImportJobTokenPrefix, ImportJobId, { i64::MAX as u128 }>;
+pub type ImportJobToken = Token<ImportJobTokenPrefix, ImportJobId, TokenAlphabet, { i64::MAX as u128 }>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ImportStatus {
