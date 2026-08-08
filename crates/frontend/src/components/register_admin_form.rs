@@ -94,7 +94,7 @@ pub(crate) fn RegisterAdminForm() -> Element {
                 if let Some(msg) = error_msg() {
                     div {
                         class: "mb-4 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg text-sm",
-                        "{msg}"
+                        {msg}
                     }
                 }
 
@@ -154,7 +154,7 @@ pub(crate) fn RegisterAdminForm() -> Element {
                                 div {
                                     class: if satisfied { "flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400" } else { "flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500" },
                                     span { if satisfied { "✓" } else { "○" } }
-                                    span { "{rule}" }
+                                    span { {rule} }
                                 }
                             }
                         }

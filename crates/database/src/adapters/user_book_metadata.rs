@@ -143,10 +143,10 @@ impl UserBookMetadataRepository for UserBookMetadataRepositoryAdapter {
         start_book_id: Option<BookId>,
         page_size: Option<u64>,
     ) -> Result<Vec<UserBookMetadata>, Error> {
-        if let Some(page_size) = page_size {
-            if page_size < 1 {
-                return Err(Error::InvalidPageSize(page_size));
-            }
+        if let Some(page_size) = page_size
+            && page_size < 1
+        {
+            return Err(Error::InvalidPageSize(page_size));
         }
 
         let tx = TransactionImpl::get_db_transaction(transaction)?;

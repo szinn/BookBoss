@@ -131,10 +131,10 @@ pub(crate) fn LandingPage(login_failed: Option<u8>) -> Element {
     let initial_error: Option<String> = login_failed.is_some().then(|| "Invalid username or password".to_string());
 
     use_effect(move || {
-        if let Some(Ok(ref state)) = landing_state() {
-            if state.is_authenticated {
-                navigator.push(Route::BooksPage {});
-            }
+        if let Some(Ok(ref state)) = landing_state()
+            && state.is_authenticated
+        {
+            navigator.push(Route::BooksPage {});
         }
     });
 
@@ -258,7 +258,7 @@ fn ForceChangePasswordForm(user_token: String, on_changed: EventHandler<()>, on_
 
                 if let Some(msg) = error_msg() {
                     div { class: "mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm",
-                        "{msg}"
+                        {msg}
                     }
                 }
 
@@ -287,7 +287,7 @@ fn ForceChangePasswordForm(user_token: String, on_changed: EventHandler<()>, on_
                                         "flex items-center gap-1.5 text-xs text-gray-400"
                                     },
                                     span { if satisfied { "✓" } else { "○" } }
-                                    span { "{rule}" }
+                                    span { {rule} }
                                 }
                             }
                         }

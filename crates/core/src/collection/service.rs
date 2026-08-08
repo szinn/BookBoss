@@ -189,10 +189,10 @@ impl CollectionService for CollectionServiceImpl {
         .await?;
 
         // Best-effort: copy the enriched file to Trash before deleting.
-        if let Some(ref file_name) = enriched_filename {
-            if let Err(e) = self.file_store.copy_to_trash(book_token, file_name).await {
-                warn!(book_token = %book_token, file_name, error = %e, "failed to copy enriched file to Trash");
-            }
+        if let Some(ref file_name) = enriched_filename
+            && let Err(e) = self.file_store.copy_to_trash(book_token, file_name).await
+        {
+            warn!(book_token = %book_token, file_name, error = %e, "failed to copy enriched file to Trash");
         }
 
         self.file_store.delete_book(book_token).await?;

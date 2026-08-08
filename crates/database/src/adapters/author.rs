@@ -156,10 +156,10 @@ impl AuthorRepository for AuthorRepositoryAdapter {
     }
 
     async fn list_authors(&self, transaction: &dyn Transaction, start_id: Option<AuthorId>, page_size: Option<u64>) -> Result<Vec<Author>, Error> {
-        if let Some(page_size) = page_size {
-            if page_size < 1 {
-                return Err(Error::InvalidPageSize(page_size));
-            }
+        if let Some(page_size) = page_size
+            && page_size < 1
+        {
+            return Err(Error::InvalidPageSize(page_size));
         }
 
         let transaction = TransactionImpl::get_db_transaction(transaction)?;

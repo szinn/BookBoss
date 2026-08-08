@@ -145,10 +145,10 @@ impl SeriesRepository for SeriesRepositoryAdapter {
     }
 
     async fn list_series(&self, transaction: &dyn Transaction, start_id: Option<SeriesId>, page_size: Option<u64>) -> Result<Vec<Series>, Error> {
-        if let Some(page_size) = page_size {
-            if page_size < 1 {
-                return Err(Error::InvalidPageSize(page_size));
-            }
+        if let Some(page_size) = page_size
+            && page_size < 1
+        {
+            return Err(Error::InvalidPageSize(page_size));
         }
 
         let transaction = TransactionImpl::get_db_transaction(transaction)?;

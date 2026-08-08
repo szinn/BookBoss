@@ -623,7 +623,7 @@ pub(crate) fn ShelfPage(token: String) -> Element {
                                 if has_more {
                                     div { class: "flex flex-col items-center gap-2 py-4 shrink-0",
                                         if let Some(err) = load_more_error() {
-                                            p { class: "text-red-600 dark:text-red-400 text-xs", "{err}" }
+                                            p { class: "text-red-600 dark:text-red-400 text-xs", {err} }
                                         }
                                         button {
                                             class: "px-6 py-2 text-sm font-medium rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50",
@@ -757,7 +757,7 @@ pub(crate) fn ShelfPage(token: String) -> Element {
                                 },
                             }
                             if let Some(msg) = edit_error() {
-                                p { class: "mt-1 text-xs text-red-600 dark:text-red-400", "{msg}" }
+                                p { class: "mt-1 text-xs text-red-600 dark:text-red-400", {msg} }
                             }
                         }
 

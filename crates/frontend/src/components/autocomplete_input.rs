@@ -70,8 +70,8 @@ pub(crate) fn AutocompleteInput(
                             "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-slate-600 text-gray-700 dark:text-slate-200 border border-gray-300 dark:border-slate-500"
                         };
                         rsx! {
-                            span { class: "{chip_class}",
-                                "{label}"
+                            span { class: chip_class,
+                                {label}
                                 if is_new {
                                     span { class: "font-semibold ml-0.5 text-green-700 dark:text-green-300", "new" }
                                 }
@@ -195,7 +195,7 @@ pub(crate) fn AutocompleteInput(
                             rsx! {
                                 div {
                                     key: "{label}",
-                                    class: "{row_class}",
+                                    class: row_class,
                                     onmousedown: move |e| e.prevent_default(),
                                     onclick: move |_| {
                                         value.set(click_name.clone());
@@ -205,7 +205,7 @@ pub(crate) fn AutocompleteInput(
                                         focused_index.set(None);
                                         on_series_selected.call((click_name.clone(), next_num));
                                     },
-                                    "{label}"
+                                    {label}
                                 }
                             }
                         }

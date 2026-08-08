@@ -153,7 +153,7 @@ pub(crate) fn LibrariesSection() -> Element {
             // Global delete error banner
             if let Some(msg) = delete_error() {
                 div { class: "mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm dark:bg-red-900/30 dark:border-red-800 dark:text-red-400",
-                    "{msg}"
+                    {msg}
                 }
             }
 
@@ -210,7 +210,7 @@ pub(crate) fn LibrariesSection() -> Element {
                 }
                 if let Some(msg) = add_error() {
                     div { class: "mb-2 p-2 bg-red-50 border border-red-200 text-red-700 rounded text-sm dark:bg-red-900/30 dark:border-red-800 dark:text-red-400",
-                        "{msg}"
+                        {msg}
                     }
                 }
             }

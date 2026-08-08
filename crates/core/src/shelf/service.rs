@@ -167,10 +167,10 @@ impl ShelfService for ShelfServiceImpl {
             };
             shelf_repository.update_shelf(tx, updated).await?;
 
-            if let Some(did) = device_id {
-                if let Some(device) = device_repository.find_by_id(tx, did).await? {
-                    device_repository.update_device(tx, Device { name: new_name, ..device }).await?;
-                }
+            if let Some(did) = device_id
+                && let Some(device) = device_repository.find_by_id(tx, did).await?
+            {
+                device_repository.update_device(tx, Device { name: new_name, ..device }).await?;
             }
 
             Ok(())
@@ -307,10 +307,10 @@ impl ShelfService for ShelfServiceImpl {
             };
             shelf_repository.update_shelf(tx, updated).await?;
 
-            if let Some(did) = device_id {
-                if let Some(device) = device_repository.find_by_id(tx, did).await? {
-                    device_repository.update_device(tx, Device { name: new_name, ..device }).await?;
-                }
+            if let Some(did) = device_id
+                && let Some(device) = device_repository.find_by_id(tx, did).await?
+            {
+                device_repository.update_device(tx, Device { name: new_name, ..device }).await?;
             }
 
             Ok(())

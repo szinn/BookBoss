@@ -162,10 +162,10 @@ fn LocalTime(iso: String) -> Element {
         let iso = iso.clone();
         spawn(async move {
             let js = format!(r#"return new Date("{iso}").toLocaleString(undefined, {{dateStyle: "medium", timeStyle: "short"}})"#);
-            if let Ok(val) = document::eval(&js).await {
-                if let Some(s) = val.as_str() {
-                    display.set(s.to_owned());
-                }
+            if let Ok(val) = document::eval(&js).await
+                && let Some(s) = val.as_str()
+            {
+                display.set(s.to_owned());
             }
         });
     });
@@ -303,7 +303,7 @@ pub(crate) fn IncomingPage() -> Element {
                                             UploadOutcome::Error(e) => ("bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300", format!("Failed: {name} — {e}")),
                                         };
                                         rsx! {
-                                            div { class: "px-3 py-2 rounded text-sm {bg}", "{msg}" }
+                                            div { class: "px-3 py-2 rounded text-sm {bg}", {msg} }
                                         }
                                     }
                                 }
@@ -321,7 +321,7 @@ pub(crate) fn IncomingPage() -> Element {
                                 };
                                 rsx! {
                                     div { class: "px-6 py-2 bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 text-sm border-b border-gray-100 dark:border-slate-700",
-                                        "{summary}"
+                                        {summary}
                                     }
                                 }
                             }
@@ -363,7 +363,7 @@ pub(crate) fn IncomingPage() -> Element {
                                         tr { key: "{item.job_token}",
                                             td { class: "px-6 py-4 text-gray-900 dark:text-slate-100",
                                                 match &item.title {
-                                                    Some(t) => rsx! { "{t}" },
+                                                    Some(t) => rsx! { {t.clone()} },
                                                     None => rsx! {
                                                         span { class: "text-gray-400 dark:text-slate-500 italic", "Unknown" }
                                                     },
@@ -398,7 +398,7 @@ pub(crate) fn IncomingPage() -> Element {
                                                     };
                                                     rsx! {
                                                         button {
-                                                            class: "{btn_class}",
+                                                            class: btn_class,
                                                             disabled: any_rejecting,
                                                             onclick: move |_| {
                                                                 let token = token.clone();

@@ -108,7 +108,7 @@ pub(crate) fn AuthorDetailPage(token: String) -> Element {
                         h1 { class: "text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2", "{author.name}" }
 
                         if let Some(ref bio) = author.bio {
-                            p { class: "text-sm text-gray-600 dark:text-slate-400 leading-relaxed mb-6 max-w-prose", "{bio}" }
+                            p { class: "text-sm text-gray-600 dark:text-slate-400 leading-relaxed mb-6 max-w-prose", {bio.clone()} }
                         }
 
                         if filtered_books.is_empty() && has_search {

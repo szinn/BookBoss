@@ -466,7 +466,7 @@ fn BulkEditModal(on_close: EventHandler<()>, on_saved: EventHandler<()>) -> Elem
 
                 // Subtitle
                 div { class: "px-6 pb-4",
-                    p { class: "text-sm text-gray-500 dark:text-slate-400", "{label}" }
+                    p { class: "text-sm text-gray-500 dark:text-slate-400", {label} }
                 }
 
                 // Fields
@@ -654,7 +654,7 @@ fn BulkEditModal(on_close: EventHandler<()>, on_saved: EventHandler<()>) -> Elem
                                                                 apply_libraries.set(true);
                                                             },
                                                         }
-                                                        "{name}"
+                                                        {name}
                                                     }
                                                 }
                                             }
@@ -674,7 +674,7 @@ fn BulkEditModal(on_close: EventHandler<()>, on_saved: EventHandler<()>) -> Elem
                 }
                 if let Some(err) = error_msg() {
                     div { class: "px-6 pt-2",
-                        p { class: "text-sm text-red-600 dark:text-red-400", "{err}" }
+                        p { class: "text-sm text-red-600 dark:text-red-400", {err} }
                     }
                 }
 
@@ -755,7 +755,7 @@ fn BulkEditRow(label: &'static str, checked: bool, on_toggle: EventHandler<()>, 
                 }
             }
             // Label
-            span { class: "mt-1.5 flex-none w-20 text-sm font-medium text-gray-600 dark:text-slate-400", "{label}" }
+            span { class: "mt-1.5 flex-none w-20 text-sm font-medium text-gray-600 dark:text-slate-400", {label} }
             // Field — when unchecked, render a placeholder instead of children
             // so any open ChipInput/AutocompleteInput dropdowns are unmounted.
             div { class: "flex-1 min-w-0",
@@ -800,10 +800,10 @@ fn BulkDeleteModal(on_close: EventHandler<()>, on_deleted: EventHandler<()>) -> 
                 h2 { class: "text-lg font-semibold text-gray-900 dark:text-slate-100 mb-2",
                     if count == 1 { "Delete Book?" } else { "Delete Books?" }
                 }
-                p { class: "text-sm text-gray-600 dark:text-slate-400 mb-6", "{label}" }
+                p { class: "text-sm text-gray-600 dark:text-slate-400 mb-6", {label} }
 
                 if let Some(err) = error_msg() {
-                    p { class: "text-sm text-red-600 dark:text-red-400 mb-4", "{err}" }
+                    p { class: "text-sm text-red-600 dark:text-red-400 mb-4", {err} }
                 }
 
                 div { class: "flex gap-3 justify-end",
@@ -993,9 +993,9 @@ pub(crate) fn SelectionActionBar(
 
             // Selection count or status message
             if let Some(msg) = status_message() {
-                span { class: "text-sm font-medium text-indigo-600 dark:text-indigo-400", "{msg}" }
+                span { class: "text-sm font-medium text-indigo-600 dark:text-indigo-400", {msg} }
             } else {
-                span { class: "text-sm font-medium text-gray-700 dark:text-slate-300", "{label}" }
+                span { class: "text-sm font-medium text-gray-700 dark:text-slate-300", {label} }
             }
 
             // Select All / Deselect All toggle
@@ -1090,7 +1090,7 @@ pub(crate) fn SelectionActionBar(
                                                             }
                                                         });
                                                     },
-                                                    "{n}"
+                                                    {n}
                                                 }
                                             }
                                         }
@@ -1140,7 +1140,7 @@ pub(crate) fn SelectionActionBar(
                                                 }
                                             });
                                         },
-                                        "{s}"
+                                        {s}
                                     }
                                 }
                             }

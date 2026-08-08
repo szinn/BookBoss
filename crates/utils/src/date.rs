@@ -13,12 +13,11 @@
 pub fn parse_year(date_str: &str) -> Option<i32> {
     let bytes = date_str.as_bytes();
     for i in 0..bytes.len().saturating_sub(3) {
-        if bytes[i..i + 4].iter().all(u8::is_ascii_digit) {
-            if let Ok(year) = date_str[i..i + 4].parse::<i32>() {
-                if (1000..=2100).contains(&year) {
-                    return Some(year);
-                }
-            }
+        if bytes[i..i + 4].iter().all(u8::is_ascii_digit)
+            && let Ok(year) = date_str[i..i + 4].parse::<i32>()
+            && (1000..=2100).contains(&year)
+        {
+            return Some(year);
         }
     }
     None

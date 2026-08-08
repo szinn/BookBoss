@@ -50,7 +50,7 @@ pub(crate) fn SeriesTile(data: SeriesTileData) -> Element {
                                     src: "/api/v1/covers/{book_token}",
                                     alt: "{data.name}",
                                     class: "object-cover rounded shadow-sm",
-                                    style: "{style}",
+                                    style: style,
                                 }
                             }
                         }
@@ -70,7 +70,7 @@ pub(crate) fn SeriesTile(data: SeriesTileData) -> Element {
                         Link {
                             to: Route::AuthorDetailPage { token: author_token.clone() },
                             class: "text-xs text-gray-500 dark:text-slate-400 hover:text-indigo-600 truncate block mt-0.5",
-                            "{author_name}"
+                            {author_name.clone()}
                         }
                     }
                 }
@@ -81,7 +81,7 @@ pub(crate) fn SeriesTile(data: SeriesTileData) -> Element {
                         format!("{} books", data.book_count)
                     };
                     rsx! {
-                        p { class: "text-xs text-gray-400 dark:text-slate-500 mt-0.5", "{count_label}" }
+                        p { class: "text-xs text-gray-400 dark:text-slate-500 mt-0.5", {count_label} }
                     }
                 }
             }

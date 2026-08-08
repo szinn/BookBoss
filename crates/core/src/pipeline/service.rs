@@ -338,14 +338,14 @@ impl PipelineServiceImpl {
                 let mut best_min_side = best_cover.as_deref().map_or(0, cover_min_side);
                 let mut cover_source: Option<&str> = None;
                 for ((name, pb), &score) in provider_results.iter().zip(scores.iter()) {
-                    if score >= MATCH_THRESHOLD {
-                        if let Some(cover) = &pb.cover_bytes {
-                            let min_side = cover_min_side(cover);
-                            if min_side > best_min_side {
-                                best_min_side = min_side;
-                                best_cover = Some(cover.clone());
-                                cover_source = Some(name);
-                            }
+                    if score >= MATCH_THRESHOLD
+                        && let Some(cover) = &pb.cover_bytes
+                    {
+                        let min_side = cover_min_side(cover);
+                        if min_side > best_min_side {
+                            best_min_side = min_side;
+                            best_cover = Some(cover.clone());
+                            cover_source = Some(name);
                         }
                     }
                 }

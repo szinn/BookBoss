@@ -120,7 +120,7 @@ pub(super) fn DevicesSectionContent() -> Element {
                          Trigger a sync on your Kobo after confirming."
                     }
                     if let Some(err) = reset_error() {
-                        p { class: "text-xs text-red-600 dark:text-red-400 mb-3", "{err}" }
+                        p { class: "text-xs text-red-600 dark:text-red-400 mb-3", {err} }
                     }
                     div { class: "flex justify-end gap-3",
                         button {
@@ -185,7 +185,7 @@ pub(super) fn DevicesSectionContent() -> Element {
                     }
 
                     if let Some(err) = delete_error() {
-                        p { class: "text-xs text-red-600 dark:text-red-400 mb-3", "{err}" }
+                        p { class: "text-xs text-red-600 dark:text-red-400 mb-3", {err} }
                     }
 
                     div { class: "flex justify-end gap-3",
@@ -260,7 +260,7 @@ fn DeviceCard(device: DeviceRow, on_edit: EventHandler<()>, on_delete: EventHand
                                         class: "text-gray-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer",
                                         title: "Reset sync — clears sync state so all books re-download on next Kobo sync",
                                         onclick: move |_| on_reset(()),
-                                        "{synced}"
+                                        {synced}
                                     }
                                 }
                             }
@@ -336,7 +336,7 @@ fn DeviceCard(device: DeviceRow, on_edit: EventHandler<()>, on_delete: EventHand
                                         copied.set(false);
                                     });
                                 },
-                                if copied() { "✓" } else { "{token_display}" }
+                                if copied() { "✓" } else { {token_display} }
                             }
                         }
                     }
@@ -435,7 +435,7 @@ fn DeviceModal(mode: ModalMode, on_close: EventHandler<()>, on_saved: EventHandl
                         }
                     }
                     if let Some(err) = error() {
-                        p { class: "text-xs text-red-600 dark:text-red-400", "{err}" }
+                        p { class: "text-xs text-red-600 dark:text-red-400", {err} }
                     }
                 }
 

@@ -16,7 +16,7 @@ use crate::{
 };
 
 const BACKOFF_INITIAL: Duration = Duration::from_secs(5);
-const BACKOFF_MAX: Duration = Duration::from_secs(300); // 5 minutes
+const BACKOFF_MAX: Duration = Duration::from_mins(5);
 
 /// Result of a subsystem precondition check.
 pub enum CheckResult {
@@ -85,10 +85,10 @@ impl<S: CheckedSubsystem> ResilienceWrapper<S> {
     }
 
     async fn clear_message(&self, id_slot: &mut Option<SystemMessageId>) {
-        if let Some(id) = id_slot.take() {
-            if let Err(e) = self.system_message_service.delete_message(id).await {
-                tracing::warn!(subsystem = self.name, "failed to clear resilience message: {e}");
-            }
+        if let Some(id) = id_slot.take()
+            && let Err(e) = self.system_message_service.delete_message(id).await
+        {
+            tracing::warn!(subsystem = self.name, "failed to clear resilience message: {e}");
         }
     }
 }

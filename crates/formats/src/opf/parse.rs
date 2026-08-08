@@ -372,14 +372,14 @@ fn parse_dc(xml: &[u8]) -> Result<DcFields, Error> {
     // Apply OPF 3 refines (role, file-as) to authors that were identified by id
     // attribute.
     for author in &mut fields.authors {
-        if let Some(ref id) = author.id {
-            if let Some((role, file_as)) = fields.meta_refines.get(id.as_str()) {
-                if author.role_code.is_none() {
-                    author.role_code.clone_from(role);
-                }
-                if author.file_as.is_none() {
-                    author.file_as.clone_from(file_as);
-                }
+        if let Some(ref id) = author.id
+            && let Some((role, file_as)) = fields.meta_refines.get(id.as_str())
+        {
+            if author.role_code.is_none() {
+                author.role_code.clone_from(role);
+            }
+            if author.file_as.is_none() {
+                author.file_as.clone_from(file_as);
             }
         }
     }
@@ -609,10 +609,10 @@ pub fn extract_cover_info(opf_xml: &[u8]) -> Option<CoverInfo> {
                                         .map(std::borrow::Cow::into_owned);
                                 }
                                 b"properties" => {
-                                    if let Ok(v) = attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder()) {
-                                        if v.split_whitespace().any(|p| p == "cover-image") {
-                                            is_cover_image = true;
-                                        }
+                                    if let Ok(v) = attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())
+                                        && v.split_whitespace().any(|p| p == "cover-image")
+                                    {
+                                        is_cover_image = true;
                                     }
                                 }
                                 _ => {}
@@ -638,14 +638,14 @@ pub fn extract_cover_info(opf_xml: &[u8]) -> Option<CoverInfo> {
     }
 
     // EPUB 2: resolve cover id against collected manifest items
-    if let Some(id) = cover_meta_id {
-        if let Some((href, _)) = manifest_items.remove(&id) {
-            return Some(CoverInfo {
-                href,
-                id,
-                has_cover_image_property: false,
-            });
-        }
+    if let Some(id) = cover_meta_id
+        && let Some((href, _)) = manifest_items.remove(&id)
+    {
+        return Some(CoverInfo {
+            href,
+            id,
+            has_cover_image_property: false,
+        });
     }
 
     // Heuristic: look for a manifest item whose id contains "cover" with an

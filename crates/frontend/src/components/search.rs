@@ -72,16 +72,17 @@ fn parse_search_query(query: &str) -> Vec<SearchToken> {
                 break;
             }
             // Stop at colon to check for field prefix.
-            if c == ':' && !word.is_empty() {
-                if let Some(field) = parse_field_prefix(&word) {
-                    chars.next(); // consume ':'
-                    let (value, exact) = collect_value(&mut chars);
-                    if !value.is_empty() {
-                        tokens.push(SearchToken::Field(field, value.to_lowercase(), exact));
-                    }
-                    word.clear();
-                    break;
+            if c == ':'
+                && !word.is_empty()
+                && let Some(field) = parse_field_prefix(&word)
+            {
+                chars.next(); // consume ':'
+                let (value, exact) = collect_value(&mut chars);
+                if !value.is_empty() {
+                    tokens.push(SearchToken::Field(field, value.to_lowercase(), exact));
                 }
+                word.clear();
+                break;
             }
             word.push(c);
             chars.next();

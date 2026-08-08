@@ -72,10 +72,10 @@ impl SystemMessageService for SystemMessageServiceImpl {
         let result = with_transaction!(self, system_message_repository, |tx| {
             system_message_repository.delete_older_than(tx, cutoff).await
         });
-        if let Ok(count) = &result {
-            if *count > 0 {
-                self.event_service.notify_system_messages_changed();
-            }
+        if let Ok(count) = &result
+            && *count > 0
+        {
+            self.event_service.notify_system_messages_changed();
         }
         result
     }

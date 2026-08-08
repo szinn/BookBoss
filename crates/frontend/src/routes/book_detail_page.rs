@@ -115,10 +115,10 @@ async fn get_book(token: String) -> Result<BookDetail, ServerFnError> {
     // Fetch unique authors (token + name)
     let mut author_map: std::collections::HashMap<u64, (String, String)> = std::collections::HashMap::new();
     for ba in &book_author_links {
-        if let std::collections::hash_map::Entry::Vacant(e) = author_map.entry(ba.author_id) {
-            if let Some(author) = book_service.find_author_by_token(AuthorToken::new(ba.author_id)).await.map_err(to_server_err)? {
-                e.insert((author.token.to_string(), author.name));
-            }
+        if let std::collections::hash_map::Entry::Vacant(e) = author_map.entry(ba.author_id)
+            && let Some(author) = book_service.find_author_by_token(AuthorToken::new(ba.author_id)).await.map_err(to_server_err)?
+        {
+            e.insert((author.token.to_string(), author.name));
         }
     }
 
@@ -519,7 +519,7 @@ pub(crate) fn BookDetailPage(token: String) -> Element {
                                         class: "text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300",
                                         match &book.series_number {
                                             Some(num) => rsx! { "{series_name} #{num}" },
-                                            None => rsx! { "{series_name}" },
+                                            None => rsx! { {series_name.clone()} },
                                         }
                                     }
                                 }
@@ -556,7 +556,7 @@ pub(crate) fn BookDetailPage(token: String) -> Element {
                                     }
                                     for genre in &book.genres {
                                         span { class: "inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-600",
-                                            "{genre}"
+                                            {genre.clone()}
                                         }
                                     }
                                 }
@@ -585,7 +585,7 @@ pub(crate) fn BookDetailPage(token: String) -> Element {
                                     }
                                     for tag in &book.tags {
                                         span { class: "inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-slate-700 dark:text-indigo-300 dark:border-slate-600",
-                                            "{tag}"
+                                            {tag.clone()}
                                         }
                                     }
                                 }
@@ -618,7 +618,7 @@ pub(crate) fn BookDetailPage(token: String) -> Element {
 
                             // Description
                             if let Some(ref desc) = book.description {
-                                p { class: "text-sm text-gray-700 dark:text-slate-300 leading-relaxed mb-6", "{desc}" }
+                                p { class: "text-sm text-gray-700 dark:text-slate-300 leading-relaxed mb-6", {desc.clone()} }
                             }
 
                             // Identifiers
@@ -735,7 +735,7 @@ fn StatusPill(token: String, initial_state: Option<ReadingStateDto>) -> Element 
                                             busy.set(false);
                                         });
                                     },
-                                    "{s}"
+                                    {s}
                                 }
                             }
                         }

@@ -126,10 +126,10 @@ impl GenreRepository for GenreRepositoryAdapter {
     }
 
     async fn list_genres(&self, transaction: &dyn Transaction, start_id: Option<GenreId>, page_size: Option<u64>) -> Result<Vec<Genre>, Error> {
-        if let Some(page_size) = page_size {
-            if page_size < 1 {
-                return Err(Error::InvalidPageSize(page_size));
-            }
+        if let Some(page_size) = page_size
+            && page_size < 1
+        {
+            return Err(Error::InvalidPageSize(page_size));
         }
 
         let transaction = TransactionImpl::get_db_transaction(transaction)?;

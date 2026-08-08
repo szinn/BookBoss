@@ -72,7 +72,7 @@ pub(crate) fn LoginForm(on_must_change: EventHandler<String>, #[props(default)] 
                 if let Some(msg) = error_msg() {
                     div {
                         class: "mb-4 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg text-sm",
-                        "{msg}"
+                        {msg}
                     }
                 }
 
@@ -122,7 +122,7 @@ pub(crate) fn LoginForm(on_must_change: EventHandler<String>, #[props(default)] 
                         a {
                             href: "/auth/oidc/start",
                             class: "block w-full py-2 px-4 text-center border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors",
-                            "{label}"
+                            {label}
                         }
                     }
                 }

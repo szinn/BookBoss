@@ -296,13 +296,13 @@ pub(super) async fn fetch_provider_metadata(
         .await
         .map_err(to_server_err)?;
 
-    if let Some(pb) = &result {
-        if let Some(cover) = &pb.cover_bytes {
-            let cover_dir = temp_dir.join("bookboss-covers");
-            tokio::fs::create_dir_all(&cover_dir).await.map_err(to_server_err)?;
-            let pending_name = format!("{token}-provider");
-            tokio::fs::write(cover_dir.join(pending_name), cover).await.map_err(to_server_err)?;
-        }
+    if let Some(pb) = &result
+        && let Some(cover) = &pb.cover_bytes
+    {
+        let cover_dir = temp_dir.join("bookboss-covers");
+        tokio::fs::create_dir_all(&cover_dir).await.map_err(to_server_err)?;
+        let pending_name = format!("{token}-provider");
+        tokio::fs::write(cover_dir.join(pending_name), cover).await.map_err(to_server_err)?;
     }
 
     Ok(result.as_ref().map(provider_book_to_result))
@@ -543,13 +543,13 @@ pub(super) async fn fetch_provider_for_edit(
         .await
         .map_err(to_server_err)?;
 
-    if let Some(pb) = &result {
-        if let Some(cover) = &pb.cover_bytes {
-            let cover_dir = temp_dir.join("bookboss-covers");
-            tokio::fs::create_dir_all(&cover_dir).await.map_err(to_server_err)?;
-            let pending_name = format!("{book_token}-provider");
-            tokio::fs::write(cover_dir.join(pending_name), cover).await.map_err(to_server_err)?;
-        }
+    if let Some(pb) = &result
+        && let Some(cover) = &pb.cover_bytes
+    {
+        let cover_dir = temp_dir.join("bookboss-covers");
+        tokio::fs::create_dir_all(&cover_dir).await.map_err(to_server_err)?;
+        let pending_name = format!("{book_token}-provider");
+        tokio::fs::write(cover_dir.join(pending_name), cover).await.map_err(to_server_err)?;
     }
 
     Ok(result.as_ref().map(provider_book_to_result))

@@ -591,7 +591,7 @@ pub(crate) fn UsersSection(is_super_admin: bool, current_user_token: String) -> 
             // Error from delete
             if let Some(msg) = delete_error() {
                 div { class: "mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm dark:bg-red-900/30 dark:border-red-800 dark:text-red-400",
-                    "{msg}"
+                    {msg}
                 }
             }
 
@@ -888,7 +888,7 @@ fn UserModal(editing: Option<UserAdminRow>, is_self: bool, is_super_admin: bool,
 
                     if let Some(msg) = error_msg() {
                         div { class: "mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm dark:bg-red-900/30 dark:border-red-800 dark:text-red-400",
-                            "{msg}"
+                            {msg}
                         }
                     }
 
@@ -1056,7 +1056,7 @@ fn UserModal(editing: Option<UserAdminRow>, is_self: bool, is_super_admin: bool,
                                                         }
                                                     },
                                                 }
-                                                span { class: "text-sm text-gray-700 dark:text-slate-300", "{cap_label}" }
+                                                span { class: "text-sm text-gray-700 dark:text-slate-300", {cap_label} }
                                             }
                                         }
                                     }
@@ -1453,14 +1453,13 @@ fn UserModal(editing: Option<UserAdminRow>, is_self: bool, is_super_admin: bool,
                                                 saving.set(false);
                                                 return;
                                             }
-                                        } else if personal_name != pers_name_original {
-                                            if let Err(e) = admin_rename_personal_library(tok.clone(), personal_name).await {
+                                        } else if personal_name != pers_name_original
+                                            && let Err(e) = admin_rename_personal_library(tok.clone(), personal_name).await {
                                                 let msg = match e { ServerFnError::ServerError { message, .. } => message, other => other.to_string() };
                                                 error_msg.set(Some(format!("User saved, but library rename failed: {msg}")));
                                                 saving.set(false);
                                                 return;
                                             }
-                                        }
                                     }
 
                                     on_saved.call(());

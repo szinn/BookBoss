@@ -574,7 +574,7 @@ fn FilterGroupEditor(
                         focus:outline-none focus:ring-1 focus:ring-indigo-400";
 
     rsx! {
-        div { class: "{container_class}",
+        div { class: container_class,
 
             // ── Condition row ────────────────────────────────────────────────
             div { class: "flex items-center gap-2 flex-wrap",
@@ -760,7 +760,7 @@ fn FilterRuleRow(
                     input {
                         class: input_class,
                         r#type: "text",
-                        value: "{value}",
+                        value: value,
                         oninput: move |e| {
                             let v = e.value();
                             let op = current_op_for_val;
@@ -926,7 +926,7 @@ fn FilterRuleRow(
                     input {
                         class: input_class,
                         r#type: "date",
-                        value: "{date_str}",
+                        value: date_str,
                         oninput: move |e| {
                             let dt = date_str_to_datetime(&e.value());
                             oc_val.call(FilterRule::DateAdded { op: op_for_val, value: dt });
@@ -1037,7 +1037,7 @@ fn EntityPicker(values: Vec<EntityRef>, options: Vec<(i64, String)>, on_change: 
                             span {
                                 key: "{i}",
                                 class: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700",
-                                "{label}"
+                                {label}
                                 button {
                                     r#type: "button",
                                     class: "ml-0.5 text-indigo-400 dark:text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 cursor-pointer leading-none",
@@ -1087,7 +1087,7 @@ fn EntityPicker(values: Vec<EntityRef>, options: Vec<(i64, String)>, on_change: 
                                         input_text.set(String::new());
                                         show_dropdown.set(false);
                                     },
-                                    "{display}"
+                                    {display}
                                 }
                             }
                         }
@@ -1114,7 +1114,7 @@ fn LanguageChipInput(values: Vec<String>, on_change: EventHandler<Vec<String>>) 
                         span {
                             key: "{i}",
                             class: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-slate-600 text-gray-700 dark:text-slate-300 border border-gray-300 dark:border-slate-500",
-                            "{label}"
+                            {label}
                             button {
                                 r#type: "button",
                                 class: "ml-0.5 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 cursor-pointer leading-none",
@@ -1207,7 +1207,7 @@ fn ReadStatusChipInput(values: Vec<FilterReadStatus>, on_change: EventHandler<Ve
                             span {
                                 key: "{i}",
                                 class: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700",
-                                "{label}"
+                                {label}
                                 button {
                                     r#type: "button",
                                     class: "ml-0.5 text-indigo-400 dark:text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 cursor-pointer leading-none",
@@ -1272,7 +1272,7 @@ fn ReadStatusChipInput(values: Vec<FilterReadStatus>, on_change: EventHandler<Ve
                                         oc.call(new_values.clone());
                                         input_text.set(String::new());
                                     },
-                                    "{label}"
+                                    {label}
                                 }
                             }
                         }

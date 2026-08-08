@@ -228,7 +228,7 @@ fn EntityPanel(
         div { class: "mb-8",
             // Panel header
             div { class: "flex items-center justify-between mb-3",
-                h3 { class: "text-base font-semibold text-gray-900 dark:text-slate-100", "{title}" }
+                h3 { class: "text-base font-semibold text-gray-900 dark:text-slate-100", {title} }
                 div { class: "flex items-center gap-2",
                     if unused_count > 0 {
                         button {
@@ -285,7 +285,7 @@ fn EntityPanel(
                 }
                 if let Some(msg) = add_error {
                     div { class: "mb-2 p-2 bg-red-50 border border-red-200 text-red-700 rounded text-sm dark:bg-red-900/30 dark:border-red-800 dark:text-red-400",
-                        "{msg}"
+                        {msg}
                     }
                 }
             }
@@ -379,13 +379,13 @@ pub(crate) fn GenreTagsSection() -> Element {
             // Global delete error banner
             if let Some(msg) = delete_error() {
                 div { class: "mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm dark:bg-red-900/30 dark:border-red-800 dark:text-red-400",
-                    "{msg}"
+                    {msg}
                 }
             }
 
             if let Some(msg) = remove_unused_error() {
                 div { class: "mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm dark:bg-red-900/30 dark:border-red-800 dark:text-red-400",
-                    "{msg}"
+                    {msg}
                 }
             }
 

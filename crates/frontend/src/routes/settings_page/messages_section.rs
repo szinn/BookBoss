@@ -96,10 +96,10 @@ fn LocalTime(iso: String) -> Element {
         let iso = iso.clone();
         spawn(async move {
             let js = format!(r#"return new Date("{iso}").toLocaleString(undefined, {{dateStyle: "medium", timeStyle: "short"}})"#);
-            if let Ok(val) = document::eval(&js).await {
-                if let Some(s) = val.as_str() {
-                    display.set(s.to_owned());
-                }
+            if let Ok(val) = document::eval(&js).await
+                && let Some(s) = val.as_str()
+            {
+                display.set(s.to_owned());
             }
         });
     });

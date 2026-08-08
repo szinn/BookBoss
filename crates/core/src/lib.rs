@@ -78,8 +78,8 @@ pub struct ExternalServices {
     pub(crate) format_service: Arc<dyn FormatService>,
     /// Path to the bookdrop directory for automatic import scanning.
     pub(crate) bookdrop_path: PathBuf,
-    /// Polling interval for the bookdrop scanner. Defaults to 60 seconds.
-    #[builder(default = "Duration::from_secs(60)")]
+    /// Polling interval for the bookdrop scanner. Defaults to 1 minute.
+    #[builder(default = "Duration::from_mins(1)")]
     pub(crate) scan_interval: Duration,
 }
 

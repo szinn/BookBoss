@@ -52,10 +52,10 @@ impl CollectionRepository for CollectionRepositoryAdapter {
         page_size: Option<u64>,
         sort: Option<BookSortOrder>,
     ) -> Result<Vec<Book>, Error> {
-        if let Some(page_size) = page_size {
-            if page_size < 1 {
-                return Err(Error::InvalidPageSize(page_size));
-            }
+        if let Some(page_size) = page_size
+            && page_size < 1
+        {
+            return Err(Error::InvalidPageSize(page_size));
         }
 
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
@@ -64,14 +64,14 @@ impl CollectionRepository for CollectionRepositoryAdapter {
             .filter(books::Column::Status.eq("available"))
             .filter(build_condition(filter, user_id).map_err(bb_core::Error::RepositoryError)?);
 
-        if let Some(lib_id) = library_id {
-            if !filter.contains_library_rule() {
-                let mut subq = Query::select();
-                subq.column(library_books::Column::BookId)
-                    .from(library_books::Entity)
-                    .and_where(library_books::Column::LibraryId.eq(lib_id as i64));
-                query = query.filter(books::Column::Id.in_subquery(subq));
-            }
+        if let Some(lib_id) = library_id
+            && !filter.contains_library_rule()
+        {
+            let mut subq = Query::select();
+            subq.column(library_books::Column::BookId)
+                .from(library_books::Entity)
+                .and_where(library_books::Column::LibraryId.eq(lib_id as i64));
+            query = query.filter(books::Column::Id.in_subquery(subq));
         }
 
         let query = crate::sort::apply_book_sort(query, sort);
@@ -93,14 +93,14 @@ impl CollectionRepository for CollectionRepositoryAdapter {
             .filter(books::Column::Status.eq("available"))
             .filter(build_condition(filter, user_id).map_err(bb_core::Error::RepositoryError)?);
 
-        if let Some(lib_id) = library_id {
-            if !filter.contains_library_rule() {
-                let mut subq = Query::select();
-                subq.column(library_books::Column::BookId)
-                    .from(library_books::Entity)
-                    .and_where(library_books::Column::LibraryId.eq(lib_id as i64));
-                query = query.filter(books::Column::Id.in_subquery(subq));
-            }
+        if let Some(lib_id) = library_id
+            && !filter.contains_library_rule()
+        {
+            let mut subq = Query::select();
+            subq.column(library_books::Column::BookId)
+                .from(library_books::Entity)
+                .and_where(library_books::Column::LibraryId.eq(lib_id as i64));
+            query = query.filter(books::Column::Id.in_subquery(subq));
         }
 
         Ok(query.count(transaction).await.map_err(handle_dberr)?)

@@ -134,7 +134,7 @@ pub(crate) fn ApplicationSection() -> Element {
             // Inline error
             if let Some(ref msg) = error() {
                 div { class: "mt-3 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm dark:bg-red-900/30 dark:border-red-800 dark:text-red-400",
-                    "{msg}"
+                    {msg.clone()}
                 }
             }
         }

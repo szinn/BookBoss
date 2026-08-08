@@ -63,20 +63,20 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
     {
         let nsl = non_system_libraries.read();
         let bel = book_existing_libraries.read();
-        if checked_library_tokens.read().is_none() {
-            if let (Some(Ok(libs)), Some(bel_res)) = (nsl.as_ref(), bel.as_ref()) {
-                let init: Vec<String> = if edit_mode {
-                    // Pre-check the libraries the book already belongs to.
-                    match bel_res {
-                        Ok(existing) => existing.clone(),
-                        Err(_) => vec![],
-                    }
-                } else {
-                    // Review mode: all non-system libraries checked by default.
-                    libs.iter().map(|(token, _)| token.clone()).collect()
-                };
-                checked_library_tokens.set(Some(init));
-            }
+        if checked_library_tokens.read().is_none()
+            && let (Some(Ok(libs)), Some(bel_res)) = (nsl.as_ref(), bel.as_ref())
+        {
+            let init: Vec<String> = if edit_mode {
+                // Pre-check the libraries the book already belongs to.
+                match bel_res {
+                    Ok(existing) => existing.clone(),
+                    Err(_) => vec![],
+                }
+            } else {
+                // Review mode: all non-system libraries checked by default.
+                libs.iter().map(|(token, _)| token.clone()).collect()
+            };
+            checked_library_tokens.set(Some(init));
         }
     }
 
@@ -127,7 +127,7 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                         };
                         rsx! {
                             button {
-                                class: "{cancel_class}",
+                                class: cancel_class,
                                 disabled: is_busy,
                                 onclick: move |_| on_back.call(()),
                                 "Cancel"
@@ -145,7 +145,7 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                             let jt = job_token.clone();
                             rsx! {
                                 button {
-                                    class: "{reject_class}",
+                                    class: reject_class,
                                     disabled: is_busy,
                                     onclick: move |_| {
                                         let jt = jt.clone();
@@ -178,7 +178,7 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                         let bk = book_token_for_edit.clone();
                         rsx! {
                             button {
-                                class: "{primary_class}",
+                                class: primary_class,
                                 disabled: approve_disabled,
                                 onclick: move |_| {
                                     let fields = BookEditFields {
@@ -242,7 +242,7 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
             // ── Error banner ──────────────────────────────────────────────────
             if let Some(err) = error_msg.read().clone() {
                 div { class: "mx-6 mt-3 px-4 py-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded text-sm text-red-700 dark:text-red-300",
-                    "{err}"
+                    {err}
                 }
             }
 
@@ -273,7 +273,7 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                                             rsx! {
                                                 button {
                                                     key: "{pname}",
-                                                    class: "{btn_class}",
+                                                    class: btn_class,
                                                     disabled: is_busy_any,
                                                     onclick: move |_| {
                                                         let pname = pname.clone();
@@ -316,7 +316,7 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                                                     if is_fetching_this {
                                                         "{pname}…"
                                                     } else {
-                                                        "{pname}"
+                                                        {pname.clone()}
                                                     }
                                                 }
                                             }
@@ -712,7 +712,7 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                                                                             }
                                                                         },
                                                                     }
-                                                                    "{name}"
+                                                                    {name}
                                                                 }
                                                             }
                                                         }
@@ -781,7 +781,7 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                                 let tk_copy = type_key.clone();
                                 rsx! {
                                     tr { key: "{type_key}",
-                                        td { class: "py-2 pr-4 text-gray-500 dark:text-slate-400 font-medium whitespace-nowrap", "{label}" }
+                                        td { class: "py-2 pr-4 text-gray-500 dark:text-slate-400 font-medium whitespace-nowrap", {label} }
                                         td { class: "py-2 pr-4",
                                             {
                                                 let tk = type_key.clone();
@@ -789,7 +789,7 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                                                 rsx! {
                                                     input {
                                                         class: "w-full border border-gray-300 dark:border-slate-600 rounded px-2 py-1 text-sm font-mono text-gray-900 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-400",
-                                                        value: "{cur_val}",
+                                                        value: cur_val,
                                                         oninput: move |e| {
                                                             identifiers.write().insert(tk.clone(), e.value());
                                                         },
@@ -827,7 +827,7 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                                         td { class: "py-2 text-gray-600 dark:text-slate-300 font-mono text-xs",
                                             if let Some(pr) = provider_result.read().as_ref() {
                                                 if let Some(val) = pr.identifiers.get(&tk_copy) {
-                                                    "{val}"
+                                                    {val.clone()}
                                                 }
                                             }
                                         }
@@ -942,8 +942,8 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                                             class: "text-indigo-500 hover:text-indigo-700 cursor-pointer text-xs font-bold",
                                             title: "Use provider cover",
                                             onclick: move |_| {
-                                                if let Some(pr) = provider_result.read().as_ref() {
-                                                    if let Some(thumb) = pr.cover_thumbnail.clone() {
+                                                if let Some(pr) = provider_result.read().as_ref()
+                                                    && let Some(thumb) = pr.cover_thumbnail.clone() {
                                                         current_cover.set(thumb);
                                                         current_cover_dimensions.set(pr.cover_dimensions);
                                                         use_fetched_cover.set(true);
@@ -957,7 +957,6 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                                                             }
                                                         });
                                                     }
-                                                }
                                             },
                                             "←"
                                         }
@@ -970,7 +969,7 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
                                         div { class: "flex flex-col items-center gap-0.5",
                                             img {
                                                 class: "max-h-32 max-w-24 object-contain rounded shadow-sm",
-                                                src: "{thumb}",
+                                                src: thumb,
                                                 alt: "Provider cover",
                                             }
                                             if let Some((w, h)) = pr.cover_dimensions {

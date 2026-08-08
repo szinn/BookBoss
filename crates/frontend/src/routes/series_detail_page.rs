@@ -112,7 +112,7 @@ pub(crate) fn SeriesDetailPage(token: String) -> Element {
                         h1 { class: "text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2", "{series.name}" }
 
                         if let Some(ref desc) = series.description {
-                            p { class: "text-sm text-gray-600 dark:text-slate-400 leading-relaxed mb-6 max-w-prose", "{desc}" }
+                            p { class: "text-sm text-gray-600 dark:text-slate-400 leading-relaxed mb-6 max-w-prose", {desc.clone()} }
                         }
 
                         if filtered_books.is_empty() && has_search {

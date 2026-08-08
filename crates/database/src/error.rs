@@ -46,10 +46,10 @@ mod sqlite_error_codes {
 pub fn handle_dberr(error: DbErr) -> RepositoryError {
     // Connectivity errors: network/DNS failure, pool exhaustion, closed pool.
     // Checked before sql_err() because these need special transient handling.
-    if let DbErr::Conn(RuntimeErr::SqlxError(ref sqlx_err)) = error {
-        if matches!(**sqlx_err, sqlx::Error::Io(_) | sqlx::Error::PoolTimedOut | sqlx::Error::PoolClosed) {
-            return RepositoryError::Connection(error.to_string());
-        }
+    if let DbErr::Conn(RuntimeErr::SqlxError(ref sqlx_err)) = error
+        && matches!(**sqlx_err, sqlx::Error::Io(_) | sqlx::Error::PoolTimedOut | sqlx::Error::PoolClosed)
+    {
+        return RepositoryError::Connection(error.to_string());
     }
     // Pool acquire failure (e.g. pool exhausted before timeout).
     if let DbErr::ConnectionAcquire(_) = &error {
@@ -71,34 +71,33 @@ pub fn handle_dberr(error: DbErr) -> RepositoryError {
 
     // Fall back to database-specific error codes for errors not covered by sql_err
     // (read-only transactions, serialization failures, query cancellation, etc.).
-    if let DbErr::Query(RuntimeErr::SqlxError(sqlx_err)) | DbErr::Exec(RuntimeErr::SqlxError(sqlx_err)) = &error {
-        if let Some(db_err) = sqlx_err.as_database_error() {
-            if let Some(code) = db_err.code() {
-                return match code.as_ref() {
-                    pg_error_codes::READ_ONLY_SQL_TRANSACTION => RepositoryError::ReadOnly,
-                    pg_error_codes::UNIQUE_VIOLATION => RepositoryError::Constraint(db_err.message().to_string()),
-                    pg_error_codes::FOREIGN_KEY_VIOLATION => RepositoryError::Constraint(format!("Foreign key violation: {}", db_err.message())),
-                    pg_error_codes::SERIALIZATION_FAILURE => RepositoryError::Conflict,
-                    pg_error_codes::QUERY_CANCELED => {
-                        tracing::warn!(error = %error, "Query canceled");
-                        RepositoryError::QueryCanceled
-                    }
-                    sqlite_error_codes::BUSY
-                    | sqlite_error_codes::BUSY_RECOVERY
-                    | sqlite_error_codes::BUSY_SNAPSHOT
-                    | sqlite_error_codes::BUSY_TIMEOUT
-                    | sqlite_error_codes::LOCKED
-                    | sqlite_error_codes::LOCKED_SHAREDCACHE => {
-                        tracing::warn!(error = %error, "Database busy (transient lock contention)");
-                        RepositoryError::Busy(db_err.message().to_string())
-                    }
-                    _ => {
-                        tracing::error!(error_code = %code, error = %error, "Unhandled database error code");
-                        RepositoryError::Database(error.to_string())
-                    }
-                };
+    if let DbErr::Query(RuntimeErr::SqlxError(sqlx_err)) | DbErr::Exec(RuntimeErr::SqlxError(sqlx_err)) = &error
+        && let Some(db_err) = sqlx_err.as_database_error()
+        && let Some(code) = db_err.code()
+    {
+        return match code.as_ref() {
+            pg_error_codes::READ_ONLY_SQL_TRANSACTION => RepositoryError::ReadOnly,
+            pg_error_codes::UNIQUE_VIOLATION => RepositoryError::Constraint(db_err.message().to_string()),
+            pg_error_codes::FOREIGN_KEY_VIOLATION => RepositoryError::Constraint(format!("Foreign key violation: {}", db_err.message())),
+            pg_error_codes::SERIALIZATION_FAILURE => RepositoryError::Conflict,
+            pg_error_codes::QUERY_CANCELED => {
+                tracing::warn!(error = %error, "Query canceled");
+                RepositoryError::QueryCanceled
             }
-        }
+            sqlite_error_codes::BUSY
+            | sqlite_error_codes::BUSY_RECOVERY
+            | sqlite_error_codes::BUSY_SNAPSHOT
+            | sqlite_error_codes::BUSY_TIMEOUT
+            | sqlite_error_codes::LOCKED
+            | sqlite_error_codes::LOCKED_SHAREDCACHE => {
+                tracing::warn!(error = %error, "Database busy (transient lock contention)");
+                RepositoryError::Busy(db_err.message().to_string())
+            }
+            _ => {
+                tracing::error!(error_code = %code, error = %error, "Unhandled database error code");
+                RepositoryError::Database(error.to_string())
+            }
+        };
     }
 
     tracing::error!(error = ?error, "Unhandled database error");

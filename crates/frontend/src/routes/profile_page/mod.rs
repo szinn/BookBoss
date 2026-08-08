@@ -538,7 +538,7 @@ fn ProfileSectionContent() -> Element {
                 }
             }
             if let Some(err) = profile_error() {
-                p { class: "text-xs text-red-600", "{err}" }
+                p { class: "text-xs text-red-600", {err} }
             }
             div { class: "flex items-center justify-between",
                 // Left — Change Password trigger
@@ -617,7 +617,7 @@ fn ProfileSectionContent() -> Element {
                             }
                         }
                         if let Some(err) = pw_error() {
-                            p { class: "text-xs text-red-600", "{err}" }
+                            p { class: "text-xs text-red-600", {err} }
                         }
                     }
 
@@ -711,9 +711,9 @@ fn DefaultLibrarySectionContent() -> Element {
                         },
                         for (token, name) in &libs {
                             option {
-                                value: "{token}",
+                                value: token,
                                 selected: *token == current_default,
-                                "{name}"
+                                {name.clone()}
                             }
                         }
                     }
@@ -724,7 +724,7 @@ fn DefaultLibrarySectionContent() -> Element {
                     }
                 }
                 if let Some(err) = error() {
-                    p { class: "text-xs text-red-600", "{err}" }
+                    p { class: "text-xs text-red-600", {err} }
                 }
             }
         }
@@ -878,7 +878,7 @@ fn OpdsSectionContent() -> Element {
                 }
 
                 if let Some(err) = error_msg() {
-                    p { class: "text-xs text-red-600", "{err}" }
+                    p { class: "text-xs text-red-600", {err} }
                 }
             }
         }

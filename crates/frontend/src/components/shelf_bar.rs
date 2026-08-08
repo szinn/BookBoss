@@ -285,7 +285,7 @@ pub(crate) fn ShelfBar(
                                 },
                             }
                             if let Some(msg) = error_msg() {
-                                p { class: "mt-1 text-xs text-red-600 dark:text-red-400", "{msg}" }
+                                p { class: "mt-1 text-xs text-red-600 dark:text-red-400", {msg} }
                             }
                         }
 
@@ -347,7 +347,7 @@ pub(crate) fn ShelfBar(
                     }
 
                     if let Some(msg) = smart_error() {
-                        p { class: "mb-3 text-sm text-red-600 dark:text-red-400", "{msg}" }
+                        p { class: "mb-3 text-sm text-red-600 dark:text-red-400", {msg} }
                     }
 
                     div { class: "flex gap-3 justify-end",

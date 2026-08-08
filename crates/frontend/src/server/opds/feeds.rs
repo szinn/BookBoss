@@ -395,10 +395,8 @@ pub async fn authors(opds_user: OpdsUser, Query(params): Query<PaginationParams>
         .with_link(AtomLink::new(rel::SELF, format_paginated_url("/opds/authors", params.start)).with_type(mime::NAVIGATION))
         .with_link(AtomLink::new(rel::START, "/opds/").with_type(mime::NAVIGATION));
 
-    if has_next {
-        if let Some(last) = page_authors.last() {
-            feed = feed.with_link(AtomLink::new(rel::NEXT, format_paginated_url("/opds/authors", Some(last.id + 1))).with_type(mime::NAVIGATION));
-        }
+    if has_next && let Some(last) = page_authors.last() {
+        feed = feed.with_link(AtomLink::new(rel::NEXT, format_paginated_url("/opds/authors", Some(last.id + 1))).with_type(mime::NAVIGATION));
     }
 
     for author in page_authors {
@@ -479,10 +477,8 @@ pub async fn series_list(opds_user: OpdsUser, Query(params): Query<PaginationPar
         .with_link(AtomLink::new(rel::SELF, format_paginated_url("/opds/series", params.start)).with_type(mime::NAVIGATION))
         .with_link(AtomLink::new(rel::START, "/opds/").with_type(mime::NAVIGATION));
 
-    if has_next {
-        if let Some(last) = page_series.last() {
-            feed = feed.with_link(AtomLink::new(rel::NEXT, format_paginated_url("/opds/series", Some(last.id + 1))).with_type(mime::NAVIGATION));
-        }
+    if has_next && let Some(last) = page_series.last() {
+        feed = feed.with_link(AtomLink::new(rel::NEXT, format_paginated_url("/opds/series", Some(last.id + 1))).with_type(mime::NAVIGATION));
     }
 
     for series in page_series {

@@ -59,8 +59,8 @@ impl FormatService for FormatServiceImpl {
         }
 
         // Step 1: Enrich epub if requested.
-        let epub_path_for_kepub;
-        if has_epub_output {
+
+        let epub_path_for_kepub = if has_epub_output {
             let epub_output = request.outputs.iter().find(|o| o.format == FileFormat::Epub).expect("checked above");
 
             let source = request.source.path.clone();
@@ -73,11 +73,11 @@ impl FormatService for FormatServiceImpl {
                 .map_err(|e| Error::Infrastructure(format!("enrichment task panicked: {e}")))?
                 .map_err(|e| Error::Infrastructure(e.to_string()))?;
 
-            epub_path_for_kepub = epub_output.path.clone();
+            epub_output.path.clone()
         } else {
             // No epub output — kepub derives from source directly.
-            epub_path_for_kepub = request.source.path.clone();
-        }
+            request.source.path.clone()
+        };
 
         // Step 2: Convert to kepub if requested.
         if let Some(kepub) = kepub_output {

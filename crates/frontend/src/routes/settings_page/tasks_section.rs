@@ -209,13 +209,12 @@ fn RelativeTime(iso: String, direction: String) -> Element {
                 prefix = if direction == "past" { "" } else { "in " },
                 suffix = if direction == "past" { " ago" } else { "" },
             );
-            if let Ok(val) = document::eval(&js).await {
-                if let Some(s) = val.as_str() {
-                    if let Ok(parsed) = serde_json::from_str::<RelTimeResult>(s) {
-                        rel_text.set(parsed.rel);
-                        abs_text.set(parsed.abs);
-                    }
-                }
+            if let Ok(val) = document::eval(&js).await
+                && let Some(s) = val.as_str()
+                && let Ok(parsed) = serde_json::from_str::<RelTimeResult>(s)
+            {
+                rel_text.set(parsed.rel);
+                abs_text.set(parsed.abs);
             }
         });
     });
@@ -254,10 +253,10 @@ fn RunNowButton(job_type: String, on_triggered: EventHandler<()>) -> Element {
 }
 
 fn format_interval(minutes: u64) -> String {
-    if minutes >= 1440 && minutes % 1440 == 0 {
+    if minutes >= 1440 && minutes.is_multiple_of(1440) {
         let days = minutes / 1440;
         if days == 1 { "1 day".to_string() } else { format!("{days} days") }
-    } else if minutes >= 60 && minutes % 60 == 0 {
+    } else if minutes >= 60 && minutes.is_multiple_of(60) {
         let hours = minutes / 60;
         if hours == 1 { "1 hour".to_string() } else { format!("{hours} hours") }
     } else if minutes == 1 {

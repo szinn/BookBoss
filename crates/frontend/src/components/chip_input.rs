@@ -84,8 +84,8 @@ pub(crate) fn ChipInput(mut values: Signal<Vec<String>>, options: Vec<String>, p
                             "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-gray-100 dark:bg-slate-600 text-gray-700 dark:text-slate-200 border border-gray-300 dark:border-slate-500"
                         };
                         rsx! {
-                            span { key: "{label}", class: "{chip_class}",
-                                "{label}"
+                            span { key: "{label}", class: chip_class,
+                                {label}
                                 if is_new {
                                     span { class: "font-semibold ml-0.5 text-green-700 dark:text-green-300", "new" }
                                 }
@@ -109,7 +109,7 @@ pub(crate) fn ChipInput(mut values: Signal<Vec<String>>, options: Vec<String>, p
                 input {
                     class: "flex-1 min-w-[120px] text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-400 outline-none bg-transparent py-0.5",
                     value: "{input_text}",
-                    placeholder: "{ph}",
+                    placeholder: ph,
                     onmounted: move |e| {
                         if focus_on_mount() {
                             focus_on_mount.set(false);
@@ -209,7 +209,7 @@ pub(crate) fn ChipInput(mut values: Signal<Vec<String>>, options: Vec<String>, p
                             rsx! {
                                 div {
                                     key: "{label}",
-                                    class: "{row_class}",
+                                    class: row_class,
                                     onmousedown: move |e| e.prevent_default(),
                                     onclick: move |_| {
                                         let name = click_val.trim().to_string();
@@ -223,7 +223,7 @@ pub(crate) fn ChipInput(mut values: Signal<Vec<String>>, options: Vec<String>, p
                                         show_dropdown.set(false);
                                         focused_index.set(None);
                                     },
-                                    "{label}"
+                                    {label}
                                 }
                             }
                         }

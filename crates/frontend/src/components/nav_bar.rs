@@ -176,10 +176,10 @@ fn IncomingCountLoader() -> Element {
     })?;
 
     use_effect(move || {
-        if let Some(Ok(val)) = pending_count() {
-            if *INCOMING_PENDING_COUNT.peek() != val {
-                *INCOMING_PENDING_COUNT.write() = val;
-            }
+        if let Some(Ok(val)) = pending_count()
+            && *INCOMING_PENDING_COUNT.peek() != val
+        {
+            *INCOMING_PENDING_COUNT.write() = val;
         }
     });
 
@@ -494,7 +494,7 @@ fn LibraryPicker() -> Element {
             button {
                 class: "flex items-center gap-1 text-sm text-white hover:text-indigo-200 cursor-pointer",
                 onclick: move |_| open.set(!open()),
-                "{active_name}"
+                {active_name}
                 svg {
                     class: "w-3.5 h-3.5",
                     xmlns: "http://www.w3.org/2000/svg",
@@ -557,10 +557,10 @@ fn SearchBar() -> Element {
 
     use_hook(move || {
         spawn(async move {
-            if let Ok(val) = document::eval("return window.localStorage.getItem('search_hint_seen')").await {
-                if !val.is_null() {
-                    hint_seen.set(true);
-                }
+            if let Ok(val) = document::eval("return window.localStorage.getItem('search_hint_seen')").await
+                && !val.is_null()
+            {
+                hint_seen.set(true);
             }
         });
     });
@@ -637,7 +637,7 @@ fn SearchBar() -> Element {
                             input {
                                 class: "relative w-full pl-9 pr-8 py-1.5 text-sm text-gray-900 dark:text-slate-100 bg-transparent placeholder-gray-400 dark:placeholder-slate-500 outline-none",
                                 r#type: "text",
-                                placeholder: "{search_placeholder}",
+                                placeholder: search_placeholder,
                                 value: SEARCH_TEXT(),
                                 onfocus: move |_| {
                                     focused.set(true);
@@ -768,7 +768,7 @@ fn SearchBar() -> Element {
                                 span { class: "font-semibold", "field:value" }
                                 " to narrow results — "
                                 for field in ["author:", "series:", "genre:", "tag:", "status:", "title:"] {
-                                    code { class: "inline-block bg-blue-100 dark:bg-slate-700 rounded px-1 mr-1 font-mono", "{field}" }
+                                    code { class: "inline-block bg-blue-100 dark:bg-slate-700 rounded px-1 mr-1 font-mono", {field} }
                                 }
                                 " · Quote multi-word values: "
                                 code { class: "bg-blue-100 dark:bg-slate-700 rounded px-1 font-mono", "author:\"Brad Thor\"" }

@@ -243,11 +243,9 @@ impl DeviceService for DeviceServiceImpl {
             };
             device_repository.update_device(tx, updated).await?;
 
-            if name_changed {
-                if let Some(shelf) = shelf_repository.find_by_device_id(tx, device.id).await? {
-                    let renamed = Shelf { name, ..shelf };
-                    shelf_repository.update_shelf(tx, renamed).await?;
-                }
+            if name_changed && let Some(shelf) = shelf_repository.find_by_device_id(tx, device.id).await? {
+                let renamed = Shelf { name, ..shelf };
+                shelf_repository.update_shelf(tx, renamed).await?;
             }
 
             Ok(())
@@ -265,10 +263,8 @@ impl DeviceService for DeviceServiceImpl {
                 return Err(Error::Validation("only the owner may delete a device".to_string()));
             }
 
-            if delete_companion_shelf {
-                if let Some(shelf) = shelf_repository.find_by_device_id(tx, device.id).await? {
-                    shelf_repository.delete_shelf(tx, shelf).await?;
-                }
+            if delete_companion_shelf && let Some(shelf) = shelf_repository.find_by_device_id(tx, device.id).await? {
+                shelf_repository.delete_shelf(tx, shelf).await?;
             }
 
             device_repository.delete_device(tx, device).await

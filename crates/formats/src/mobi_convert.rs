@@ -248,10 +248,10 @@ fn collect_img_srcs(html: &[u8]) -> Vec<String> {
                 let local = local_name_lower(e.name().as_ref());
                 if local == "img" {
                     for attr in e.attributes().flatten() {
-                        if attr.key.as_ref() == b"src" {
-                            if let Ok(v) = std::str::from_utf8(attr.value.as_ref()) {
-                                srcs.push(v.to_string());
-                            }
+                        if attr.key.as_ref() == b"src"
+                            && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
+                        {
+                            srcs.push(v.to_string());
                         }
                     }
                 }
@@ -317,12 +317,11 @@ fn clean_html(
                 if local == "link" {
                     let mut is_stylesheet = false;
                     for attr in e.attributes().flatten() {
-                        if attr.key.as_ref() == b"rel" {
-                            if let Ok(v) = std::str::from_utf8(attr.value.as_ref()) {
-                                if v.eq_ignore_ascii_case("stylesheet") {
-                                    is_stylesheet = true;
-                                }
-                            }
+                        if attr.key.as_ref() == b"rel"
+                            && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
+                            && v.eq_ignore_ascii_case("stylesheet")
+                        {
+                            is_stylesheet = true;
                         }
                     }
                     if is_stylesheet {
@@ -412,12 +411,11 @@ fn clean_html(
                 if local == "link" {
                     let mut is_stylesheet = false;
                     for attr in e.attributes().flatten() {
-                        if attr.key.as_ref() == b"rel" {
-                            if let Ok(v) = std::str::from_utf8(attr.value.as_ref()) {
-                                if v.eq_ignore_ascii_case("stylesheet") {
-                                    is_stylesheet = true;
-                                }
-                            }
+                        if attr.key.as_ref() == b"rel"
+                            && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
+                            && v.eq_ignore_ascii_case("stylesheet")
+                        {
+                            is_stylesheet = true;
                         }
                     }
                     if is_stylesheet {
@@ -528,11 +526,11 @@ fn clean_html(
 /// placeholder if the src is not found.
 fn img_src_to_kindle_embed(e: &quick_xml::events::BytesStart<'_>, src_to_record: &HashMap<String, u32>) -> String {
     for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == b"src" {
-            if let Ok(src) = std::str::from_utf8(attr.value.as_ref()) {
-                let record = src_to_record.get(src).copied().unwrap_or(1);
-                return format!("kindle:embed:{record:04}?mime=image/jpeg");
-            }
+        if attr.key.as_ref() == b"src"
+            && let Ok(src) = std::str::from_utf8(attr.value.as_ref())
+        {
+            let record = src_to_record.get(src).copied().unwrap_or(1);
+            return format!("kindle:embed:{record:04}?mime=image/jpeg");
         }
     }
     "kindle:embed:0001?mime=image/jpeg".to_string()
@@ -691,10 +689,10 @@ fn parse_ncx(ncx: &[u8], ncx_dir: &str, spine_prefix_map: &HashMap<String, Strin
                     "navpoint" => {
                         let mut play_order = 0u32;
                         for attr in e.attributes().flatten() {
-                            if attr.key.as_ref().eq_ignore_ascii_case(b"playorder") {
-                                if let Ok(v) = std::str::from_utf8(attr.value.as_ref()) {
-                                    play_order = v.trim().parse().unwrap_or(0);
-                                }
+                            if attr.key.as_ref().eq_ignore_ascii_case(b"playorder")
+                                && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
+                            {
+                                play_order = v.trim().parse().unwrap_or(0);
                             }
                         }
                         stack.push(Pending {
@@ -710,23 +708,23 @@ fn parse_ncx(ncx: &[u8], ncx_dir: &str, spine_prefix_map: &HashMap<String, Strin
             }
             Ok(Event::Empty(ref e)) => {
                 let local = local_name_lower(e.name().as_ref());
-                if local == "content" {
-                    if let Some(top) = stack.last_mut() {
-                        for attr in e.attributes().flatten() {
-                            if attr.key.as_ref() == b"src" {
-                                if let Ok(v) = std::str::from_utf8(attr.value.as_ref()) {
-                                    top.src = v.to_string();
-                                }
-                            }
+                if local == "content"
+                    && let Some(top) = stack.last_mut()
+                {
+                    for attr in e.attributes().flatten() {
+                        if attr.key.as_ref() == b"src"
+                            && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
+                        {
+                            top.src = v.to_string();
                         }
                     }
                 }
             }
             Ok(Event::Text(ref e)) if in_text => {
-                if let Some(top) = stack.last_mut() {
-                    if let Ok(text) = std::str::from_utf8(e.as_ref()) {
-                        top.label.push_str(text);
-                    }
+                if let Some(top) = stack.last_mut()
+                    && let Ok(text) = std::str::from_utf8(e.as_ref())
+                {
+                    top.label.push_str(text);
                 }
             }
             Ok(Event::End(ref e)) => {
@@ -1033,10 +1031,10 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
                     }
                     "itemref" if in_spine => {
                         for attr in e.attributes().flatten() {
-                            if attr.key.as_ref() == b"idref" {
-                                if let Ok(v) = std::str::from_utf8(attr.value.as_ref()) {
-                                    spine.push(v.to_string());
-                                }
+                            if attr.key.as_ref() == b"idref"
+                                && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
+                            {
+                                spine.push(v.to_string());
                             }
                         }
                     }
@@ -1090,10 +1088,10 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
                     }
                     "itemref" if in_spine => {
                         for attr in e.attributes().flatten() {
-                            if attr.key.as_ref() == b"idref" {
-                                if let Ok(v) = std::str::from_utf8(attr.value.as_ref()) {
-                                    spine.push(v.to_string());
-                                }
+                            if attr.key.as_ref() == b"idref"
+                                && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
+                            {
+                                spine.push(v.to_string());
                             }
                         }
                     }
@@ -1131,10 +1129,10 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
 
     // Fallback: resolve NCX href via spine toc= attribute if media-type lookup
     // missed it.
-    if ncx_href.is_none() {
-        if let Some(ref toc_id) = spine_toc_id {
-            ncx_href = manifest.get(toc_id).cloned();
-        }
+    if ncx_href.is_none()
+        && let Some(ref toc_id) = spine_toc_id
+    {
+        ncx_href = manifest.get(toc_id).cloned();
     }
 
     Ok((manifest, spine, ncx_href, guide_toc_href))
@@ -1207,7 +1205,7 @@ fn write_palmdb(
     let record_list_size: u32 = total_records as u32 * 8;
     let data_start: u32 = palmdb_header_size + record_list_size;
     // PalmDB spec requires data start at an even offset; add padding if needed.
-    let data_start = if data_start % 2 != 0 { data_start + 1 } else { data_start };
+    let data_start = if data_start.is_multiple_of(2) { data_start } else { data_start + 1 };
 
     let mut offsets: Vec<u32> = Vec::with_capacity(total_records);
     let mut current = data_start;
@@ -1272,7 +1270,7 @@ fn write_palmdb(
 
     // Padding byte if data_start was bumped to even.
     let raw_data_start = palmdb_header_size + record_list_size;
-    if raw_data_start % 2 != 0 {
+    if !raw_data_start.is_multiple_of(2) {
         f.write_all(&[0u8])?;
     }
 

@@ -236,7 +236,7 @@ struct_excessive_bools = "allow"
 must_use_candidate = "allow"
 too_many_arguments = "allow"
 case_sensitive_file_extension_comparisons = "allow"
-allow-attributes-without-reason = "allow"
+allow_attributes_without_reason = "allow"
 empty_structs_with_brackets = "allow"
 
 # Pending Review

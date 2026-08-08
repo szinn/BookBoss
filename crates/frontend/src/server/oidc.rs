@@ -38,7 +38,7 @@ use crate::OidcConfig;
 
 /// OIDC in-flight state entries expire 5 minutes after creation. Authorization
 /// code flow round-trips are typically a few seconds; 5 minutes is generous.
-const STATE_ENTRY_TTL: Duration = Duration::from_secs(5 * 60);
+const STATE_ENTRY_TTL: Duration = Duration::from_mins(5);
 
 /// Walks an error's source chain and concatenates each layer's `Display`.
 /// `openidconnect`'s and `reqwest`'s errors expose useful detail (DNS,

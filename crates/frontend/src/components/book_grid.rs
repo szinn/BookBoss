@@ -328,16 +328,16 @@ fn BookCard(book: BookSummary) -> Element {
                     p { class: "text-xs text-gray-400 dark:text-slate-500 leading-tight truncate mt-0.5",
                         if let Some(ref stok) = book.series_token {
                             if suppressed_series_token.as_deref() == Some(stok.as_str()) {
-                                span { "{series}" }
+                                span { {series} }
                             } else {
                                 Link {
                                     to: Route::SeriesDetailPage { token: stok.clone() },
                                     class: "hover:underline",
-                                    "{series}"
+                                    {series}
                                 }
                             }
                         } else {
-                            span { "{series}" }
+                            span { {series} }
                         }
                     }
                 }

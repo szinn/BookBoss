@@ -115,12 +115,12 @@ pub(crate) fn SettingsPage() -> Element {
     // Restore section from URL hash on mount.
     use_effect(move || {
         spawn(async move {
-            if let Ok(val) = document::eval("return window.location.hash").await {
-                if let Some(hash) = val.as_str() {
-                    let section = Section::from_hash(hash);
-                    if section != Section::Users {
-                        active_section.set(section);
-                    }
+            if let Ok(val) = document::eval("return window.location.hash").await
+                && let Some(hash) = val.as_str()
+            {
+                let section = Section::from_hash(hash);
+                if section != Section::Users {
+                    active_section.set(section);
                 }
             }
         });
