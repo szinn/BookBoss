@@ -5,7 +5,7 @@ members = ["crates/bookboss", "crates/integration-tests"]
 [workspace.package]
 version = "0.8.33"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.95"
 description = "Take control of your digital library"
 readme = "README.md"
 repository = "https://github.com/szinn/BookBoss"

@@ -983,8 +983,6 @@ dependencies = [
 name = "bb-utils"
 version = "0.8.33"
 dependencies = [
- "serde",
- "serde_json",
  "sha2 0.11.0",
  "tempfile",
  "thiserror 2.0.19",

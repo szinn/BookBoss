@@ -1,7 +1,7 @@
 use alderkit_token::define_alphabet;
 pub use alderkit_token::{
     define_token_prefix,
-    token::{Token, TokenError},
+    token::{Alphabet, Token, TokenError},
 };
 
 // Byte order must exactly match the retired bb-utils alphabet — every token
@@ -10,8 +10,6 @@ define_alphabet!(TokenAlphabet, b"Y4XK0N8AR3G6JM2VT9BS5WC1DPH7EUZF");
 
 #[cfg(test)]
 mod tests {
-    use alderkit_token::token::Alphabet;
-
     use super::*;
 
     define_token_prefix!(TestPrefix, "T_");
