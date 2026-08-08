@@ -21,6 +21,7 @@ pub mod repository;
 pub mod resilience;
 pub mod shelf;
 pub mod storage;
+pub mod token;
 pub mod types;
 pub mod user;
 
