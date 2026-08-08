@@ -1,5 +1,5 @@
 {
   "project_slug": "bb",
   "server": "https://issueboss.zinn.ca:8090",
-  "thoughts_dir": ".insights/"
+  "insights_dir": ".insights/"
 }
