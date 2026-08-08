@@ -113,6 +113,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "alderkit-token"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25c90a719ee696369c74a749fbe5243bd5c71bb6c7bf630998ec64ba2613fd33"
+dependencies = [
+ "rand 0.10.2",
+ "serde",
+ "thiserror 2.0.19",
+]
+
+[[package]]
 name = "aliasable"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -844,6 +855,7 @@ name = "bb-core"
 version = "0.8.33"
 dependencies = [
  "aes-gcm 0.11.0",
+ "alderkit-token",
  "argon2",
  "async-trait",
  "base64 0.23.0",

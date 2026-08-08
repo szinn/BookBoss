@@ -15,6 +15,7 @@ test-support = ["dep:mockall"]
 [dependencies]
 mockall = { workspace = true, optional = true }
 bb-utils.workspace = true
+alderkit-token.workspace = true
 
 aes-gcm.workspace = true
 md-5.workspace = true
