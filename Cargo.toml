@@ -132,7 +132,7 @@ serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 
 # Database
-sea-orm = { version = "2.0.0", features = [
+sea-orm = { version = "2.0.1", features = [
     "debug-print",
     "postgres-array",
     "runtime-tokio-rustls",
@@ -144,7 +144,7 @@ sea-orm = { version = "2.0.0", features = [
     "with-rust_decimal",
     "with-uuid",
 ] }
-sea-orm-migration = { version = "2.0.0", features = [
+sea-orm-migration = { version = "2.0.1", features = [
     "sqlx-postgres",
     "sqlx-sqlite",
     "sqlx-mysql",
