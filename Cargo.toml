@@ -157,7 +157,7 @@ sea-orm-migration = { version = "2.0.1", features = [
 sqlx = "0.9.0"
 
 # CLI
-clap = { version = "4.6.5", features = ["cargo", "derive", "env"] }
+clap = { version = "4.6.6", features = ["cargo", "derive", "env"] }
 
 # Testing
 insta = { version = "1.48.0", features = ["filters"] }
