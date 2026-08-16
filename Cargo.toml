@@ -64,7 +64,7 @@ tokio-util = { version = "0.7.19", default-features = false, features = ["rt"] }
 
 # Web
 axum = "0.8.9"
-axum_session = { version = "0.20.1", default-features = false }
+axum_session = { version = "0.21.0", default-features = false }
 axum_session_auth = { version = "0.20.0", default-features = false }
 dioxus = { version = "0.7.10", features = ["fullstack", "router"] }
 dioxus-server = { version = "0.7.10", features = ["router"] }
