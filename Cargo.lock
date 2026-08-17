@@ -735,37 +735,6 @@ dependencies = [
 
 [[package]]
 name = "axum_session"
-version = "0.20.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0deb5c3602db0d699dff8cca8ae2d3ff01320cccdebf5a4aeda4ad25008737c2"
-dependencies = [
- "aes-gcm 0.10.3",
- "async-trait",
- "axum",
- "base64 0.22.1",
- "bytes",
- "chrono",
- "cookie",
- "dashmap",
- "forwarded-header-value",
- "futures",
- "hmac 0.13.0",
- "http",
- "http-body",
- "rand 0.10.2",
- "serde",
- "serde_json",
- "sha2 0.11.0",
- "thiserror 2.0.20",
- "tokio",
- "tower-layer",
- "tower-service",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "axum_session"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "337130e61b1166b57510a481c76f585f08d9b78449c754c4d1d4155f56823ecc"
@@ -805,7 +774,7 @@ dependencies = [
  "async-recursion",
  "async-trait",
  "axum-core",
- "axum_session 0.21.0",
+ "axum_session",
  "bytes",
  "chrono",
  "dashmap",
@@ -954,7 +923,7 @@ dependencies = [
  "async-stream",
  "async-trait",
  "axum",
- "axum_session 0.21.0",
+ "axum_session",
  "axum_session_auth",
  "base64 0.23.1",
  "bb-core",
