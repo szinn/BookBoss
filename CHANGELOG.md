@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.34](https://github.com/szinn/BookBoss/compare/v0.8.33..v0.8.34) - 2026-08-23
+
+### Features
+
+- _(core)_ Define TokenAlphabet matching bb-utils's retired token alphabet - ([11bb4a2](https://github.com/szinn/BookBoss/commit/11bb4a27ddb6c1869857dc51d8fd3d448116300e))
+
+### Bug Fixes
+
+- _(formats)_ Migrate crates/formats to quick-xml 0.42 API - ([855447b](https://github.com/szinn/BookBoss/commit/855447bb5b3f96350d2e17429ee9bc36f67de97d))
+
+### Refactor
+
+- _(core)_ Migrate Token declarations to alderkit-token via TokenAlphabet - ([6663fcd](https://github.com/szinn/BookBoss/commit/6663fcd9320a324d4305b60c67433fba198899a2))
+
+### Miscellaneous Tasks
+
+- _(core)_ Prune bb-utils deps and MSRV after alderkit-token migration - ([2ee665f](https://github.com/szinn/BookBoss/commit/2ee665fefbd5e86b80f820e8b392f554f6ad1f7a))
+- _(core)_ Retire bb-utils token implementation - ([2bf8a11](https://github.com/szinn/BookBoss/commit/2bf8a1140ac24cb24544ec351bdc0c2cf8d5b5e9))
+- _(core)_ Add alderkit-token dependency - ([fcddac0](https://github.com/szinn/BookBoss/commit/fcddac0c0616ffdf910e630cf6891ac79b8e1f1a))
+- Fix clippy warnings across all crates - ([66a3d45](https://github.com/szinn/BookBoss/commit/66a3d45c17da56d2063901de2f0f5438c19a073b))
+
 ## [0.8.33](https://github.com/szinn/BookBoss/compare/v0.8.32..v0.8.33) - 2026-08-02
 
 ### Bug Fixes
