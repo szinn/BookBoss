@@ -62,7 +62,7 @@ RUN /usr/local/cargo/bin/dx bundle --server --package bookboss --release --targe
 # Sanity check: should say "not a dynamic executable"
 RUN ldd target/dx/bookboss/release/web/bookboss || true
 
-FROM ubuntu:latest@sha256:678c6550cc43645e08669028bc177f50be4e7c5b8cca677067b1914d4afc7a03 AS certs
+FROM ubuntu:latest@sha256:2260313b31c8c011cd2eebe728008efac1b3982be73eb71348ea2648d2c0e09b AS certs
 RUN groupadd --gid 1234 bookboss && useradd -g 1234 -M -u 1234 -s /usr/sbin/nologin bookboss
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 RUN update-ca-certificates
