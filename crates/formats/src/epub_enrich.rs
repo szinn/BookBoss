@@ -176,11 +176,11 @@ fn replace_opf_metadata(opf_xml: &str, sidecar: &BookSidecar) -> Result<String, 
     loop {
         buf.clear();
         match reader.read_event_into(&mut buf)? {
-            Event::Start(ref e) if e.local_name().as_ref() == b"metadata" => {
+            Event::Start(ref e) if e.local_name().as_ref() == "metadata" => {
                 writer.get_mut().extend_from_slice(&new_meta);
                 skipping = true;
             }
-            Event::End(ref e) if skipping && e.local_name().as_ref() == b"metadata" => {
+            Event::End(ref e) if skipping && e.local_name().as_ref() == "metadata" => {
                 skipping = false;
             }
             Event::Eof => break,
@@ -207,11 +207,11 @@ fn inject_cover_manifest_entry(opf_xml: &str, cover_href: &str) -> Result<String
     loop {
         buf.clear();
         match reader.read_event_into(&mut buf)? {
-            Event::End(ref e) if e.local_name().as_ref() == b"manifest" => {
+            Event::End(ref e) if e.local_name().as_ref() == "manifest" => {
                 writer.write_event(Event::Empty(build_cover_item(&cover_href)))?;
                 writer.write_event(Event::End(BytesEnd::new("manifest")))?;
             }
-            Event::Empty(ref e) if e.local_name().as_ref() == b"manifest" => {
+            Event::Empty(ref e) if e.local_name().as_ref() == "manifest" => {
                 writer.write_event(Event::Start(BytesStart::new("manifest")))?;
                 writer.write_event(Event::Empty(build_cover_item(&cover_href)))?;
                 writer.write_event(Event::End(BytesEnd::new("manifest")))?;
@@ -244,12 +244,13 @@ fn ensure_cover_image_property(opf_xml: &str, item_id: &str) -> Result<String, E
     loop {
         buf.clear();
         match reader.read_event_into(&mut buf)? {
-            Event::Empty(ref e) if e.local_name().as_ref() == b"item" => {
-                let is_target = e.attributes().flatten().any(|a| {
-                    a.key.as_ref() == b"id" && a.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder()).ok().as_deref() == Some(item_id)
-                });
+            Event::Empty(ref e) if e.local_name().as_ref() == "item" => {
+                let is_target = e
+                    .attributes()
+                    .flatten()
+                    .any(|a| a.key.as_ref() == "id" && a.normalized_value(XmlVersion::Implicit1_0).ok().as_deref() == Some(item_id));
                 if is_target {
-                    let patched = patch_cover_image_property(e, reader.decoder())?;
+                    let patched = patch_cover_image_property(e)?;
                     writer.write_event(Event::Empty(patched))?;
                 } else {
                     writer.write_event(Event::Empty(e.borrow()))?;
@@ -262,12 +263,12 @@ fn ensure_cover_image_property(opf_xml: &str, item_id: &str) -> Result<String, E
     String::from_utf8(writer.into_inner()).map_err(|e| Error::InvalidValue(e.to_string()))
 }
 
-fn patch_cover_image_property(elem: &quick_xml::events::BytesStart<'_>, decoder: quick_xml::Decoder) -> Result<BytesStart<'static>, Error> {
+fn patch_cover_image_property(elem: &quick_xml::events::BytesStart<'_>) -> Result<BytesStart<'static>, Error> {
     let mut new_elem = BytesStart::new("item");
     let mut found_properties = false;
     for attr in elem.attributes().flatten() {
-        if attr.key.as_ref() == b"properties" {
-            let val = attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, decoder)?;
+        if attr.key.as_ref() == "properties" {
+            let val = attr.normalized_value(XmlVersion::Implicit1_0)?;
             if val.split_whitespace().any(|p| p == "cover-image") {
                 new_elem.push_attribute(("properties", val.as_ref()));
             } else {
@@ -276,8 +277,8 @@ fn patch_cover_image_property(elem: &quick_xml::events::BytesStart<'_>, decoder:
             }
             found_properties = true;
         } else {
-            let key = std::str::from_utf8(attr.key.as_ref())?;
-            let val = attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, decoder)?;
+            let key = attr.key.as_ref();
+            let val = attr.normalized_value(XmlVersion::Implicit1_0)?;
             new_elem.push_attribute((key, val.as_ref()));
         }
     }

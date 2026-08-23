@@ -248,10 +248,8 @@ fn collect_img_srcs(html: &[u8]) -> Vec<String> {
                 let local = local_name_lower(e.name().as_ref());
                 if local == "img" {
                     for attr in e.attributes().flatten() {
-                        if attr.key.as_ref() == b"src"
-                            && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
-                        {
-                            srcs.push(v.to_string());
+                        if attr.key.as_ref() == "src" {
+                            srcs.push(attr.value.as_ref().to_string());
                         }
                     }
                 }
@@ -317,10 +315,7 @@ fn clean_html(
                 if local == "link" {
                     let mut is_stylesheet = false;
                     for attr in e.attributes().flatten() {
-                        if attr.key.as_ref() == b"rel"
-                            && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
-                            && v.eq_ignore_ascii_case("stylesheet")
-                        {
+                        if attr.key.as_ref() == "rel" && attr.value.as_ref().eq_ignore_ascii_case("stylesheet") {
                             is_stylesheet = true;
                         }
                     }
@@ -349,23 +344,16 @@ fn clean_html(
                     out.extend_from_slice(b"<a");
                     for attr in e.attributes().flatten() {
                         out.extend_from_slice(b" ");
-                        out.extend_from_slice(attr.key.as_ref());
+                        out.extend_from_slice(attr.key.as_ref().as_bytes());
                         out.extend_from_slice(b"=\"");
-                        if attr.key.as_ref() == b"href" {
-                            if let Ok(href) = std::str::from_utf8(attr.value.as_ref()) {
-                                let new_href = rewrite_href(href, current_prefix, html_zip_dir, spine_prefix_map);
-                                write!(out, "{new_href}")?;
-                            } else {
-                                out.extend_from_slice(attr.value.as_ref());
-                            }
-                        } else if attr.key.as_ref() == b"id" {
-                            if let Ok(id_val) = std::str::from_utf8(attr.value.as_ref()) {
-                                write!(out, "{current_prefix}_{id_val}")?;
-                            } else {
-                                out.extend_from_slice(attr.value.as_ref());
-                            }
+                        if attr.key.as_ref() == "href" {
+                            let new_href = rewrite_href(attr.value.as_ref(), current_prefix, html_zip_dir, spine_prefix_map);
+                            write!(out, "{new_href}")?;
+                        } else if attr.key.as_ref() == "id" {
+                            let id_val = attr.value.as_ref();
+                            write!(out, "{current_prefix}_{id_val}")?;
                         } else {
-                            out.extend_from_slice(attr.value.as_ref());
+                            out.extend_from_slice(attr.value.as_ref().as_bytes());
                         }
                         out.extend_from_slice(b"\"");
                     }
@@ -379,19 +367,16 @@ fn clean_html(
                     anchor_emitted = true;
                 }
                 out.extend_from_slice(b"<");
-                out.extend_from_slice(e.name().as_ref());
+                out.extend_from_slice(e.name().as_ref().as_bytes());
                 for attr in e.attributes().flatten() {
                     out.extend_from_slice(b" ");
-                    out.extend_from_slice(attr.key.as_ref());
+                    out.extend_from_slice(attr.key.as_ref().as_bytes());
                     out.extend_from_slice(b"=\"");
-                    if attr.key.as_ref() == b"id" {
-                        if let Ok(id_val) = std::str::from_utf8(attr.value.as_ref()) {
-                            write!(out, "{current_prefix}_{id_val}")?;
-                        } else {
-                            out.extend_from_slice(attr.value.as_ref());
-                        }
+                    if attr.key.as_ref() == "id" {
+                        let id_val = attr.value.as_ref();
+                        write!(out, "{current_prefix}_{id_val}")?;
                     } else {
-                        out.extend_from_slice(attr.value.as_ref());
+                        out.extend_from_slice(attr.value.as_ref().as_bytes());
                     }
                     out.extend_from_slice(b"\"");
                 }
@@ -411,10 +396,7 @@ fn clean_html(
                 if local == "link" {
                     let mut is_stylesheet = false;
                     for attr in e.attributes().flatten() {
-                        if attr.key.as_ref() == b"rel"
-                            && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
-                            && v.eq_ignore_ascii_case("stylesheet")
-                        {
+                        if attr.key.as_ref() == "rel" && attr.value.as_ref().eq_ignore_ascii_case("stylesheet") {
                             is_stylesheet = true;
                         }
                     }
@@ -442,16 +424,13 @@ fn clean_html(
                     out.extend_from_slice(b"<a");
                     for attr in e.attributes().flatten() {
                         out.extend_from_slice(b" ");
-                        out.extend_from_slice(attr.key.as_ref());
+                        out.extend_from_slice(attr.key.as_ref().as_bytes());
                         out.extend_from_slice(b"=\"");
-                        if attr.key.as_ref() == b"id" {
-                            if let Ok(id_val) = std::str::from_utf8(attr.value.as_ref()) {
-                                write!(out, "{current_prefix}_{id_val}")?;
-                            } else {
-                                out.extend_from_slice(attr.value.as_ref());
-                            }
+                        if attr.key.as_ref() == "id" {
+                            let id_val = attr.value.as_ref();
+                            write!(out, "{current_prefix}_{id_val}")?;
                         } else {
-                            out.extend_from_slice(attr.value.as_ref());
+                            out.extend_from_slice(attr.value.as_ref().as_bytes());
                         }
                         out.extend_from_slice(b"\"");
                     }
@@ -465,19 +444,16 @@ fn clean_html(
                     anchor_emitted = true;
                 }
                 out.extend_from_slice(b"<");
-                out.extend_from_slice(e.name().as_ref());
+                out.extend_from_slice(e.name().as_ref().as_bytes());
                 for attr in e.attributes().flatten() {
                     out.extend_from_slice(b" ");
-                    out.extend_from_slice(attr.key.as_ref());
+                    out.extend_from_slice(attr.key.as_ref().as_bytes());
                     out.extend_from_slice(b"=\"");
-                    if attr.key.as_ref() == b"id" {
-                        if let Ok(id_val) = std::str::from_utf8(attr.value.as_ref()) {
-                            write!(out, "{current_prefix}_{id_val}")?;
-                        } else {
-                            out.extend_from_slice(attr.value.as_ref());
-                        }
+                    if attr.key.as_ref() == "id" {
+                        let id_val = attr.value.as_ref();
+                        write!(out, "{current_prefix}_{id_val}")?;
                     } else {
-                        out.extend_from_slice(attr.value.as_ref());
+                        out.extend_from_slice(attr.value.as_ref().as_bytes());
                     }
                     out.extend_from_slice(b"\"");
                 }
@@ -504,14 +480,14 @@ fn clean_html(
                 }
 
                 out.extend_from_slice(b"</");
-                out.extend_from_slice(e.name().as_ref());
+                out.extend_from_slice(e.name().as_ref().as_bytes());
                 out.extend_from_slice(b">");
             }
             Ok(Event::Text(ref e)) if in_body && skip_style_depth == 0 => {
-                out.extend_from_slice(e.as_ref());
+                out.extend_from_slice(e.as_ref().as_bytes());
             }
             Ok(Event::CData(ref e)) if in_body && skip_style_depth == 0 => {
-                out.extend_from_slice(e.as_ref());
+                out.extend_from_slice(e.as_ref().as_bytes());
             }
             Ok(Event::Eof) | Err(_) => break,
             _ => {}
@@ -526,9 +502,8 @@ fn clean_html(
 /// placeholder if the src is not found.
 fn img_src_to_kindle_embed(e: &quick_xml::events::BytesStart<'_>, src_to_record: &HashMap<String, u32>) -> String {
     for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == b"src"
-            && let Ok(src) = std::str::from_utf8(attr.value.as_ref())
-        {
+        if attr.key.as_ref() == "src" {
+            let src = attr.value.as_ref();
             let record = src_to_record.get(src).copied().unwrap_or(1);
             return format!("kindle:embed:{record:04}?mime=image/jpeg");
         }
@@ -689,10 +664,8 @@ fn parse_ncx(ncx: &[u8], ncx_dir: &str, spine_prefix_map: &HashMap<String, Strin
                     "navpoint" => {
                         let mut play_order = 0u32;
                         for attr in e.attributes().flatten() {
-                            if attr.key.as_ref().eq_ignore_ascii_case(b"playorder")
-                                && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
-                            {
-                                play_order = v.trim().parse().unwrap_or(0);
+                            if attr.key.as_ref().eq_ignore_ascii_case("playorder") {
+                                play_order = attr.value.as_ref().trim().parse().unwrap_or(0);
                             }
                         }
                         stack.push(Pending {
@@ -712,19 +685,15 @@ fn parse_ncx(ncx: &[u8], ncx_dir: &str, spine_prefix_map: &HashMap<String, Strin
                     && let Some(top) = stack.last_mut()
                 {
                     for attr in e.attributes().flatten() {
-                        if attr.key.as_ref() == b"src"
-                            && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
-                        {
-                            top.src = v.to_string();
+                        if attr.key.as_ref() == "src" {
+                            top.src = attr.value.as_ref().to_string();
                         }
                     }
                 }
             }
             Ok(Event::Text(ref e)) if in_text => {
-                if let Some(top) = stack.last_mut()
-                    && let Ok(text) = std::str::from_utf8(e.as_ref())
-                {
-                    top.label.push_str(text);
+                if let Some(top) = stack.last_mut() {
+                    top.label.push_str(e.as_ref());
                 }
             }
             Ok(Event::End(ref e)) => {
@@ -1005,8 +974,8 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
                         in_spine = true;
                         // <spine toc="ncx-id"> — fallback if media-type lookup fails.
                         for attr in e.attributes().flatten() {
-                            if attr.key.as_ref() == b"toc" {
-                                spine_toc_id = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from);
+                            if attr.key.as_ref() == "toc" {
+                                spine_toc_id = Some(attr.value.as_ref().to_string());
                             }
                         }
                     }
@@ -1016,9 +985,9 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
                         let mut media_type = None;
                         for attr in e.attributes().flatten() {
                             match attr.key.as_ref() {
-                                b"id" => id = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from),
-                                b"href" => href = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from),
-                                b"media-type" => media_type = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from),
+                                "id" => id = Some(attr.value.as_ref().to_string()),
+                                "href" => href = Some(attr.value.as_ref().to_string()),
+                                "media-type" => media_type = Some(attr.value.as_ref().to_string()),
                                 _ => {}
                             }
                         }
@@ -1031,10 +1000,8 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
                     }
                     "itemref" if in_spine => {
                         for attr in e.attributes().flatten() {
-                            if attr.key.as_ref() == b"idref"
-                                && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
-                            {
-                                spine.push(v.to_string());
+                            if attr.key.as_ref() == "idref" {
+                                spine.push(attr.value.as_ref().to_string());
                             }
                         }
                     }
@@ -1043,8 +1010,8 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
                         let mut ref_href = None;
                         for attr in e.attributes().flatten() {
                             match attr.key.as_ref() {
-                                b"type" => ref_type = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from),
-                                b"href" => ref_href = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from),
+                                "type" => ref_type = Some(attr.value.as_ref().to_string()),
+                                "href" => ref_href = Some(attr.value.as_ref().to_string()),
                                 _ => {}
                             }
                         }
@@ -1064,9 +1031,9 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
                         let mut media_type = None;
                         for attr in e.attributes().flatten() {
                             match attr.key.as_ref() {
-                                b"id" => id = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from),
-                                b"href" => href = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from),
-                                b"media-type" => media_type = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from),
+                                "id" => id = Some(attr.value.as_ref().to_string()),
+                                "href" => href = Some(attr.value.as_ref().to_string()),
+                                "media-type" => media_type = Some(attr.value.as_ref().to_string()),
                                 _ => {}
                             }
                         }
@@ -1081,17 +1048,15 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
                         // Self-closing <spine toc="..."/> (unusual but possible).
                         in_spine = true;
                         for attr in e.attributes().flatten() {
-                            if attr.key.as_ref() == b"toc" {
-                                spine_toc_id = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from);
+                            if attr.key.as_ref() == "toc" {
+                                spine_toc_id = Some(attr.value.as_ref().to_string());
                             }
                         }
                     }
                     "itemref" if in_spine => {
                         for attr in e.attributes().flatten() {
-                            if attr.key.as_ref() == b"idref"
-                                && let Ok(v) = std::str::from_utf8(attr.value.as_ref())
-                            {
-                                spine.push(v.to_string());
+                            if attr.key.as_ref() == "idref" {
+                                spine.push(attr.value.as_ref().to_string());
                             }
                         }
                     }
@@ -1100,8 +1065,8 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
                         let mut ref_href = None;
                         for attr in e.attributes().flatten() {
                             match attr.key.as_ref() {
-                                b"type" => ref_type = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from),
-                                b"href" => ref_href = std::str::from_utf8(attr.value.as_ref()).ok().map(String::from),
+                                "type" => ref_type = Some(attr.value.as_ref().to_string()),
+                                "href" => ref_href = Some(attr.value.as_ref().to_string()),
                                 _ => {}
                             }
                         }
@@ -1489,9 +1454,8 @@ fn resolve_zip_path(dir: &str, href: &str) -> String {
     normalize_zip_path(&combined)
 }
 
-fn local_name_lower(qualified: &[u8]) -> String {
-    let s = std::str::from_utf8(qualified).unwrap_or("");
-    let local = s.split(':').next_back().unwrap_or(s);
+fn local_name_lower(qualified: &str) -> String {
+    let local = qualified.split(':').next_back().unwrap_or(qualified);
     local.to_ascii_lowercase()
 }
 

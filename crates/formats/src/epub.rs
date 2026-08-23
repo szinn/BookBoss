@@ -75,11 +75,11 @@ pub(crate) fn find_opf_path(xml: &[u8]) -> Result<String, crate::Error> {
     loop {
         buf.clear();
         match reader.read_event_into(&mut buf) {
-            Ok(Event::Empty(ref e) | Event::Start(ref e)) if e.local_name().as_ref() == b"rootfile" => {
+            Ok(Event::Empty(ref e) | Event::Start(ref e)) if e.local_name().as_ref() == "rootfile" => {
                 for attr in e.attributes() {
                     let attr = attr.map_err(quick_xml::Error::from)?;
-                    if attr.key.as_ref() == b"full-path" {
-                        let val = attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())?;
+                    if attr.key.as_ref() == "full-path" {
+                        let val = attr.normalized_value(XmlVersion::Implicit1_0)?;
                         return Ok(val.into_owned());
                     }
                 }

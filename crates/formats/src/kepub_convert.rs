@@ -153,8 +153,8 @@ fn inject_kobo_spans(xhtml_bytes: &[u8], chapter: usize) -> Result<Vec<u8>, Erro
             }
             Event::Text(ref e) => {
                 // Wrap non-whitespace text inside body (but not inside <pre>).
-                let raw: &[u8] = e.as_ref();
-                let is_whitespace_only = raw.iter().all(u8::is_ascii_whitespace);
+                let raw: &str = e.as_ref();
+                let is_whitespace_only = raw.chars().all(|c| c.is_ascii_whitespace());
 
                 if in_body && pre_depth == 0 && !is_whitespace_only {
                     span_counter += 1;
@@ -180,9 +180,8 @@ fn inject_kobo_spans(xhtml_bytes: &[u8], chapter: usize) -> Result<Vec<u8>, Erro
 
 /// Extracts the local (un-namespaced) name from a qualified XML name, folded
 /// to ASCII lowercase.
-fn local_name_lower(qualified: &[u8]) -> String {
-    let s = std::str::from_utf8(qualified).unwrap_or("");
-    let local = s.split(':').next_back().unwrap_or(s);
+fn local_name_lower(qualified: &str) -> String {
+    let local = qualified.split(':').next_back().unwrap_or(qualified);
     local.to_ascii_lowercase()
 }
 

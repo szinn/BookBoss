@@ -15,7 +15,7 @@ use serde::Deserialize;
 
 use crate::Error;
 
-const DC_NS: &[u8] = b"http://purl.org/dc/elements/1.1/";
+const DC_NS: &str = "http://purl.org/dc/elements/1.1/";
 
 // ── intermediate raw DC state
 // ─────────────────────────────────────────────────
@@ -214,44 +214,44 @@ fn parse_dc(xml: &[u8]) -> Result<DcFields, Error> {
                 text_buf.clear();
                 let local = e.local_name();
                 match local.as_ref() {
-                    b"title" => state = ParseState::InTitle,
-                    b"creator" => {
+                    "title" => state = ParseState::InTitle,
+                    "creator" => {
                         let mut id = None;
                         let mut role = None;
                         let mut file_as = None;
                         for attr in e.attributes() {
                             let attr = attr.map_err(quick_xml::Error::from)?;
                             match attr.key.as_ref() {
-                                b"id" => {
-                                    id = Some(attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())?.into_owned());
+                                "id" => {
+                                    id = Some(attr.normalized_value(XmlVersion::Implicit1_0)?.into_owned());
                                 }
-                                b"opf:role" => {
-                                    role = Some(attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())?.into_owned());
+                                "opf:role" => {
+                                    role = Some(attr.normalized_value(XmlVersion::Implicit1_0)?.into_owned());
                                 }
-                                b"opf:file-as" => {
-                                    file_as = Some(attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())?.into_owned());
+                                "opf:file-as" => {
+                                    file_as = Some(attr.normalized_value(XmlVersion::Implicit1_0)?.into_owned());
                                 }
                                 _ => {}
                             }
                         }
                         state = ParseState::InCreator { id, role, file_as };
                     }
-                    b"description" => state = ParseState::InDescription,
-                    b"publisher" => state = ParseState::InPublisher,
-                    b"date" => state = ParseState::InDate,
-                    b"language" => state = ParseState::InLanguage,
-                    b"subject" => state = ParseState::InSubject,
-                    b"identifier" => {
+                    "description" => state = ParseState::InDescription,
+                    "publisher" => state = ParseState::InPublisher,
+                    "date" => state = ParseState::InDate,
+                    "language" => state = ParseState::InLanguage,
+                    "subject" => state = ParseState::InSubject,
+                    "identifier" => {
                         let mut id = None;
                         let mut scheme = None;
                         for attr in e.attributes() {
                             let attr = attr.map_err(quick_xml::Error::from)?;
                             match attr.key.as_ref() {
-                                b"id" => {
-                                    id = Some(attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())?.into_owned());
+                                "id" => {
+                                    id = Some(attr.normalized_value(XmlVersion::Implicit1_0)?.into_owned());
                                 }
-                                b"opf:scheme" => {
-                                    scheme = Some(attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())?.into_owned());
+                                "opf:scheme" => {
+                                    scheme = Some(attr.normalized_value(XmlVersion::Implicit1_0)?.into_owned());
                                 }
                                 _ => {}
                             }
@@ -261,17 +261,17 @@ fn parse_dc(xml: &[u8]) -> Result<DcFields, Error> {
                     _ => {}
                 }
             }
-            (_, Event::Empty(ref e)) if e.local_name().as_ref() == b"meta" => {
+            (_, Event::Empty(ref e)) if e.local_name().as_ref() == "meta" => {
                 let mut meta_name = None::<String>;
                 let mut content = None::<String>;
                 for attr in e.attributes() {
                     let attr = attr.map_err(quick_xml::Error::from)?;
                     match attr.key.as_ref() {
-                        b"name" => {
-                            meta_name = Some(attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())?.into_owned());
+                        "name" => {
+                            meta_name = Some(attr.normalized_value(XmlVersion::Implicit1_0)?.into_owned());
                         }
-                        b"content" => {
-                            content = Some(attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())?.into_owned());
+                        "content" => {
+                            content = Some(attr.normalized_value(XmlVersion::Implicit1_0)?.into_owned());
                         }
                         _ => {}
                     }
@@ -281,17 +281,17 @@ fn parse_dc(xml: &[u8]) -> Result<DcFields, Error> {
                 }
             }
             // OPF 3: <meta property="role|file-as" refines="#id">text</meta>
-            (_, Event::Start(ref e)) if e.local_name().as_ref() == b"meta" => {
+            (_, Event::Start(ref e)) if e.local_name().as_ref() == "meta" => {
                 let mut property = None::<String>;
                 let mut refines = None::<String>;
                 for attr in e.attributes() {
                     let attr = attr.map_err(quick_xml::Error::from)?;
                     match attr.key.as_ref() {
-                        b"property" => {
-                            property = Some(attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())?.into_owned());
+                        "property" => {
+                            property = Some(attr.normalized_value(XmlVersion::Implicit1_0)?.into_owned());
                         }
-                        b"refines" => {
-                            refines = Some(attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())?.into_owned());
+                        "refines" => {
+                            refines = Some(attr.normalized_value(XmlVersion::Implicit1_0)?.into_owned());
                         }
                         _ => {}
                     }
@@ -306,14 +306,14 @@ fn parse_dc(xml: &[u8]) -> Result<DcFields, Error> {
                 }
             }
             (_, Event::Text(ref t)) => {
-                text_buf.push_str(&t.decode()?);
+                text_buf.push_str(t);
             }
             (_, Event::GeneralRef(ref r)) => {
                 // quick-xml emits XML entity references (&apos; &amp; etc.)
                 // as separate GeneralRef events. Resolve and append to the
                 // text accumulator so entities don't cause truncation.
-                let name = r.decode()?;
-                match name.as_ref() {
+                let name: &str = r.as_ref();
+                match name {
                     "amp" => text_buf.push('&'),
                     "lt" => text_buf.push('<'),
                     "gt" => text_buf.push('>'),
@@ -561,20 +561,17 @@ pub fn extract_cover_info(opf_xml: &[u8]) -> Option<CoverInfo> {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Empty(ref e)) => {
                 match e.local_name().as_ref() {
-                    b"meta" => {
+                    "meta" => {
                         // EPUB 2: <meta name="cover" content="item-id"/>
                         let mut is_cover = false;
                         let mut content = None;
                         for attr in e.attributes().flatten() {
                             match attr.key.as_ref() {
-                                b"name" if attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder()).ok().as_deref() == Some("cover") => {
+                                "name" if attr.normalized_value(XmlVersion::Implicit1_0).ok().as_deref() == Some("cover") => {
                                     is_cover = true;
                                 }
-                                b"content" => {
-                                    content = attr
-                                        .decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())
-                                        .ok()
-                                        .map(std::borrow::Cow::into_owned);
+                                "content" => {
+                                    content = attr.normalized_value(XmlVersion::Implicit1_0).ok().map(std::borrow::Cow::into_owned);
                                 }
                                 _ => {}
                             }
@@ -583,33 +580,24 @@ pub fn extract_cover_info(opf_xml: &[u8]) -> Option<CoverInfo> {
                             cover_meta_id = content;
                         }
                     }
-                    b"item" => {
+                    "item" => {
                         let mut id = None;
                         let mut href = None;
                         let mut media_type = None;
                         let mut is_cover_image = false;
                         for attr in e.attributes().flatten() {
                             match attr.key.as_ref() {
-                                b"id" => {
-                                    id = attr
-                                        .decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())
-                                        .ok()
-                                        .map(std::borrow::Cow::into_owned);
+                                "id" => {
+                                    id = attr.normalized_value(XmlVersion::Implicit1_0).ok().map(std::borrow::Cow::into_owned);
                                 }
-                                b"href" => {
-                                    href = attr
-                                        .decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())
-                                        .ok()
-                                        .map(std::borrow::Cow::into_owned);
+                                "href" => {
+                                    href = attr.normalized_value(XmlVersion::Implicit1_0).ok().map(std::borrow::Cow::into_owned);
                                 }
-                                b"media-type" => {
-                                    media_type = attr
-                                        .decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())
-                                        .ok()
-                                        .map(std::borrow::Cow::into_owned);
+                                "media-type" => {
+                                    media_type = attr.normalized_value(XmlVersion::Implicit1_0).ok().map(std::borrow::Cow::into_owned);
                                 }
-                                b"properties" => {
-                                    if let Ok(v) = attr.decoded_and_normalized_value(XmlVersion::Implicit1_0, reader.decoder())
+                                "properties" => {
+                                    if let Ok(v) = attr.normalized_value(XmlVersion::Implicit1_0)
                                         && v.split_whitespace().any(|p| p == "cover-image")
                                     {
                                         is_cover_image = true;
