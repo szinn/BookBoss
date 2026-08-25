@@ -206,6 +206,7 @@ too_many_lines = "allow"          # subjective; doesn't indicate correctness iss
 doc_markdown = "allow"            # overzealous about backtick formatting in docs
 items_after_statements = "allow"  # fires on `use` blocks inside match arms / closures
 map_err_ignore = "allow"          # intentional in server fns that must not leak internal errors
+assert_is_empty = "allow"         # assert!(x.is_empty()) is clearer than the assert_eq! alternative
 
 # Restriction lints
 assertions_on_result_states = "warn"

@@ -1,3 +1,5 @@
+#![allow(unreachable_code)] // false positive in Routable derive codegen on current nightly
+
 use dioxus::prelude::*;
 
 mod components;
