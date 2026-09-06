@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use argon2::{
     Argon2,
-    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
+    password_hash::{PasswordHasher, PasswordVerifier, phc::PasswordHash},
 };
 use chrono::{DateTime, Utc};
 use derive_builder::Builder;
@@ -80,9 +80,8 @@ impl User {
     /// Returns `Error::CryptoError` if hashing fails.
     pub fn encrypt_password(password: impl Into<String>) -> Result<String, Error> {
         let password = password.into();
-        let salt = SaltString::generate(&mut OsRng);
         let hash = Argon2::default()
-            .hash_password(password.as_bytes(), &salt)
+            .hash_password(password.as_bytes())
             .map_err(|e| Error::CryptoError(e.to_string()))?;
         Ok(hash.to_string())
     }
