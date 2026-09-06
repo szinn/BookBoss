@@ -836,7 +836,6 @@ dependencies = [
  "tonic-prost-build",
  "tonic-reflection",
  "tower",
- "tower-http 0.7.1",
  "tracing",
 ]
 
