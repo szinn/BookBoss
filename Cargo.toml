@@ -80,7 +80,7 @@ reqwest = { version = "0.13.4", default-features = false, features = [
     "gzip",
 ] }
 tower = "0.5.3"
-tower-http = { version = "0.7.0", features = [
+tower-http = { version = "0.7.1", features = [
     "compression-full",
     "limit",
     "request-id",
