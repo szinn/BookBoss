@@ -1,5 +1,5 @@
 [tools]
-"buf" = "1.72.0"
+"buf" = "1.73.0"
 "cargo:cargo-audit" = "0.22.2"
 "cargo:cargo-deny" = "0.20.2"
 "cargo:cargo-insta" = "1.48.0"
