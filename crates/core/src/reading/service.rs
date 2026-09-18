@@ -299,7 +299,8 @@ mod tests {
         user::UserId,
     };
 
-    // ─── Helper ───────────────────────────────────────────────────────────────
+    // ─── Helper
+    // ───────────────────────────────────────────────────────────────
 
     fn create_service(mock: MockUserBookMetadataRepository) -> ReadingServiceImpl {
         let repository_service = Arc::new(
@@ -331,7 +332,8 @@ mod tests {
         }
     }
 
-    // ─── get_reading_state ────────────────────────────────────────────────────
+    // ─── get_reading_state
+    // ────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_get_reading_state_returns_none_when_not_found() {
@@ -398,7 +400,8 @@ mod tests {
         mock.expect_upsert().returning(|_, s| Box::pin(async { Ok(s) }));
         let svc = create_service(mock);
         let result = svc.set_status(1, 1, ReadStatus::Read).await.unwrap();
-        // Not coming from Reading/Rereading/Paused, so times_read should not increment
+        // Not coming from Reading/Rereading/Paused, so times_read should not
+        // increment
         assert_eq!(result.times_read, 1);
     }
 

@@ -293,7 +293,8 @@ async fn admin_delete_personal_library(user_token: String) -> Result<(), ServerF
         .map_err(to_server_err)?
         .ok_or_else(|| ServerFnError::new("No personal library found"))?;
 
-    // delete_library re-parents shelves to All Books and resets default settings.
+    // delete_library re-parents shelves to All Books and resets default
+    // settings.
     core_services.library_service.delete_library(lib.token).await.map_err(to_server_err)
 }
 
@@ -803,8 +804,8 @@ fn UserModal(editing: Option<UserAdminRow>, is_self: bool, is_super_admin: bool,
     let mut checked_library_tokens: Signal<Vec<String>> = use_signal(Vec::new);
     // default_library_token: the selected default library (from checked ones)
     let mut default_library_token = use_signal(String::new);
-    // create_personal_library: whether to create a personal library on save (create
-    // mode only)
+    // create_personal_library: whether to create a personal library on save
+    // (create mode only)
     let mut create_personal_library = use_signal(|| false);
     // personal_library_name: name for new (create mode) or existing (edit mode)
     // personal library
@@ -812,8 +813,8 @@ fn UserModal(editing: Option<UserAdminRow>, is_self: bool, is_super_admin: bool,
     // personal_name_dirty: true once the user has manually edited the personal
     // library name field
     let mut personal_name_dirty = use_signal(|| false);
-    // edit mode: token of the user's existing personal library (None if they don't
-    // have one)
+    // edit mode: token of the user's existing personal library (None if they
+    // don't have one)
     let mut personal_library_token: Signal<Option<String>> = use_signal(|| None);
     // edit mode: original name of the personal library (to detect changes)
     let mut personal_name_original = use_signal(String::new);

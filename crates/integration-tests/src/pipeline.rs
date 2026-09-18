@@ -129,10 +129,11 @@ async fn process_job_dedupes_duplicate_authors() {
 
 #[tokio::test]
 async fn process_job_dedupes_case_variant_genres() {
-    // Open Library subjects routinely include case-variant duplicates ("Fiction"
-    // and "FICTION", "Fantasy fiction" and "Fantasy Fiction"). GenreRepository::
-    // find_by_name is case-insensitive, so both variants resolve to one genre.id
-    // and without dedup the second add_book_genre violates (book_id, genre_id).
+    // Open Library subjects routinely include case-variant duplicates
+    // ("Fiction" and "FICTION", "Fantasy fiction" and "Fantasy Fiction").
+    // GenreRepository:: find_by_name is case-insensitive, so both variants
+    // resolve to one genre.id and without dedup the second add_book_genre
+    // violates (book_id, genre_id).
     let metadata = ExtractedMetadata {
         title: Some("The Test Book".to_string()),
         authors: Some(vec![ExtractedAuthor {
@@ -193,7 +194,8 @@ async fn process_job_deduplicates_existing_file() {
 #[tokio::test]
 async fn process_job_uses_filename_as_fallback_title() {
     let ctx = setup().await;
-    // Extractor returns no title — pipeline should fall back to the filename stem
+    // Extractor returns no title — pipeline should fall back to the filename
+    // stem
     let svc = fixtures::pipeline_services(&ctx, ExtractedMetadata::default());
     let job = fixtures::insert_import_job(&ctx.repos, "hash_no_title").await;
 

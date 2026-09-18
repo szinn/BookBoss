@@ -454,8 +454,8 @@ fn first_subsystem_error(join_err: SubsystemJoinError<Box<dyn std::error::Error 
         .iter()
         .find_map(|e| match e {
             SubsystemError::Failed(_, failure) => {
-                // Deref chain: SubsystemFailure → Box<dyn Error> → dyn Error + Send + Sync +
-                // 'static
+                // Deref chain: SubsystemFailure → Box<dyn Error> → dyn Error +
+                // Send + Sync + 'static
                 (***failure)
                     .downcast_ref::<Error>()
                     .cloned()

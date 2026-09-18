@@ -431,8 +431,8 @@ pub(crate) async fn books_for_shelf(
     }
 
     // Load per-user reading state for the displayed books only.
-    // list_for_user has a pagination cap; list_for_user_and_books is ID-scoped with
-    // no cap.
+    // list_for_user has a pagination cap; list_for_user_and_books is ID-scoped
+    // with no cap.
     let book_ids: Vec<bb_core::book::BookId> = books.iter().map(|b| b.id).collect();
     let reading_metas = core_services
         .reading_service
@@ -485,9 +485,9 @@ pub(crate) fn ShelfPage(token: String) -> Element {
     // Data loading
     let mut shelves_resource = use_server_future(list_my_shelves)?;
 
-    // Sync `token` prop into a signal so `use_server_future` restarts reactively
-    // when navigating between shelves (Dioxus re-renders in-place; plain captured
-    // values won't trigger the future to re-run).
+    // Sync `token` prop into a signal so `use_server_future` restarts
+    // reactively when navigating between shelves (Dioxus re-renders
+    // in-place; plain captured values won't trigger the future to re-run).
     let mut token_sig = use_signal(|| token.clone());
     if *token_sig.peek() != token {
         token_sig.set(token.clone());
@@ -504,7 +504,8 @@ pub(crate) fn ShelfPage(token: String) -> Element {
     let mut loading_more = use_signal(|| false);
     let mut load_more_error: Signal<Option<String>> = use_signal(|| None);
 
-    // Sync offset from first page; reset accumulated state when token/data changes.
+    // Sync offset from first page; reset accumulated state when token/data
+    // changes.
     use_effect(move || {
         let _ = token_sig(); // subscribe to token changes
         extra_books.set(vec![]);
@@ -515,8 +516,8 @@ pub(crate) fn ShelfPage(token: String) -> Element {
         }
     });
 
-    // Derive current shelf info from the shelves list (avoids a separate get_shelf
-    // call).
+    // Derive current shelf info from the shelves list (avoids a separate
+    // get_shelf call).
     let shelves: Vec<ShelfSummary> = shelves_resource().and_then(std::result::Result::ok).unwrap_or_default();
     let current_shelf = shelves.iter().find(|s| s.token == token).cloned();
 
@@ -545,7 +546,8 @@ pub(crate) fn ShelfPage(token: String) -> Element {
     };
 
     // Merged book list: first page + any load-more pages.
-    // Manual shelves: client-side sort; smart shelves: already sorted server-side.
+    // Manual shelves: client-side sort; smart shelves: already sorted
+    // server-side.
     let first_books = books_resource().and_then(Result::ok).map(|p| p.books).unwrap_or_default();
     let is_manual = current_shelf.as_ref().is_some_and(|s| !s.is_smart);
     let merged: Vec<BookSummary> = first_books.into_iter().chain(extra_books()).collect();

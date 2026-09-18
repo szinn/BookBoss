@@ -319,7 +319,8 @@ pub(super) fn build_removed_entitlement(book_id: BookId) -> KoboSyncItem {
     let entitlement = build_entitlement(&uuid, true, &now, &now);
 
     // Minimal metadata — the Kobo only needs the ID fields to identify which
-    // book to remove. Title is required by the schema so we use an empty string.
+    // book to remove. Title is required by the schema so we use an empty
+    // string.
     let metadata = KoboBookMetadata {
         categories: vec![DUMMY_ID],
         contributor_roles: Vec::new(),

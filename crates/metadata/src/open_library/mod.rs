@@ -301,14 +301,16 @@ impl MetadataProvider for OpenLibraryAdapter {
 
         let mut title_search_performed = false;
 
-        // ── Step 1: ISBN search ───────────────────────────────────────────────
+        // ── Step 1: ISBN search
+        // ───────────────────────────────────────────────
         let isbn_result = if let Some((isbn_type, isbn_val)) = isbn.clone() {
             self.search_isbn(isbn_type, &isbn_val).await?
         } else {
             None
         };
 
-        // ── Step 2: Validate ISBN result against embedded title/author ────────
+        // ── Step 2: Validate ISBN result against embedded title/author
+        // ────────
         let isbn_accepted = match &isbn_result {
             Some((_, _, data)) => {
                 if title.is_some() {
@@ -326,7 +328,8 @@ impl MetadataProvider for OpenLibraryAdapter {
             None => false,
         };
 
-        // ── Step 3: Title search fallback ─────────────────────────────────────
+        // ── Step 3: Title search fallback
+        // ─────────────────────────────────────
         enum Best {
             FromIsbn(IdentifierType, String, OlBookData),
             FromSearch(OlSearchDoc),
@@ -351,7 +354,8 @@ impl MetadataProvider for OpenLibraryAdapter {
             None
         };
 
-        // ── Log summary and return ─────────────────────────────────────────────
+        // ── Log summary and return
+        // ─────────────────────────────────────────────
         let isbn_str = isbn.as_ref().map(|(_, v)| v.as_str());
         let final_score = best.as_ref().map(|b| match b {
             Best::FromIsbn(_, _, data) => Self::score_book_data(data, title, author),

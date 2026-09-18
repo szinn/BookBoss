@@ -102,8 +102,8 @@ impl SessionRepository for SessionRepositoryAdapter {
         let now = Utc::now();
         let anonymous_cutoff = now - chrono::Duration::hours(48);
 
-        // Match expired sessions OR stale anonymous sessions (empty data, older than
-        // 48h)
+        // Match expired sessions OR stale anonymous sessions (empty data, older
+        // than 48h)
         let condition = Condition::any().add(sessions::Column::ExpiresAt.lt(now)).add(
             Condition::all()
                 .add(sessions::Column::Session.contains("\"data\":{}"))
@@ -466,7 +466,8 @@ mod tests {
         let svc = setup().await;
         let tx = svc.repository().begin().await.unwrap();
 
-        // Stale anonymous session (empty data, created > 48h ago) — should be deleted
+        // Stale anonymous session (empty data, created > 48h ago) — should be
+        // deleted
         svc.session_repository()
             .store(
                 &*tx,
@@ -474,7 +475,8 @@ mod tests {
             )
             .await
             .unwrap();
-        // Backdate created_at to 72h ago via a raw update so it qualifies as stale
+        // Backdate created_at to 72h ago via a raw update so it qualifies as
+        // stale
         let model: crate::entities::sessions::Model = crate::entities::prelude::Sessions::find_by_id("anon-stale")
             .one(TransactionImpl::get_db_transaction(&*tx).unwrap())
             .await
@@ -493,7 +495,8 @@ mod tests {
             .await
             .unwrap();
 
-        // Logged-in session with old created_at — should be kept (has user data)
+        // Logged-in session with old created_at — should be kept (has user
+        // data)
         svc.session_repository()
             .store(
                 &*tx,

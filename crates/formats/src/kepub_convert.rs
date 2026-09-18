@@ -302,7 +302,8 @@ mod tests {
 
         let content = read_entry(&std::fs::read(&dst).unwrap(), "chapter1.xhtml");
         let s = String::from_utf8(content).unwrap();
-        // The CSS block contains ".koboSpan" but no <span> elements should be injected.
+        // The CSS block contains ".koboSpan" but no <span> elements should be
+        // injected.
         assert!(!s.contains("class=\"koboSpan\""), "pre content should not be wrapped in spans");
     }
 

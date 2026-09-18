@@ -50,7 +50,8 @@ pub(crate) async fn list_libraries_admin() -> Result<Vec<LibraryRow>, ServerFnEr
         })
         .collect();
 
-    // System libraries first (alphabetically), then non-system (alphabetically).
+    // System libraries first (alphabetically), then non-system
+    // (alphabetically).
     rows.sort_by(|a, b| b.is_system.cmp(&a.is_system).then_with(|| a.name.cmp(&b.name)));
 
     Ok(rows)

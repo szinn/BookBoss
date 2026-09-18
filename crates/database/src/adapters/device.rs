@@ -365,7 +365,8 @@ mod tests {
         }
     }
 
-    // ── add_device / find ─────────────────────────────────────────────────────
+    // ── add_device / find
+    // ─────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn add_device_and_find_by_token() {
@@ -408,7 +409,8 @@ mod tests {
         assert!(found.is_none());
     }
 
-    // ── list_for_user ─────────────────────────────────────────────────────────
+    // ── list_for_user
+    // ─────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn list_for_user_empty_initially() {
@@ -438,7 +440,8 @@ mod tests {
         assert_eq!(alice_devices[0].name, "Alice's Kobo");
     }
 
-    // ── update_device ─────────────────────────────────────────────────────────
+    // ── update_device
+    // ─────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn update_device_changes_name_and_removal_action() {
@@ -458,7 +461,8 @@ mod tests {
         assert_eq!(updated.on_removal_action, OnRemovalAction::MarkRead);
     }
 
-    // ── delete_device ─────────────────────────────────────────────────────────
+    // ── delete_device
+    // ─────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn delete_device_removes_record() {
@@ -477,7 +481,8 @@ mod tests {
         assert!(found.is_none());
     }
 
-    // ── count_with_name_prefix ────────────────────────────────────────────────
+    // ── count_with_name_prefix
+    // ────────────────────────────────────────────────
 
     #[tokio::test]
     async fn count_with_name_prefix_matches_prefix() {
@@ -562,7 +567,8 @@ mod tests {
         assert!(books.is_empty());
     }
 
-    // ── sync log ──────────────────────────────────────────────────────────────
+    // ── sync log
+    // ──────────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn add_sync_log_and_list() {

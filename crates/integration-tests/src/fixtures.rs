@@ -189,7 +189,8 @@ pub async fn insert_book(repos: &RepositoryService, title: &str, status: BookSta
                     },
                 )
                 .await?;
-            // Mirror CollectionService::add_book: every book lands in ALL_BOOKS.
+            // Mirror CollectionService::add_book: every book lands in
+            // ALL_BOOKS.
             library_repo.add_book_to_library(tx, bb_core::library::ALL_BOOKS_LIBRARY_ID, book.id).await?;
             Ok(book)
         })

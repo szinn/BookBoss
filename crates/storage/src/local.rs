@@ -553,7 +553,8 @@ mod tests {
         assert_eq!(contents, b"new version");
     }
 
-    // ── normalize_to_jpeg helpers ──────────────────────────────────────────────
+    // ── normalize_to_jpeg helpers
+    // ──────────────────────────────────────────────
 
     fn tiny_jpeg(width: u32, height: u32) -> Vec<u8> {
         use image::{ImageBuffer, Rgb, codecs::jpeg::JpegEncoder};
@@ -571,7 +572,8 @@ mod tests {
         out
     }
 
-    // ── normalize_to_jpeg tests ────────────────────────────────────────────────
+    // ── normalize_to_jpeg tests
+    // ────────────────────────────────────────────────
 
     #[test]
     fn normalize_to_jpeg_jpeg_passthrough() {
@@ -618,7 +620,8 @@ mod tests {
         assert_eq!(output, input, "corrupt PNG should be returned unchanged");
     }
 
-    // ── generate_thumbnail_bytes tests ────────────────────────────────────────
+    // ── generate_thumbnail_bytes tests
+    // ────────────────────────────────────────
 
     #[test]
     fn generate_thumbnail_bytes_returns_jpeg_from_jpeg() {
@@ -770,8 +773,8 @@ mod tests {
         let path1 = store.store_original_file(&real_hash, "book.epub", &source).await.unwrap();
         assert_eq!(path1, "Originals/book.epub");
 
-        // Second store with same hash — should return same path without creating a
-        // duplicate.
+        // Second store with same hash — should return same path without
+        // creating a duplicate.
         let path2 = store.store_original_file(&real_hash, "book.epub", &source).await.unwrap();
         assert_eq!(path2, "Originals/book.epub");
 
@@ -796,14 +799,15 @@ mod tests {
         let hash_a = bb_utils::hash::hash_file(&source_a).await.unwrap();
         store.store_original_file(&hash_a, "book.epub", &source_a).await.unwrap();
 
-        // Store file B under the same desired filename "book.epub" — hash differs →
-        // collision path.
+        // Store file B under the same desired filename "book.epub" — hash
+        // differs → collision path.
         let source_b = dir.path().join("book-b.epub");
         tokio::fs::write(&source_b, b"content-B-different").await.unwrap();
         let hash_b = bb_utils::hash::hash_file(&source_b).await.unwrap();
         let path_b = store.store_original_file(&hash_b, "book.epub", &source_b).await.unwrap();
 
-        // The returned path should include the first 8 chars of hash_b as a suffix.
+        // The returned path should include the first 8 chars of hash_b as a
+        // suffix.
         let hash_prefix = &hash_b[..8];
         assert!(
             path_b.contains(hash_prefix),

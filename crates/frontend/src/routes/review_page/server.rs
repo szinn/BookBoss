@@ -112,7 +112,8 @@ fn provider_book_to_result(pb: &ProviderBook) -> ProviderResult {
         .iter()
         .map(|i| (i.identifier_type.form_key().to_string(), i.value.clone()))
         .collect();
-    // Provider cover bytes take priority; fall back to embedded cover in metadata.
+    // Provider cover bytes take priority; fall back to embedded cover in
+    // metadata.
     let cover_bytes = pb.cover_bytes.as_deref().or(meta.cover_bytes.as_deref());
     let cover_dimensions = cover_bytes.and_then(image_dimensions);
     let cover_thumbnail = cover_bytes.map(cover_to_base64);
@@ -837,7 +838,8 @@ mod tests {
 
     use super::*;
 
-    // ── image_dimensions helpers ──────────────────────────────────────────────
+    // ── image_dimensions helpers
+    // ──────────────────────────────────────────────
 
     /// Builds a minimal 24-byte PNG IHDR buffer with the given dimensions.
     fn png_bytes(w: u32, h: u32) -> Vec<u8> {
@@ -920,7 +922,8 @@ mod tests {
         v
     }
 
-    // ── image_dimensions tests ────────────────────────────────────────────────
+    // ── image_dimensions tests
+    // ────────────────────────────────────────────────
 
     #[test]
     fn image_dimensions_png() {
@@ -1000,7 +1003,8 @@ mod tests {
         }
     }
 
-    // ── provider_book_to_result tests ─────────────────────────────────────────
+    // ── provider_book_to_result tests
+    // ─────────────────────────────────────────
 
     #[test]
     fn provider_book_to_result_maps_fields() {
@@ -1015,14 +1019,14 @@ mod tests {
 
     #[test]
     fn provider_book_to_result_provider_cover_takes_priority() {
-        // Provider cover (PNG 10×20) and metadata cover (PNG 30×40) both present.
-        // Provider cover must win.
+        // Provider cover (PNG 10×20) and metadata cover (PNG 30×40) both
+        // present. Provider cover must win.
         let provider_cover = png_bytes(10, 20);
         let metadata_cover = png_bytes(30, 40);
         let pb = make_provider_book(Some("Foundation"), &[], None, Some(provider_cover), Some(metadata_cover));
         let result = provider_book_to_result(&pb);
-        // cover_dimensions should reflect the provider cover (10×20), not metadata
-        // (30×40)
+        // cover_dimensions should reflect the provider cover (10×20), not
+        // metadata (30×40)
         assert_eq!(result.cover_dimensions, Some((10, 20)));
         assert!(result.cover_thumbnail.is_some());
     }

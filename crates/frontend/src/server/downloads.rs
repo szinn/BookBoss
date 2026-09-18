@@ -70,13 +70,15 @@ pub(crate) async fn serve_book_file(
 
     let ext = format.extension();
 
-    // Try the enriched file first; fall back to the original if not yet on disk.
+    // Try the enriched file first; fall back to the original if not yet on
+    // disk.
     let data = if let Some(enriched) = enriched_file {
         let enriched_path = core_services.file_store.resolve(&enriched.path);
         match tokio::fs::read(&enriched_path).await {
             Ok(d) => d,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                // Enriched record exists but file not on disk yet — fall back to original.
+                // Enriched record exists but file not on disk yet — fall back
+                // to original.
                 let Some(original) = original_file else {
                     return Response::builder()
                         .status(StatusCode::NOT_FOUND)

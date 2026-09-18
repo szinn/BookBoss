@@ -130,7 +130,8 @@ fn classify_identifier(scheme: Option<&str>, value: &str, id_hint: Option<&str>)
                 // "scheme:value" prefix (e.g. Calibre's "calibre:20139").
                 (value[..pos].to_uppercase(), &value[pos + 1..])
             } else {
-                // No scheme and no prefix — try heuristic ISBN detection on the value.
+                // No scheme and no prefix — try heuristic ISBN detection on the
+                // value.
                 if let Some(id_type) = isbn_from_bare_value(value) {
                     return Some((id_type, value.to_string()));
                 }

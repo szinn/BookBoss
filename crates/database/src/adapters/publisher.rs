@@ -422,7 +422,8 @@ mod tests {
         assert!(matches!(svc.publisher_repository().update_publisher(&*tx, p).await, Err(Error::InvalidId(0))));
     }
 
-    // ─── count_books_for_publisher ────────────────────────────────────────────
+    // ─── count_books_for_publisher
+    // ────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_count_books_for_publisher_zero_when_no_books() {
@@ -482,7 +483,8 @@ mod tests {
         assert_eq!(svc.publisher_repository().count_books_for_publisher(&*tx, p.id).await.unwrap(), 2);
     }
 
-    // ─── delete_publisher ─────────────────────────────────────────────────────
+    // ─── delete_publisher
+    // ─────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_delete_publisher_removes_record() {

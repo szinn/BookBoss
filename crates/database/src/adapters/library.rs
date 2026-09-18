@@ -68,9 +68,9 @@ impl LibraryRepository for LibraryRepositoryAdapter {
     }
 
     async fn find_by_token(&self, transaction: &dyn Transaction, token: LibraryToken) -> Result<Option<Library>, Error> {
-        // Tokens encode the row ID, so looking up by PK is more efficient than a token
-        // string scan. The unique constraint on the token column means token↔id
-        // is always consistent.
+        // Tokens encode the row ID, so looking up by PK is more efficient than
+        // a token string scan. The unique constraint on the token
+        // column means token↔id is always consistent.
         self.find_by_id(transaction, token.id()).await
     }
 

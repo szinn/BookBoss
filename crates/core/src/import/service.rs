@@ -216,8 +216,8 @@ impl ImportJobService for ImportJobServiceImpl {
     }
 
     async fn recover_on_startup(&self) -> Result<(), Error> {
-        // Reset any import jobs left in Extracting/Identifying state from a previous
-        // crash.
+        // Reset any import jobs left in Extracting/Identifying state from a
+        // previous crash.
         let reset = with_transaction!(self, import_job_repository, |tx| {
             import_job_repository.reset_in_progress_to_pending(tx).await
         })?;
@@ -287,7 +287,8 @@ mod tests {
         jobs::repository::MockJobRepository,
     };
 
-    // ─── Helpers ──────────────────────────────────────────────────────────────
+    // ─── Helpers
+    // ──────────────────────────────────────────────────────────────
 
     fn create_service(mock: MockImportJobRepository) -> ImportJobServiceImpl {
         let repository_service = Arc::new(
@@ -350,7 +351,8 @@ mod tests {
         }
     }
 
-    // ─── list_pending ─────────────────────────────────────────────────────────
+    // ─── list_pending
+    // ─────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_list_pending_returns_jobs() {
@@ -392,7 +394,8 @@ mod tests {
         assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::Database(_)))));
     }
 
-    // ─── find_by_token ────────────────────────────────────────────────────────
+    // ─── find_by_token
+    // ────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_find_by_token_found() {
@@ -437,7 +440,8 @@ mod tests {
         assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::Database(_)))));
     }
 
-    // ─── find_by_id ───────────────────────────────────────────────────────────
+    // ─── find_by_id
+    // ───────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_find_by_id_found() {
@@ -468,7 +472,8 @@ mod tests {
         assert!(result.unwrap().is_none());
     }
 
-    // ─── queue_file_if_new ────────────────────────────────────────────────────
+    // ─── queue_file_if_new
+    // ────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_queue_file_if_new_same_path_returns_actively_processing() {
@@ -670,8 +675,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_queue_file_if_new_requeues_after_rejection() {
-        // find_active_by_hash returns None (rejected job not matched by active filter)
-        // find_file_by_hash returns None (not in library)
+        // find_active_by_hash returns None (rejected job not matched by active
+        // filter) find_file_by_hash returns None (not in library)
         // → file should be re-queued
         let job = fake_job(ImportStatus::Pending);
         let mut import_mock = MockImportJobRepository::new();
@@ -714,7 +719,8 @@ mod tests {
         assert_eq!(result, FileQueueStatus::Queued);
     }
 
-    // ─── approve_job ──────────────────────────────────────────────────────────
+    // ─── approve_job
+    // ──────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_approve_job_success() {
@@ -760,7 +766,8 @@ mod tests {
         assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::Conflict))));
     }
 
-    // ─── reject_job ───────────────────────────────────────────────────────────
+    // ─── reject_job
+    // ───────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_reject_job_success() {
@@ -806,7 +813,8 @@ mod tests {
         assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::Conflict))));
     }
 
-    // ─── queue_bytes_if_new ───────────────────────────────────────────────────
+    // ─── queue_bytes_if_new
+    // ───────────────────────────────────────────────────
 
     fn create_service_with_bookdrop_all_repos(
         import_mock: MockImportJobRepository,

@@ -444,7 +444,8 @@ mod tests {
         assert!(!file_path.exists(), "duplicate file should have been removed from bookdrop");
     }
 
-    // ── unsupported_ebook_extension ───────────────────────────────────────────
+    // ── unsupported_ebook_extension
+    // ───────────────────────────────────────────
 
     #[test]
     fn unsupported_extension_recognised() {

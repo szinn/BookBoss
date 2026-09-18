@@ -534,7 +534,8 @@ mod tests {
         assert!(matches!(result, Err(Error::InvalidId(0))));
     }
 
-    // ─── find_by_ids ─────────────────────────────────────────────────────────────
+    // ─── find_by_ids
+    // ─────────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_find_by_ids_empty_input() {

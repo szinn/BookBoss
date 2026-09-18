@@ -256,14 +256,16 @@ impl MetadataProvider for HardcoverAdapter {
 
         let mut title_search_performed = false;
 
-        // ── Step 1: ISBN search ───────────────────────────────────────────────
+        // ── Step 1: ISBN search
+        // ───────────────────────────────────────────────
         let isbn_doc = if let Some(ref isbn_str) = isbn {
             self.search_isbn(isbn_str).await?
         } else {
             None
         };
 
-        // ── Step 2: Validate ISBN result against embedded title/author ────────
+        // ── Step 2: Validate ISBN result against embedded title/author
+        // ────────
         //
         // If no title is available there is nothing to validate against, so the
         // ISBN result is accepted as-is (the pipeline will score it 0.0 and
@@ -282,7 +284,8 @@ impl MetadataProvider for HardcoverAdapter {
             (None, _) => None,
         };
 
-        // ── Step 3: Title search fallback ─────────────────────────────────────
+        // ── Step 3: Title search fallback
+        // ─────────────────────────────────────
         let best_doc = if best_doc.is_none() {
             if let Some(title_str) = title {
                 title_search_performed = true;
@@ -300,7 +303,8 @@ impl MetadataProvider for HardcoverAdapter {
             best_doc
         };
 
-        // ── Log summary and return ─────────────────────────────────────────────
+        // ── Log summary and return
+        // ─────────────────────────────────────────────
         let final_score = best_doc.as_ref().map(|doc| Self::score_candidate(doc, title, author));
         tracing::debug!(
             isbn = ?isbn,
@@ -542,7 +546,8 @@ mod tests {
         let book = result.expect("expected ProviderBook");
 
         assert_eq!(book.metadata.title.as_deref(), Some("The Correct Book Title"));
-        // Two requests should have been made: ISBN search + title search fallback.
+        // Two requests should have been made: ISBN search + title search
+        // fallback.
         assert_eq!(server.received_requests().await.unwrap().len(), 2);
     }
 

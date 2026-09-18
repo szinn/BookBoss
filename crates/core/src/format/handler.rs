@@ -37,7 +37,8 @@ impl EnrichBookFilesHandler {
 
 impl EnrichBookFilesHandler {
     async fn run(&self, book_id: BookId) -> Result<(), Error> {
-        // ── 1. Load all book data in a single read transaction ────────────────
+        // ── 1. Load all book data in a single read transaction
+        // ────────────────
         let repo = self.core.repository_service.clone();
         let (book, files, authors, identifiers, genres, tags, series_opt, publisher_opt) =
             read_only_transaction(&**self.core.repository_service.repository(), |tx| {
@@ -240,7 +241,8 @@ impl EnrichBookFilesHandler {
 
         // ── 10. Enqueue MOBI conversion if needed ────────────────────────────
         // Enqueue when mobi_enabled (new conversion) OR an enriched MOBI
-        // already exists (keep existing file up to date after metadata changes).
+        // already exists (keep existing file up to date after metadata
+        // changes).
         let mobi_exists = files.iter().any(|f| f.file_role == FileRole::Enriched && f.format == FileFormat::Mobi);
         if mobi_exists || self.core.app_setting_service.mobi_enabled().await? {
             use crate::{format::mobi_handler::ConvertMobiPayload, jobs::JobServiceExt};

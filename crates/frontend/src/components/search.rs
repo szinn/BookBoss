@@ -164,7 +164,8 @@ pub(crate) fn compute_completion(input: &str, cycle_idx: usize) -> String {
     if let Some(colon_pos) = last_token.find(':') {
         let field = &last_token[..colon_pos];
         let partial_value = &last_token[colon_pos + 1..];
-        // Only complete values for fields with a known fixed set; require >= 1 char
+        // Only complete values for fields with a known fixed set; require >= 1
+        // char
         if field.eq_ignore_ascii_case("status") && !partial_value.is_empty() {
             let lower = partial_value.to_lowercase();
             let value_matches: Vec<&str> = STATUS_VALUES.iter().copied().filter(|v| v.starts_with(lower.as_str())).collect();
@@ -431,7 +432,8 @@ mod tests {
         assert!(parse_search_query("se").is_empty()); // prefix of "series"
         assert!(parse_search_query("ta").is_empty()); // prefix of "tag"
 
-        // Complete field names are also skipped when last (user is about to type ":")
+        // Complete field names are also skipped when last (user is about to
+        // type ":")
         assert!(parse_search_query("author").is_empty());
         assert!(parse_search_query("tag").is_empty());
         assert!(parse_search_query("title").is_empty());
@@ -446,7 +448,8 @@ mod tests {
 
     #[test]
     fn parse_field_prefix_only_affects_last_word() {
-        // Field-name-like words mid-query (followed by more words) are committed
+        // Field-name-like words mid-query (followed by more words) are
+        // committed
         let tokens = parse_search_query("auth dune");
         assert_eq!(tokens, vec![SearchToken::Any("auth".into()), SearchToken::Any("dune".into())]);
         let tokens = parse_search_query("author dune");
@@ -571,7 +574,8 @@ mod tests {
             make_book("Backlash", &["Brad Thor"], None, &[], &[]),
             make_book("The Last Patriot", &["Brad Thor"], None, &[], &[]),
         ];
-        // author must contain "thor" AND at least one field must contain "backlash"
+        // author must contain "thor" AND at least one field must contain
+        // "backlash"
         let result = filter_books_by_search(books, "author:thor backlash");
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].title, "Backlash");
@@ -697,7 +701,8 @@ mod tests {
     fn completion_status_exact_value_no_ghost() {
         // Fully typed value with single match — no ghost
         assert_eq!(compute_completion("status:unread", 0), "");
-        // "read" matches "read" exactly at idx 0 → empty suffix; "reading" at idx 1
+        // "read" matches "read" exactly at idx 0 → empty suffix; "reading" at
+        // idx 1
         assert_eq!(compute_completion("status:read", 0), "");
         assert_eq!(compute_completion("status:read", 1), "ing");
     }
@@ -757,7 +762,8 @@ mod tests {
 
     #[test]
     fn next_cycle_input_multi_token_input() {
-        // Cycling works correctly when there are tokens before the completed field
+        // Cycling works correctly when there are tokens before the completed
+        // field
         assert_eq!(next_cycle_input("author:thor series:", "s", 1), Some("author:thor status:".to_string()));
         assert_eq!(next_cycle_input("author:thor status:", "s", 2), Some("author:thor series:".to_string()));
     }

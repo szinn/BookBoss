@@ -543,7 +543,8 @@ mod tests {
         assert!(matches!(svc.series_repository().update_series(&*tx, s).await, Err(Error::InvalidId(0))));
     }
 
-    // ─── count_books_for_series ───────────────────────────────────────────────
+    // ─── count_books_for_series
+    // ───────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_count_books_for_series_zero_when_no_books() {
@@ -611,7 +612,8 @@ mod tests {
         assert_eq!(svc.series_repository().count_books_for_series(&*tx, s.id).await.unwrap(), 2);
     }
 
-    // ─── delete_series ────────────────────────────────────────────────────────
+    // ─── delete_series
+    // ────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_delete_series_removes_record() {
@@ -644,7 +646,8 @@ mod tests {
         svc.series_repository().delete_series(&*tx, 999).await.unwrap();
     }
 
-    // ─── find_by_ids ─────────────────────────────────────────────────────────────
+    // ─── find_by_ids
+    // ─────────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_series_find_by_ids_empty_input() {

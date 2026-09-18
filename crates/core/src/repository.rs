@@ -259,7 +259,8 @@ where
             Ok(result)
         }
         Err(e) => {
-            // Best effort rollback - if it fails, we still return the original error
+            // Best effort rollback - if it fails, we still return the original
+            // error
             let _ = tx.rollback().await;
             Err(e)
         }

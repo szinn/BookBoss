@@ -37,9 +37,9 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        // Composite index covers both "all books in shelf X" and paginated "books in
-        // shelf X after book_id Y" queries, which are the dominant access
-        // patterns for this table.
+        // Composite index covers both "all books in shelf X" and paginated
+        // "books in shelf X after book_id Y" queries, which are the
+        // dominant access patterns for this table.
         manager
             .create_index(
                 Index::create()

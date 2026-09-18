@@ -33,7 +33,8 @@ pub async fn handle(kobo: KoboDevice, Path(params): Path<HashMap<String, String>
 
     tracing::debug!(device_id = kobo.device.id, book_token = %token, "Retrieve book metadata");
 
-    // Look up the book — return empty array if not found (matches Komga behaviour).
+    // Look up the book — return empty array if not found (matches Komga
+    // behaviour).
     let book = match core_services.book_service.find_book_by_token(token).await {
         Ok(Some(b)) => b,
         Ok(None) => return Json(Vec::<dto::KoboBookMetadata>::new()).into_response(),

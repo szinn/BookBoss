@@ -214,7 +214,8 @@ async fn list_books(sort: crate::components::SortOrder, library_token: Option<St
         .await
         .map_err(to_server_err)?;
 
-    // Load per-user reading state scoped to the fetched books (avoids page limits).
+    // Load per-user reading state scoped to the fetched books (avoids page
+    // limits).
     let book_ids: Vec<bb_core::book::BookId> = books.iter().map(|b| b.id).collect();
     let reading_metas = core_services
         .reading_service
@@ -317,9 +318,9 @@ pub(crate) fn BooksPage() -> Element {
     // re-fetch that causes the "All Books flash" on browser refresh.
     //
     // `initialized` tracks whether ACTIVE_LIBRARY has been set at least once
-    // since this component mounted, so the effect can tell the difference between
-    // "LibraryInit is just now setting the default for the first time" (skip) and
-    // "the user explicitly switched libraries" (re-fetch).
+    // since this component mounted, so the effect can tell the difference
+    // between "LibraryInit is just now setting the default for the first
+    // time" (skip) and "the user explicitly switched libraries" (re-fetch).
     let mut explicit_library = use_signal(|| ACTIVE_LIBRARY.peek().clone());
     let mut initialized = use_signal(|| ACTIVE_LIBRARY.peek().is_some());
 
@@ -329,8 +330,9 @@ pub(crate) fn BooksPage() -> Element {
         let active = ACTIVE_LIBRARY();
         // Use peek() for `initialized` so reading it here does NOT create a
         // reactive subscription.  Without peek(), setting initialized to true
-        // would re-fire this effect, fall into the "already initialized" branch,
-        // and write to explicit_library — causing the very re-fetch we want to prevent.
+        // would re-fire this effect, fall into the "already initialized"
+        // branch, and write to explicit_library — causing the very
+        // re-fetch we want to prevent.
         if *initialized.peek() {
             // Already past initialization — this is a real user switch.
             if *explicit_library.peek() != active {
@@ -344,11 +346,12 @@ pub(crate) fn BooksPage() -> Element {
         }
     });
 
-    // Apply any pending search set by external navigation (e.g. genre/tag links).
-    // Ordering guarantee: this effect runs once on first render, which happens in
-    // a separate render pass *after* AppLayout's route-change effect has already
-    // cleared SEARCH_TEXT. BooksPage is a fresh mount on navigation — it cannot
-    // render before AppLayout has processed the route change that caused the mount.
+    // Apply any pending search set by external navigation (e.g. genre/tag
+    // links). Ordering guarantee: this effect runs once on first render,
+    // which happens in a separate render pass *after* AppLayout's
+    // route-change effect has already cleared SEARCH_TEXT. BooksPage is a
+    // fresh mount on navigation — it cannot render before AppLayout has
+    // processed the route change that caused the mount.
     use_effect(move || {
         if let Some(search) = crate::components::PENDING_SEARCH.write().take() {
             *crate::components::SEARCH_TEXT.write() = search;

@@ -54,8 +54,9 @@ impl BookIdSweep for EnsureEnrichmentsHandler {
 
         tracing::info!(count, "enqueued enrichment jobs (missing + stale)");
 
-        // MOBI sweep: enqueue ConvertMobiPayload for books that have an enriched
-        // EPUB but no enriched MOBI, when MOBI conversion is enabled.
+        // MOBI sweep: enqueue ConvertMobiPayload for books that have an
+        // enriched EPUB but no enriched MOBI, when MOBI conversion is
+        // enabled.
         if core.app_setting_service.mobi_enabled().await? {
             let batch_size = BookSweepPayload::default().batch_size;
             let book_repo = core.repository_service.book_repository().clone();
@@ -149,7 +150,8 @@ mod tests {
         let mut book_repo = MockBookRepository::new();
         let mut job_repo = MockJobRepository::new();
 
-        // Return two books needing enrichment; batch < batch_size so no continuation.
+        // Return two books needing enrichment; batch < batch_size so no
+        // continuation.
         book_repo
             .expect_find_book_ids_needing_any_enrichment()
             .returning(|_, _, _| Box::pin(std::future::ready(Ok(vec![1, 5]))));
@@ -241,15 +243,16 @@ mod tests {
         let mut book_repo = MockBookRepository::new();
         let mut job_repo = MockJobRepository::new();
 
-        // Return exactly batch_size books so the sweep re-enqueues a continuation.
+        // Return exactly batch_size books so the sweep re-enqueues a
+        // continuation.
         let batch_size = BookSweepPayload::default().batch_size;
         let ids: Vec<BookId> = (1..=batch_size).collect();
         book_repo
             .expect_find_book_ids_needing_any_enrichment()
             .returning(move |_, _, _| Box::pin(std::future::ready(Ok(ids.clone()))));
 
-        // Expect one enqueue per book, plus one delayed enqueue for the continuation.
-        // mobi_enabled = false, so no MOBI jobs enqueued.
+        // Expect one enqueue per book, plus one delayed enqueue for the
+        // continuation. mobi_enabled = false, so no MOBI jobs enqueued.
         job_repo
             .expect_enqueue_raw()
             .returning(|_, _, _, _| Box::pin(std::future::ready(Ok(fake_job()))));

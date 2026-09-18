@@ -88,8 +88,9 @@ impl JobHandler for VerifyFileIntegrityHandler {
             if original_missing {
                 let title = book.title.clone();
                 if book.status == BookStatus::Incoming {
-                    // Candidate book awaiting admin review — do not auto-delete.
-                    // The review screen will show an error and only allow rejection.
+                    // Candidate book awaiting admin review — do not
+                    // auto-delete. The review screen will
+                    // show an error and only allow rejection.
                     tracing::warn!(book_id, title, "import job has missing original file — admin review required");
                     self.core
                         .system_message_service
@@ -100,7 +101,8 @@ impl JobHandler for VerifyFileIntegrityHandler {
                         })
                         .await?;
                 } else {
-                    // Library book with missing original — unrecoverable, delete it.
+                    // Library book with missing original — unrecoverable,
+                    // delete it.
                     let token = book.token;
                     if let Err(e) = self.core.collection_service.delete_book(token).await {
                         tracing::error!(book_id, title, error = %e, "failed to delete unrecoverable book");

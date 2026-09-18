@@ -40,8 +40,8 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        // Unique constraint on (document_hash, book_id) — duplicates are silently
-        // ignored
+        // Unique constraint on (document_hash, book_id) — duplicates are
+        // silently ignored
         manager
             .create_index(
                 Index::create()

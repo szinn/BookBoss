@@ -59,7 +59,8 @@ async fn list_incoming_books() -> Result<Vec<IncomingBookSummary>, ServerFnError
 
     let jobs = import_service.list_all_needs_review().await.map_err(to_server_err)?;
 
-    // Collect all candidate book IDs, then fetch books and hydration data in bulk.
+    // Collect all candidate book IDs, then fetch books and hydration data in
+    // bulk.
     let book_ids: Vec<BookId> = jobs.iter().filter_map(|j| j.candidate_book_id).collect();
 
     let books = book_service.find_books_by_ids(&book_ids).await.map_err(to_server_err)?;

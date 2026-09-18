@@ -96,8 +96,8 @@ impl FormatService for FormatServiceImpl {
             if request.source.format != FileFormat::Epub {
                 return Err(Error::Infrastructure("MOBI output requires an EPUB source".to_string()));
             }
-            // Use the enriched EPUB as source if available, otherwise use the original
-            // source.
+            // Use the enriched EPUB as source if available, otherwise use the
+            // original source.
             let source = if has_epub_output {
                 request
                     .outputs
@@ -404,7 +404,8 @@ mod tests {
         svc.enrich(&request).await.unwrap();
         assert!(mobi_dest.exists(), "mobi should be written from source");
 
-        // Verify it's not a ZIP (MOBI is binary PalmDB format, not a ZIP archive)
+        // Verify it's not a ZIP (MOBI is binary PalmDB format, not a ZIP
+        // archive)
         let mobi_bytes = std::fs::read(&mobi_dest).unwrap();
         assert!(!mobi_bytes.starts_with(b"PK"), "MOBI should not be a ZIP file");
 

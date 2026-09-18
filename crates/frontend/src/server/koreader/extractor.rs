@@ -23,7 +23,8 @@ impl<S: Send + Sync> FromRequestParts<S> for KoReaderUser {
     type Rejection = StatusCode;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        // 1. Extract custom auth headers (owned so we can pass parts mutably later).
+        // 1. Extract custom auth headers (owned so we can pass parts mutably
+        //    later).
         let username = parts
             .headers
             .get("x-auth-user")
@@ -58,11 +59,11 @@ impl<S: Send + Sync> FromRequestParts<S> for KoReaderUser {
             return Err(StatusCode::FORBIDDEN);
         }
 
-        // 5. Get the OPDS password (decrypted plaintext, read-only). Returns None if
-        //    the user hasn't set up an OPDS password yet → 401. We intentionally do NOT
-        //    call get_or_create_password here — auth must be read-only. Creating a
-        //    password silently during an auth check would be a surprising write side
-        //    effect.
+        // 5. Get the OPDS password (decrypted plaintext, read-only). Returns
+        //    None if the user hasn't set up an OPDS password yet → 401. We
+        //    intentionally do NOT call get_or_create_password here — auth must
+        //    be read-only. Creating a password silently during an auth check
+        //    would be a surprising write side effect.
         let opds_password = core_services
             .opds_service
             .get_password(&user)

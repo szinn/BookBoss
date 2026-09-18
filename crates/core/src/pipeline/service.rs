@@ -181,7 +181,8 @@ impl PipelineService for PipelineServiceImpl {
 
 impl PipelineServiceImpl {
     async fn process_job_inner(&self, mut job: ImportJob) -> Result<ImportJob, Error> {
-        // ── 1. Hash dedup: reject if file is already in the library ───────────
+        // ── 1. Hash dedup: reject if file is already in the library
+        // ───────────
         {
             let book_repo = self.repository_service.book_repository().clone();
             let file_hash = job.file_hash.clone();
@@ -202,7 +203,8 @@ impl PipelineServiceImpl {
             }
         }
 
-        // ── 2. Mark Extracting ────────────────────────────────────────────────
+        // ── 2. Mark Extracting
+        // ────────────────────────────────────────────────
         job = {
             let import_job_repo = self.repository_service.import_job_repository().clone();
             job.status = ImportStatus::Extracting;
@@ -213,7 +215,8 @@ impl PipelineServiceImpl {
             .await?
         };
 
-        // ── 3. Extract metadata from the e-book file ──────────────────────────
+        // ── 3. Extract metadata from the e-book file
+        // ──────────────────────────
         let path: PathBuf = job.file_path.clone().into();
 
         // Guard: if the file has disappeared since the job was queued, move it
@@ -232,7 +235,8 @@ impl PipelineServiceImpl {
 
         let (detected_format, extracted) = self.format_service.extract_metadata(&path).await?;
 
-        // ── 4. Mark Identifying ───────────────────────────────────────────────
+        // ── 4. Mark Identifying
+        // ───────────────────────────────────────────────
         job = {
             let import_job_repo = self.repository_service.import_job_repository().clone();
             job.status = ImportStatus::Identifying;
@@ -243,8 +247,9 @@ impl PipelineServiceImpl {
             .await?
         };
 
-        // ── 5. Enrich: query all providers concurrently, score results by title
-        //    similarity, and pick the highest-scoring match above the threshold.
+        // ── 5. Enrich: query all providers concurrently, score results by
+        // title    similarity, and pick the highest-scoring match above
+        // the threshold.
         //
         // If the file already contains spinnaker:metadata it was previously
         // enriched by BookBoss. Treat the embedded metadata as authoritative
@@ -280,9 +285,10 @@ impl PipelineServiceImpl {
                     }
                 }
 
-                // Score each result against the embedded title and primary author.
-                // Scores are stored in a parallel vec so they can be reused for
-                // both metadata selection and cover selection below.
+                // Score each result against the embedded title and primary
+                // author. Scores are stored in a parallel vec
+                // so they can be reused for both metadata
+                // selection and cover selection below.
                 let extracted_title = extracted.title.as_deref();
                 let extracted_author = extracted
                     .authors
@@ -331,9 +337,10 @@ impl PipelineServiceImpl {
                     }
                 }
 
-                // Cover: pick the largest image from the embedded EPUB cover and
-                // any provider that scored above MATCH_THRESHOLD. Covers from
-                // providers that failed to match are excluded.
+                // Cover: pick the largest image from the embedded EPUB cover
+                // and any provider that scored above
+                // MATCH_THRESHOLD. Covers from providers that
+                // failed to match are excluded.
                 let mut best_cover = embedded_cover;
                 let mut best_min_side = best_cover.as_deref().map_or(0, cover_min_side);
                 let mut cover_source: Option<&str> = None;
@@ -356,7 +363,8 @@ impl PipelineServiceImpl {
                     tracing::debug!(provider = source_name, score = best_score, "selected provider result");
                     let source = pb.source;
                     let mut metadata = pb.metadata;
-                    // Preserve file-embedded fields not returned by the provider.
+                    // Preserve file-embedded fields not returned by the
+                    // provider.
                     if let Some(extracted_ids) = &extracted.identifiers {
                         let provider_ids = metadata.identifiers.get_or_insert_with(Vec::new);
                         let existing_types: std::collections::HashSet<IdentifierType> = provider_ids.iter().map(|id| id.identifier_type.clone()).collect();
@@ -390,21 +398,24 @@ impl PipelineServiceImpl {
         };
         let job_source = Some(job_source);
 
-        // ── 7. Capture file size before the file is moved ─────────────────────
+        // ── 7. Capture file size before the file is moved
+        // ─────────────────────
         #[expect(
             clippy::cast_possible_wrap,
             reason = "file size stored as i64 in DB; files in practice will not exceed i64::MAX bytes"
         )]
         let file_size = tokio::fs::metadata(&path).await.map_or(0, |m| m.len() as i64);
 
-        // ── 7a. Store original file in Originals/ before the transaction ───────
-        // Must happen before the DB transaction so the actual filename (possibly
-        // collision-resolved) is available to pass into add_book_file.
-        // Uses copy semantics — source file is preserved for store_book_file.
+        // ── 7a. Store original file in Originals/ before the transaction
+        // ─────── Must happen before the DB transaction so the actual
+        // filename (possibly collision-resolved) is available to pass
+        // into add_book_file. Uses copy semantics — source file is
+        // preserved for store_book_file.
         let intended_filename = path.file_name().and_then(|s| s.to_str()).unwrap_or("unknown").to_string();
         let actual_original_filename = self.file_store.store_original_file(&job.file_hash, &intended_filename, &path).await?;
 
-        // ── 8. Determine title (fall back to filename stem) ───────────────────
+        // ── 8. Determine title (fall back to filename stem)
+        // ───────────────────
         let title = normalize_name(
             &final_meta
                 .title
@@ -412,7 +423,8 @@ impl PipelineServiceImpl {
                 .unwrap_or_else(|| path.file_stem().and_then(|s| s.to_str()).unwrap_or("Unknown").to_string()),
         );
 
-        // ── 9. Map ImportSource → MetadataSource for the Book record ──────────
+        // ── 9. Map ImportSource → MetadataSource for the Book record
+        // ──────────
         let book_metadata_source: Option<MetadataSource> = job_source.as_ref().map(|s| match s {
             ImportSource::Embedded => MetadataSource::Manual,
             ImportSource::OpenLibrary => MetadataSource::OpenLibrary,
@@ -420,7 +432,8 @@ impl PipelineServiceImpl {
             ImportSource::GoogleBooks => MetadataSource::GoogleBooks,
         });
 
-        // ── 10. Pre-build sidecar sub-structures from final_meta ──────────────
+        // ── 10. Pre-build sidecar sub-structures from final_meta
+        // ──────────────
         let sidecar_authors: Vec<SidecarAuthor> = final_meta
             .authors
             .as_deref()
@@ -445,7 +458,8 @@ impl PipelineServiceImpl {
             })
             .collect();
 
-        // ── 11. DB writes in a single transaction ──────────────────────────────
+        // ── 11. DB writes in a single transaction
+        // ──────────────────────────────
         let book_repo = self.repository_service.book_repository().clone();
         let author_repo = self.repository_service.author_repository().clone();
         let series_repo = self.repository_service.series_repository().clone();
@@ -512,15 +526,17 @@ impl PipelineServiceImpl {
                     )
                     .await?;
 
-                // Record the book file — path set to the library-relative location
-                // returned by store_original_file (updated to full relative path in M9.3).
+                // Record the book file — path set to the library-relative
+                // location returned by store_original_file
+                // (updated to full relative path in M9.3).
                 book_repo
                     .add_book_file(tx, book.id, file_format, FileRole::Original, original_filename, file_size, file_hash)
                     .await?;
 
                 // Find or create each author, then link to book.
-                // Dedupe by resolved author id: source metadata can list the same
-                // person twice (e.g. duplicate <dc:creator> entries with/without a
+                // Dedupe by resolved author id: source metadata can list the
+                // same person twice (e.g. duplicate
+                // <dc:creator> entries with/without a
                 // role attribute, or providers returning duplicates), and the
                 // book_authors PK is (book_id, author_id).
                 let mut seen_author_ids = std::collections::HashSet::new();
@@ -537,7 +553,8 @@ impl PipelineServiceImpl {
                     book_repo.add_book_author(tx, book.id, author.id, role, a.sort_order).await?;
                 }
 
-                // Add identifiers, deduplicating by type (keep first occurrence)
+                // Add identifiers, deduplicating by type (keep first
+                // occurrence)
                 let mut seen_types = std::collections::HashSet::new();
                 for id in fm.identifiers.as_deref().unwrap_or(&[]) {
                     if seen_types.insert(id.identifier_type.clone()) {
@@ -545,10 +562,13 @@ impl PipelineServiceImpl {
                     }
                 }
 
-                // Add genres. Dedupe by resolved genre id: GenreRepository::find_by_name
-                // is case-insensitive while normalize_name preserves case, so two source
-                // strings differing only in case (e.g. Open Library subjects "Fiction"
-                // and "FICTION") resolve to the same row and violate (book_id, genre_id).
+                // Add genres. Dedupe by resolved genre id:
+                // GenreRepository::find_by_name
+                // is case-insensitive while normalize_name preserves case, so
+                // two source strings differing only in case
+                // (e.g. Open Library subjects "Fiction"
+                // and "FICTION") resolve to the same row and violate (book_id,
+                // genre_id).
                 let mut seen_genre_ids = std::collections::HashSet::new();
                 for name in &fm.genres {
                     let name = normalize_name(name);
@@ -565,7 +585,8 @@ impl PipelineServiceImpl {
                     book_repo.add_book_genre(tx, book.id, genre.id).await?;
                 }
 
-                // Add tags. Same case-insensitive find_by_name caveat as genres above.
+                // Add tags. Same case-insensitive find_by_name caveat as genres
+                // above.
                 let mut seen_tag_ids = std::collections::HashSet::new();
                 for name in &fm.tags {
                     let name = normalize_name(name);
@@ -593,19 +614,22 @@ impl PipelineServiceImpl {
         })
         .await?;
 
-        // ── 12. Store book file (moves it into the library directory) ──────────
+        // ── 12. Store book file (moves it into the library directory)
+        // ──────────
         let slug = {
             let first_author = final_meta.authors.as_deref().and_then(|a| a.first()).map(|a| a.name.as_str());
             book_slug(&book.title, first_author)
         };
         self.file_store.store_book_file(book.token, &slug, detected_format.clone(), &path).await?;
 
-        // ── 13. Store cover image ──────────────────────────────────────────────
+        // ── 13. Store cover image
+        // ──────────────────────────────────────────────
         if let Some(data) = &cover_bytes {
             self.file_store.store_cover(book.token, data).await?;
         }
 
-        // ── 14. Write metadata sidecar ────────────────────────────────────────
+        // ── 14. Write metadata sidecar
+        // ────────────────────────────────────────
         let sidecar = BookSidecar {
             title: book.title.clone(),
             authors: sidecar_authors,
@@ -668,12 +692,13 @@ impl PipelineServiceImpl {
 mod tests {
     use super::{cover_min_side, image_dimensions, provider_priority};
 
-    // ── image_dimensions: PNG ─────────────────────────────────────────────────
+    // ── image_dimensions: PNG
+    // ─────────────────────────────────────────────────
 
     #[test]
     fn image_dimensions_png() {
-        // PNG signature (8 bytes) + fake IHDR length/type (8 bytes) + width (4 BE) +
-        // height (4 BE)
+        // PNG signature (8 bytes) + fake IHDR length/type (8 bytes) + width (4
+        // BE) + height (4 BE)
         let mut data = vec![0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]; // PNG sig
         data.extend_from_slice(&[0x00, 0x00, 0x00, 0x0D]); // IHDR length (unused by parser)
         data.extend_from_slice(b"IHDR"); // chunk type (unused by parser)
@@ -684,12 +709,14 @@ mod tests {
 
     #[test]
     fn image_dimensions_truncated_png_returns_none() {
-        // PNG magic but only 10 bytes — not enough to read width/height at offset 16–23
+        // PNG magic but only 10 bytes — not enough to read width/height at
+        // offset 16–23
         let data = vec![0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00];
         assert_eq!(image_dimensions(&data), None);
     }
 
-    // ── image_dimensions: GIF ─────────────────────────────────────────────────
+    // ── image_dimensions: GIF
+    // ─────────────────────────────────────────────────
 
     #[test]
     fn image_dimensions_gif89a() {
@@ -699,12 +726,13 @@ mod tests {
         assert_eq!(image_dimensions(&data), Some((80, 60)));
     }
 
-    // ── image_dimensions: WebP ────────────────────────────────────────────────
+    // ── image_dimensions: WebP
+    // ────────────────────────────────────────────────
 
     #[test]
     fn image_dimensions_webp_vp8_lossy() {
-        // RIFF....WEBPVP8 <4-byte chunk-size> <bitstream-start: 3 bytes> <w+h 2 bytes
-        // each>
+        // RIFF....WEBPVP8 <4-byte chunk-size> <bitstream-start: 3 bytes> <w+h 2
+        // bytes each>
         let mut data = vec![0u8; 30];
         data[0..4].copy_from_slice(b"RIFF");
         data[8..12].copy_from_slice(b"WEBP");
@@ -719,7 +747,8 @@ mod tests {
 
     #[test]
     fn image_dimensions_webp_vp8l_lossless() {
-        // Outer WebP guard requires len >= 30; VP8L parser reads at offset 21..25
+        // Outer WebP guard requires len >= 30; VP8L parser reads at offset
+        // 21..25
         let mut data = vec![0u8; 30];
         data[0..4].copy_from_slice(b"RIFF");
         data[8..12].copy_from_slice(b"WEBP");
@@ -732,7 +761,8 @@ mod tests {
         assert_eq!(image_dimensions(&data), Some((w, h)));
     }
 
-    // ── image_dimensions: JPEG ────────────────────────────────────────────────
+    // ── image_dimensions: JPEG
+    // ────────────────────────────────────────────────
 
     #[test]
     fn image_dimensions_jpeg_sof0() {

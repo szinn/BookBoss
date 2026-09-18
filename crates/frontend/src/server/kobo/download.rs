@@ -37,7 +37,8 @@ pub async fn handle(kobo: KoboDevice, Path(params): Path<HashMap<String, String>
         return StatusCode::BAD_REQUEST.into_response();
     };
 
-    // 1. Parse format from path param — only epub and kepub are served via Kobo.
+    // 1. Parse format from path param — only epub and kepub are served via
+    //    Kobo.
     let Ok(format @ (FileFormat::Epub | FileFormat::Kepub)) = format_str.parse::<FileFormat>() else {
         return StatusCode::NOT_FOUND.into_response();
     };
@@ -81,7 +82,8 @@ pub async fn handle(kobo: KoboDevice, Path(params): Path<HashMap<String, String>
         match File::open(&enriched_path).await {
             Ok(f) => (enriched_file.file_size, f),
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                // Enriched record exists but file not on disk — fall back to original.
+                // Enriched record exists but file not on disk — fall back to
+                // original.
                 let Some(orig_file) = original else {
                     return StatusCode::NOT_FOUND.into_response();
                 };
@@ -121,8 +123,8 @@ pub async fn handle(kobo: KoboDevice, Path(params): Path<HashMap<String, String>
         "kobo download"
     );
 
-    // 6. Build Content-Disposition filename. Kepub must have .kepub.epub extension
-    //    so the Kobo recognises it.
+    // 6. Build Content-Disposition filename. Kepub must have .kepub.epub
+    //    extension so the Kobo recognises it.
     let ext = format.extension();
     let safe_title: String = book
         .title

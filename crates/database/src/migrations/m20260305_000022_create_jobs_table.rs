@@ -33,8 +33,8 @@ impl MigrationTrait for Migration {
             .await?;
 
         // Partial index for the claim query.
-        // MySQL does not support partial indexes, so we create a regular covering index
-        // there.
+        // MySQL does not support partial indexes, so we create a regular
+        // covering index there.
         let index = match manager.get_database_backend() {
             sea_orm::DatabaseBackend::MySql => Index::create()
                 .name("jobs_claim")

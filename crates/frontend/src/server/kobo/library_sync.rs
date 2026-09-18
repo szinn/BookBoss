@@ -33,7 +33,8 @@ use super::{
 // ─────────────────────────────────────────────────────────────────
 
 pub async fn handle(kobo: KoboDevice, req_headers: HeaderMap, core_services: Arc<CoreServices>, base_url: String) -> Result<impl IntoResponse, StatusCode> {
-    // 1. Decode sync cursor from request header (absent = full sync from start).
+    // 1. Decode sync cursor from request header (absent = full sync from
+    //    start).
     let raw_cursor = req_headers.get("x-kobo-synctoken").and_then(|v| v.to_str().ok()).unwrap_or("");
     let (cursor_since, cursor_after_book_id) = cursor::decode(raw_cursor);
 
@@ -73,8 +74,8 @@ pub async fn handle(kobo: KoboDevice, req_headers: HeaderMap, core_services: Arc
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
-    // 4. Fetch reading state for all books on this sync page. Pages are capped at
-    //    100 entries so the individual reads are acceptable here.
+    // 4. Fetch reading state for all books on this sync page. Pages are capped
+    //    at 100 entries so the individual reads are acceptable here.
     let mut state_map = std::collections::HashMap::new();
     for entry in diff.new_books.iter().chain(diff.upgraded_books.iter()).chain(diff.refreshed_books.iter()) {
         if let Ok(Some(s)) = core_services.reading_service.get_reading_state(kobo.device.owner_id, entry.book.id).await {
@@ -133,9 +134,9 @@ pub async fn handle(kobo: KoboDevice, req_headers: HeaderMap, core_services: Arc
         cursor::encode(Some(Utc::now()), None)
     };
 
-    // 7. Build response headers. x-kobo-synctoken: always present (cursor for next
-    //    call). x-kobo-sync:      "continue" only when more pages remain; absent
-    //    when done.
+    // 7. Build response headers. x-kobo-synctoken: always present (cursor for
+    //    next call). x-kobo-sync:      "continue" only when more pages remain;
+    //    absent when done.
     let next_cursor_hv = HeaderValue::try_from(next_cursor).expect("cursor contains only ASCII digits and colons");
 
     let mut resp_headers = HeaderMap::new();

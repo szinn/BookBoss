@@ -109,9 +109,9 @@ mod tests {
     #[tokio::test]
     async fn register_hashes_stores_filename_and_content_hashes() {
         let mut mock = MockKoReaderDocumentHashRepository::new();
-        // "epub-bytes" is 10 bytes. partial_md5 reads from offset 0 (entire file),
-        // so partial_hash == contents_hash. After dedup: filename_hash + contents_hash
-        // = 2 distinct entries.
+        // "epub-bytes" is 10 bytes. partial_md5 reads from offset 0 (entire
+        // file), so partial_hash == contents_hash. After dedup:
+        // filename_hash + contents_hash = 2 distinct entries.
         mock.expect_insert_hashes()
             .withf(|_, book_id, hashes| *book_id == 1 && hashes.len() == 2)
             .returning(|_, _, _| Box::pin(async { Ok(()) }));
@@ -122,9 +122,9 @@ mod tests {
     #[tokio::test]
     async fn register_hashes_deduplicates_when_filename_and_content_hashes_match() {
         let mut mock = MockKoReaderDocumentHashRepository::new();
-        // filename and contents are identical bytes → filename_hash == contents_hash
-        // == partial_hash (file < 1024 bytes, partial reads full file). All three
-        // collapse to 1 entry after dedup.
+        // filename and contents are identical bytes → filename_hash ==
+        // contents_hash == partial_hash (file < 1024 bytes, partial
+        // reads full file). All three collapse to 1 entry after dedup.
         mock.expect_insert_hashes()
             .withf(|_, _, hashes| hashes.len() == 1)
             .returning(|_, _, _| Box::pin(async { Ok(()) }));

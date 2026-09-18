@@ -362,8 +362,8 @@ pub(crate) mod tests {
         let parsed = parse_sidecar(&bytes).expect("parse failed");
 
         assert_eq!(parsed.authors.len(), 3);
-        // After roundtrip, authors should be reconstructed with correct sort_orders.
-        // Find by name and check sort_order.
+        // After roundtrip, authors should be reconstructed with correct
+        // sort_orders. Find by name and check sort_order.
         let first = parsed.authors.iter().find(|a| a.name == "First Author").unwrap();
         let second = parsed.authors.iter().find(|a| a.name == "Second Author").unwrap();
         let third = parsed.authors.iter().find(|a| a.name == "Third Author").unwrap();

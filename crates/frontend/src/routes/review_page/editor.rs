@@ -24,7 +24,8 @@ const ALL_IDENTIFIER_TYPES: &[(&str, &str)] = &[
 
 #[component]
 pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: EventHandler<()>) -> Element {
-    // ── Edit state ────────────────────────────────────────────────────────────
+    // ── Edit state
+    // ────────────────────────────────────────────────────────────
     let mut title = use_signal(|| data.title.clone());
     let mut description = use_signal(|| data.description.clone());
     let mut published_date = use_signal(|| data.published_date.clone());
@@ -43,8 +44,9 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
     let genres = use_signal(|| data.genres.clone());
     let tags = use_signal(|| data.tags.clone());
 
-    // ── Library membership state ──────────────────────────────────────────────
-    // All non-system libraries: Vec<(token, name)>
+    // ── Library membership state
+    // ────────────────────────────────────────────── All non-system
+    // libraries: Vec<(token, name)>
     let non_system_libraries = use_resource(list_non_system_libraries);
     // For edit_mode: fetch book's current library memberships. In review mode
     // we skip the server round-trip by returning an empty vec immediately.
@@ -57,9 +59,9 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
     // initialised.
     let mut checked_library_tokens: Signal<Option<Vec<String>>> = use_signal(|| None);
 
-    // Initialise checked_library_tokens once resource data arrives (runs once per
-    // render until initialised, then becomes a no-op because it won't be None
-    // any more).
+    // Initialise checked_library_tokens once resource data arrives (runs once
+    // per render until initialised, then becomes a no-op because it won't
+    // be None any more).
     {
         let nsl = non_system_libraries.read();
         let bel = book_existing_libraries.read();
@@ -80,7 +82,8 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
         }
     }
 
-    // ── Pick-list data (loads client-side after hydration) ────────────────────
+    // ── Pick-list data (loads client-side after hydration)
+    // ────────────────────
     let picklist = use_resource(move || get_picklist_data(()));
     let mut identifiers: Signal<IdentifierMap> = use_signal(|| data.identifiers.clone());
     let mut use_fetched_cover = use_signal(|| false);
@@ -89,7 +92,8 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
     let mut current_cover_dimensions: Signal<Option<(u32, u32)>> = use_signal(|| data.cover_dimensions);
     let mut cover_drag_over = use_signal(|| false);
 
-    // ── Provider fetch state ──────────────────────────────────────────────────
+    // ── Provider fetch state
+    // ──────────────────────────────────────────────────
     let mut provider_result: Signal<Option<ProviderResult>> = use_signal(|| None);
     let mut fetching: Signal<Option<String>> = use_signal(|| None); // provider name being fetched
     let mut action_busy = use_signal(|| false);
@@ -97,8 +101,8 @@ pub(crate) fn ReviewEditor(data: BookReviewData, edit_mode: bool, on_back: Event
 
     let job_token = data.job_token.clone();
     let book_token_for_edit = data.book_token.clone();
-    // cover_key identifies the temp cover file: job token for review, book token
-    // for edit.
+    // cover_key identifies the temp cover file: job token for review, book
+    // token for edit.
     let cover_key = if edit_mode { data.book_token.clone() } else { data.job_token.clone() };
     let original_missing = data.original_missing;
 

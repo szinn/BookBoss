@@ -25,7 +25,8 @@ async fn get_all_series() -> Result<Vec<SeriesTileData>, ServerFnError> {
 
     let mut tiles = Vec::with_capacity(all_series.len());
     for series in &all_series {
-        // Load only Available books for this series (list_books filters by status).
+        // Load only Available books for this series (list_books filters by
+        // status).
         let filter = BookQuery {
             series_id: Some(series.id),
             ..Default::default()

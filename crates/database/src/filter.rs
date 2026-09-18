@@ -417,8 +417,8 @@ fn read_status_condition(op: SetOp, values: &[FilterReadStatus], user_id: UserId
         q
     };
 
-    // SELECT book_id FROM user_book_metadata WHERE user_id = ? AND read_status IN
-    // (statuses)
+    // SELECT book_id FROM user_book_metadata WHERE user_id = ? AND read_status
+    // IN (statuses)
     let ubm_with_status = |statuses: Vec<&'static str>| {
         let mut q = Query::select();
         q.column(user_book_metadata::Column::BookId)
@@ -435,7 +435,8 @@ fn read_status_condition(op: SetOp, values: &[FilterReadStatus], user_id: UserId
                 return Ok(never());
             }
             if unread_included {
-                // No UBM row (implicit unread) OR UBM row with a matching status
+                // No UBM row (implicit unread) OR UBM row with a matching
+                // status
                 Condition::any()
                     .add(books::Column::Id.not_in_subquery(ubm_for_user()))
                     .add(books::Column::Id.in_subquery(ubm_with_status(statuses)))
@@ -448,15 +449,17 @@ fn read_status_condition(op: SetOp, values: &[FilterReadStatus], user_id: UserId
                 return Ok(Condition::all());
             }
             if unread_included {
-                // A book with no UBM row is effectively "unread" → it IS in the excluded
-                // set, so it must be filtered out.  Only books with an explicit UBM row
+                // A book with no UBM row is effectively "unread" → it IS in the
+                // excluded set, so it must be filtered out.
+                // Only books with an explicit UBM row
                 // whose status is NOT in the excluded set pass through.
                 Condition::all()
                     .add(books::Column::Id.in_subquery(ubm_for_user()))
                     .add(books::Column::Id.not_in_subquery(ubm_with_status(statuses)))
             } else {
-                // Books with no UBM row have implicit status "unread" which is NOT in the
-                // excluded set → include them.  Books with a matching UBM status → exclude.
+                // Books with no UBM row have implicit status "unread" which is
+                // NOT in the excluded set → include them.
+                // Books with a matching UBM status → exclude.
                 Condition::all().add(books::Column::Id.not_in_subquery(ubm_with_status(statuses)))
             }
         }

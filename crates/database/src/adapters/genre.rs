@@ -195,7 +195,8 @@ impl GenreRepository for GenreRepositoryAdapter {
 
         let book_genre_rows = prelude::BookGenres::find().all(transaction).await.map_err(handle_dberr)?;
 
-        // Collect book_ids that appear in book_genres, then load their statuses.
+        // Collect book_ids that appear in book_genres, then load their
+        // statuses.
         let book_ids: Vec<i64> = book_genre_rows.iter().map(|r| r.book_id).collect();
         let book_available: HashMap<i64, bool> = if book_ids.is_empty() {
             HashMap::new()
@@ -210,7 +211,8 @@ impl GenreRepository for GenreRepositoryAdapter {
                 .collect()
         };
 
-        // Per-genre: count available books and flag any non-available references.
+        // Per-genre: count available books and flag any non-available
+        // references.
         let mut counts: HashMap<i64, (u64, bool)> = HashMap::new();
         for row in book_genre_rows {
             let is_available = book_available.get(&row.book_id).copied().unwrap_or(false);
@@ -507,10 +509,11 @@ mod tests {
     #[tokio::test]
     async fn test_delete_unused_genres_single_unused_is_deleted() {
         // Note: this test only exercises the query logic; wiring a full book →
-        // book_genres association requires the book and book_genres repositories.
-        // The "no book rows" branch is already tested above. The "some used"
-        // branch is implicitly covered by integration tests. At the unit level
-        // we verify the zero-row path returns 0 when nothing matches the filter.
+        // book_genres association requires the book and book_genres
+        // repositories. The "no book rows" branch is already tested
+        // above. The "some used" branch is implicitly covered by
+        // integration tests. At the unit level we verify the zero-row
+        // path returns 0 when nothing matches the filter.
         let svc = setup().await;
         let tx = svc.repository().begin().await.unwrap();
 

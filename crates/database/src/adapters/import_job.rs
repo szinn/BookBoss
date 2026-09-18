@@ -659,7 +659,8 @@ mod tests {
         assert_eq!(reset, 0);
     }
 
-    // ─── delete_old_terminal_jobs ─────────────────────────────────────────────
+    // ─── delete_old_terminal_jobs
+    // ─────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_delete_old_terminal_jobs_deletes_approved_before_cutoff() {
@@ -706,7 +707,8 @@ mod tests {
         assert_eq!(deleted, 0);
     }
 
-    // ─── find_stale_non_terminal_jobs ─────────────────────────────────────────
+    // ─── find_stale_non_terminal_jobs
+    // ─────────────────────────────────────────
 
     #[tokio::test]
     async fn test_find_stale_non_terminal_jobs_returns_old_pending() {

@@ -107,8 +107,8 @@ pub async fn all_books(opds_user: OpdsUser, Query(params): Query<PaginationParam
     let now = Utc::now();
     let user_id = opds_user.user.id;
 
-    // Resolve default library — return 500 rather than silently expanding to all
-    // books
+    // Resolve default library — return 500 rather than silently expanding to
+    // all books
     let library_id = match core_services.library_service.get_default_library_token(user_id).await {
         Ok(token_str) => match LibraryToken::parse(&token_str) {
             Ok(token) => Some(token.id()),
@@ -764,7 +764,8 @@ pub async fn serve_download(
 
     let ext = format.extension();
 
-    // Try the enriched file first; fall back to the original if not yet on disk.
+    // Try the enriched file first; fall back to the original if not yet on
+    // disk.
     let data = if let Some(enriched) = enriched_file {
         let enriched_path = core_services.file_store.resolve(&enriched.path);
         match tokio::fs::read(&enriched_path).await {

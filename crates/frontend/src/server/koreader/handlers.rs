@@ -107,8 +107,9 @@ pub async fn syncs_progress_push(
         current_status
     };
 
-    // 4. Persist via sync_device_state. progress_bps is 0–10000 (basis points of
-    //    100%). Capture timestamp once so the stored value and the response agree.
+    // 4. Persist via sync_device_state. progress_bps is 0–10000 (basis points
+    //    of 100%). Capture timestamp once so the stored value and the response
+    //    agree.
     let now = Utc::now();
     #[allow(clippy::cast_sign_loss)] // value is clamped to [0.0, 1.0] * 10_000.0 → always non-negative
     let progress_bps = (body.percentage.clamp(0.0, 1.0) * 10_000.0).round() as u16;
@@ -166,8 +167,8 @@ pub async fn syncs_progress_pull(
     };
 
     // 2. Load UserBookMetadata. If no reading state exists yet, return unread
-    //    defaults (percentage 0, empty progress token) rather than 404 — the book
-    //    is known to BookBoss, just not yet started.
+    //    defaults (percentage 0, empty progress token) rather than 404 — the
+    //    book is known to BookBoss, just not yet started.
     let metadata = match core_services.reading_service.get_reading_state(koreader_user.user.id, book_id).await {
         Ok(m) => {
             tracing::debug!(book_id, has_state = m.is_some(), "KOReader pull: reading state");

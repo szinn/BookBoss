@@ -29,7 +29,8 @@ impl<S: Send + Sync> FromRequestParts<S> for KoboDevice {
     type Rejection = StatusCode;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        // 1. Extract named path parameters — all Kobo routes contain `sync_token`.
+        // 1. Extract named path parameters — all Kobo routes contain
+        //    `sync_token`.
         let Path(params) = Path::<HashMap<String, String>>::from_request_parts(parts, state)
             .await
             .map_err(|_| StatusCode::BAD_REQUEST)?;

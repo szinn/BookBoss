@@ -15,8 +15,8 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-        // SQLite does not support adding foreign keys to existing tables via ALTER
-        // TABLE.
+        // SQLite does not support adding foreign keys to existing tables via
+        // ALTER TABLE.
         if manager.get_database_backend() != sea_orm::DatabaseBackend::Sqlite {
             manager
                 .create_foreign_key(

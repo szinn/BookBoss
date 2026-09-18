@@ -311,8 +311,8 @@ impl DeviceService for DeviceServiceImpl {
                 return Ok(SyncDiff::empty());
             };
 
-            // 2. Load all shelf books with no page limit, then sort by book_id for
-            //    deterministic keyset pagination
+            // 2. Load all shelf books with no page limit, then sort by book_id
+            //    for deterministic keyset pagination
             let mut shelf_books = collection_repository
                 .books_for_filter(tx, filter, owner_id, Some(companion_shelf.library_id), None, None, None)
                 .await?;
@@ -322,8 +322,9 @@ impl DeviceService for DeviceServiceImpl {
             let device_books = device_repository.books_for_device(tx, device_id).await?;
             let device_book_map: HashMap<BookId, DeviceBook> = device_books.iter().map(|db| (db.book_id, db.clone())).collect();
 
-            // 4. Detect removals: books in DeviceBook that are no longer on the shelf. Only
-            //    included on the first page to avoid duplicating them across pages.
+            // 4. Detect removals: books in DeviceBook that are no longer on the
+            //    shelf. Only included on the first page to avoid duplicating
+            //    them across pages.
             let shelf_id_set: HashSet<BookId> = shelf_books.iter().map(|b| b.id).collect();
             let removed_book_ids = if after_book_id.is_none() {
                 device_books
@@ -335,8 +336,8 @@ impl DeviceService for DeviceServiceImpl {
                 vec![]
             };
 
-            // 5. Classify each shelf book — N+1 files query accepted; fast indexed lookups
-            //    on a personal library are negligible
+            // 5. Classify each shelf book — N+1 files query accepted; fast
+            //    indexed lookups on a personal library are negligible
             let mut classified: Vec<(EntryKind, BookSyncEntry)> = Vec::new();
             for book in &shelf_books {
                 let files = book_repository.files_for_book(tx, book.id).await?;
@@ -421,7 +422,8 @@ impl DeviceService for DeviceServiceImpl {
         let books_removed = removed_count as i32;
         let has_more = diff.has_more;
 
-        // Clone entries for the async move closure (diff is a borrowed reference)
+        // Clone entries for the async move closure (diff is a borrowed
+        // reference)
         let new_books = diff.new_books.clone();
         let upgraded_books = diff.upgraded_books.clone();
         let removed_book_ids = diff.removed_book_ids.clone();
@@ -459,7 +461,8 @@ impl DeviceService for DeviceServiceImpl {
                     .await?;
             }
 
-            // Remove DeviceBook records for books no longer on the companion shelf
+            // Remove DeviceBook records for books no longer on the companion
+            // shelf
             for book_id in &removed_book_ids {
                 device_repository.remove_device_book(tx, device_id, *book_id).await?;
             }
@@ -525,9 +528,10 @@ impl DeviceService for DeviceServiceImpl {
 
             // Resetting last_synced_at to None is enough: the library sync
             // handler treats None as a server-side override that ignores the
-            // Kobo's cursor and forces a full re-classification on the next sync.
-            // DeviceBook records are preserved so re-sent books are classified
-            // as Refreshed (existing) or New (not yet sent) rather than all New.
+            // Kobo's cursor and forces a full re-classification on the next
+            // sync. DeviceBook records are preserved so re-sent
+            // books are classified as Refreshed (existing) or New
+            // (not yet sent) rather than all New.
             let updated = Device {
                 last_synced_at: None,
                 ..device
@@ -582,7 +586,8 @@ mod tests {
         },
     };
 
-    // ─── Helpers ──────────────────────────────────────────────────────────────
+    // ─── Helpers
+    // ──────────────────────────────────────────────────────────────
 
     fn create_service(device_repo: MockDeviceRepository, shelf_repo: MockShelfRepository, user_repo: MockUserRepository) -> DeviceServiceImpl {
         let repository_service = Arc::new(
@@ -701,7 +706,8 @@ mod tests {
         }
     }
 
-    // ─── Helper: build a MockBookRepository with per-book file maps ────────────
+    // ─── Helper: build a MockBookRepository with per-book file maps
+    // ────────────
 
     fn book_repo_with_files(file_map: std::collections::HashMap<BookId, Vec<BookFile>>) -> MockBookRepository {
         let mut repo = MockBookRepository::new();
@@ -712,7 +718,8 @@ mod tests {
         repo
     }
 
-    // ─── list_devices_for_user ────────────────────────────────────────────────
+    // ─── list_devices_for_user
+    // ────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_list_devices_returns_devices() {
@@ -731,7 +738,8 @@ mod tests {
         assert_eq!(result[0].id, device_id);
     }
 
-    // ─── get_device ───────────────────────────────────────────────────────────
+    // ─── get_device
+    // ───────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_get_device_success() {
@@ -778,7 +786,8 @@ mod tests {
         assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::NotFound))));
     }
 
-    // ─── create_device ────────────────────────────────────────────────────────
+    // ─── create_device
+    // ────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_create_device_returns_token() {
@@ -815,7 +824,8 @@ mod tests {
         assert!(matches!(result, Err(Error::Validation(_))));
     }
 
-    // ─── update_device ────────────────────────────────────────────────────────
+    // ─── update_device
+    // ────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_update_device_renames_companion_shelf() {
@@ -896,7 +906,8 @@ mod tests {
         assert!(matches!(result, Err(Error::Validation(_))));
     }
 
-    // ─── delete_device ────────────────────────────────────────────────────────
+    // ─── delete_device
+    // ────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_delete_device_with_companion_shelf_deletion() {
@@ -956,7 +967,8 @@ mod tests {
         assert!(matches!(result, Err(Error::Validation(_))));
     }
 
-    // ─── default_device_name ──────────────────────────────────────────────────
+    // ─── default_device_name
+    // ──────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_default_device_name_no_collision() {
@@ -1009,7 +1021,8 @@ mod tests {
         assert_eq!(name, "My's Device");
     }
 
-    // ─── compute_sync_diff ────────────────────────────────────────────────────
+    // ─── compute_sync_diff
+    // ────────────────────────────────────────────────────
 
     fn sync_shelf() -> Shelf {
         fake_shelf(1, Some(1))
@@ -1039,8 +1052,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_compute_sync_diff_scopes_to_shelf_library() {
-        // Shelf has a non-default library_id (42) — verifies compute_sync_diff passes
-        // the shelf's library_id rather than always passing ALL_BOOKS_LIBRARY_ID.
+        // Shelf has a non-default library_id (42) — verifies compute_sync_diff
+        // passes the shelf's library_id rather than always passing
+        // ALL_BOOKS_LIBRARY_ID.
         let mut shelf_repo = MockShelfRepository::new();
         shelf_repo.expect_find_by_device_id().returning(|_, _| {
             let s = Shelf {
@@ -1076,12 +1090,13 @@ mod tests {
     #[tokio::test]
     async fn test_compute_sync_diff_returns_all_rows_for_large_smart_shelf() {
         // BB-18 reproducer: 75 books on a smart-shelf must all surface in the
-        // sync diff. Before the adapter pagination fix (caller-owned page size),
-        // CollectionRepositoryAdapter::books_for_filter silently clamped to 50,
-        // so a shelf with 51+ books would lose entries from the sync. This test
-        // mocks the repository directly to return 75 books and asserts that
-        // every one of them appears in diff.new_books — exercising the service
-        // contract that the adapter pagination must honour.
+        // sync diff. Before the adapter pagination fix (caller-owned page
+        // size), CollectionRepositoryAdapter::books_for_filter silently
+        // clamped to 50, so a shelf with 51+ books would lose entries
+        // from the sync. This test mocks the repository directly to
+        // return 75 books and asserts that every one of them appears in
+        // diff.new_books — exercising the service contract that the
+        // adapter pagination must honour.
         let books: Vec<Book> = (1u64..=75).map(|i| Book::fake(i, format!("Book {i}"), BookStatus::Available)).collect();
         let file_map: std::collections::HashMap<BookId, Vec<BookFile>> = (1u64..=75)
             .map(|i| (i, vec![fake_book_file(i, FileFormat::Epub, FileRole::Original)]))
@@ -1358,7 +1373,8 @@ mod tests {
     #[tokio::test]
     async fn test_sync_diff_removals_only_on_first_page() {
         let book = Book::fake(1, "On Shelf", BookStatus::Available);
-        // DeviceBook for book_id=2 is no longer on the shelf → should appear as removal
+        // DeviceBook for book_id=2 is no longer on the shelf → should appear as
+        // removal
         let stale_book = fake_device_book(1, 2, FileFormat::Epub, FileRole::Original);
         let mut device_repo = MockDeviceRepository::new();
         device_repo.expect_books_for_device().returning(move |_, _| {

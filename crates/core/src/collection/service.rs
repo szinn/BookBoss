@@ -168,7 +168,8 @@ impl CollectionService for CollectionServiceImpl {
                     .find(|f| f.file_role == FileRole::Enriched)
                     .and_then(|f| std::path::Path::new(&f.path).file_name().and_then(|n| n.to_str()).map(String::from));
 
-                // Delete the originating import job so the file can be re-imported.
+                // Delete the originating import job so the file can be
+                // re-imported.
                 if let Some(job) = jr.find_by_candidate_book_id(tx, book.id).await? {
                     jr.delete_job(tx, job.id).await?;
                 }
@@ -204,7 +205,8 @@ impl CollectionService for CollectionServiceImpl {
     }
 
     async fn approve_book(&self, job_token: ImportJobToken, reviewer_id: crate::user::UserId, edit: BookEdit, temp_dir: &std::path::Path) -> Result<(), Error> {
-        // ── 1. Load job and guard status ──────────────────────────────────────
+        // ── 1. Load job and guard status
+        // ──────────────────────────────────────
         let import_job_repo = self.repository_service.import_job_repository().clone();
         let job = read_only_transaction(&**self.repository_service.repository(), |tx| {
             Box::pin(async move { import_job_repo.find_by_token(tx, job_token).await })
@@ -220,7 +222,8 @@ impl CollectionService for CollectionServiceImpl {
             .candidate_book_id
             .ok_or_else(|| Error::Validation("import job has no candidate book".into()))?;
 
-        // ── 2. Load current book and first author for old-slug computation ─────
+        // ── 2. Load current book and first author for old-slug computation
+        // ─────
         let book_repo = self.repository_service.book_repository().clone();
         let (book, old_authors) = read_only_transaction(&**self.repository_service.repository(), |tx| {
             let br = book_repo.clone();
@@ -246,7 +249,8 @@ impl CollectionService for CollectionServiceImpl {
 
         let old_slug = book_slug(&book.title, old_first_author_name.as_deref());
 
-        // ── 3. Read temp cover if requested ───────────────────────────────────
+        // ── 3. Read temp cover if requested
+        // ───────────────────────────────────
         let cover_data: Option<Vec<u8>> = if edit.use_fetched_cover {
             let cover_path = temp_dir.join("bookboss-covers").join(job_token.to_string());
             match tokio::fs::read(&cover_path).await {
@@ -264,7 +268,8 @@ impl CollectionService for CollectionServiceImpl {
             None
         };
 
-        // ── 4. DB transaction: update book + approve job ──────────────────────
+        // ── 4. DB transaction: update book + approve job
+        // ──────────────────────
         let book_repo2 = self.repository_service.book_repository().clone();
         let author_repo = self.repository_service.author_repository().clone();
         let series_repo = self.repository_service.series_repository().clone();
@@ -359,10 +364,11 @@ impl CollectionService for CollectionServiceImpl {
                     }
                 }
 
-                // Replace genres. Dedupe by resolved genre id: find_by_name is case-
-                // insensitive while the trimmed input preserves case, so two source
-                // strings differing only in case resolve to the same row and would
-                // violate (book_id, genre_id).
+                // Replace genres. Dedupe by resolved genre id: find_by_name is
+                // case- insensitive while the trimmed input
+                // preserves case, so two source
+                // strings differing only in case resolve to the same row and
+                // would violate (book_id, genre_id).
                 book_repo2.delete_book_genres(tx, book_id).await?;
                 let mut seen_genre_ids = std::collections::HashSet::new();
                 for name in &edit_c.genres {
@@ -380,7 +386,8 @@ impl CollectionService for CollectionServiceImpl {
                     book_repo2.add_book_genre(tx, book_id, genre.id).await?;
                 }
 
-                // Replace tags. Same case-insensitive find_by_name caveat as genres above.
+                // Replace tags. Same case-insensitive find_by_name caveat as
+                // genres above.
                 book_repo2.delete_book_tags(tx, book_id).await?;
                 let mut seen_tag_ids = std::collections::HashSet::new();
                 for name in &edit_c.tags {
@@ -409,7 +416,8 @@ impl CollectionService for CollectionServiceImpl {
         })
         .await?;
 
-        // ── 5. Store fetched cover ────────────────────────────────────────────
+        // ── 5. Store fetched cover
+        // ────────────────────────────────────────────
         if let Some(cover_bytes) = cover_data {
             self.file_store.store_cover(book.token, &cover_bytes).await?;
             // Clean up temp file
@@ -417,7 +425,8 @@ impl CollectionService for CollectionServiceImpl {
             let _ = tokio::fs::remove_file(&cover_path).await;
         }
 
-        // ── 6. Rename book files if slug changed ──────────────────────────────
+        // ── 6. Rename book files if slug changed
+        // ──────────────────────────────
         let new_first_author = edit.authors.first().map(|a| normalize_name(a));
         let new_slug = book_slug(&normalize_name(&edit.title), new_first_author.as_deref());
 
@@ -437,7 +446,8 @@ impl CollectionService for CollectionServiceImpl {
             .await?;
         }
 
-        // ── 7. Rewrite metadata sidecar ───────────────────────────────────────
+        // ── 7. Rewrite metadata sidecar
+        // ───────────────────────────────────────
         let sidecar_authors: Vec<SidecarAuthor> = edit
             .authors
             .iter()
@@ -545,7 +555,8 @@ impl CollectionService for CollectionServiceImpl {
                     let author_links = book_repo.authors_for_book(tx, book.id).await?;
                     let author_ids: Vec<u64> = author_links.iter().map(|a| a.author_id).collect();
 
-                    // Collect original file paths before the records are deleted.
+                    // Collect original file paths before the records are
+                    // deleted.
                     let original_filenames: Vec<String> = book_repo
                         .files_for_book(tx, book.id)
                         .await?
@@ -598,7 +609,8 @@ impl CollectionService for CollectionServiceImpl {
     }
 
     async fn edit_book(&self, book_token: BookToken, edit: BookEdit, cover_key: &str, temp_dir: &std::path::Path) -> Result<(), Error> {
-        // ── 1. Load book and compute old slug for rename detection ─────────────
+        // ── 1. Load book and compute old slug for rename detection
+        // ─────────────
         let book_repo = self.repository_service.book_repository().clone();
         let (book, old_authors) = read_only_transaction(&**self.repository_service.repository(), |tx| {
             let br = book_repo.clone();
@@ -629,7 +641,8 @@ impl CollectionService for CollectionServiceImpl {
 
         let old_slug = book_slug(&book.title, old_first_author_name.as_deref());
 
-        // ── 2. Read temp cover if requested ───────────────────────────────────
+        // ── 2. Read temp cover if requested
+        // ───────────────────────────────────
         let cover_data: Option<Vec<u8>> = if edit.use_fetched_cover {
             let cover_path = temp_dir.join("bookboss-covers").join(cover_key);
             match tokio::fs::read(&cover_path).await {
@@ -644,7 +657,8 @@ impl CollectionService for CollectionServiceImpl {
             None
         };
 
-        // ── 3. DB transaction: update book ────────────────────────────────────
+        // ── 3. DB transaction: update book
+        // ────────────────────────────────────
         let book_repo2 = self.repository_service.book_repository().clone();
         let author_repo = self.repository_service.author_repository().clone();
         let series_repo = self.repository_service.series_repository().clone();
@@ -735,10 +749,11 @@ impl CollectionService for CollectionServiceImpl {
                     }
                 }
 
-                // Replace genres. Dedupe by resolved genre id: find_by_name is case-
-                // insensitive while the trimmed input preserves case, so two source
-                // strings differing only in case resolve to the same row and would
-                // violate (book_id, genre_id).
+                // Replace genres. Dedupe by resolved genre id: find_by_name is
+                // case- insensitive while the trimmed input
+                // preserves case, so two source
+                // strings differing only in case resolve to the same row and
+                // would violate (book_id, genre_id).
                 book_repo2.delete_book_genres(tx, book_id).await?;
                 let mut seen_genre_ids = std::collections::HashSet::new();
                 for name in &edit_c.genres {
@@ -756,7 +771,8 @@ impl CollectionService for CollectionServiceImpl {
                     book_repo2.add_book_genre(tx, book_id, genre.id).await?;
                 }
 
-                // Replace tags. Same case-insensitive find_by_name caveat as genres above.
+                // Replace tags. Same case-insensitive find_by_name caveat as
+                // genres above.
                 book_repo2.delete_book_tags(tx, book_id).await?;
                 let mut seen_tag_ids = std::collections::HashSet::new();
                 for name in &edit_c.tags {
@@ -779,14 +795,16 @@ impl CollectionService for CollectionServiceImpl {
         })
         .await?;
 
-        // ── 4. Store fetched cover ─────────────────────────────────────────────
+        // ── 4. Store fetched cover
+        // ─────────────────────────────────────────────
         if let Some(cover_bytes) = cover_data {
             self.file_store.store_cover(book.token, &cover_bytes).await?;
             let cover_path = temp_dir.join("bookboss-covers").join(cover_key);
             let _ = tokio::fs::remove_file(&cover_path).await;
         }
 
-        // ── 5. Rename book files if slug changed ──────────────────────────────
+        // ── 5. Rename book files if slug changed
+        // ──────────────────────────────
         let new_first_author = edit.authors.first().map(|a| normalize_name(a));
         let new_slug = book_slug(&normalize_name(&edit.title), new_first_author.as_deref());
 
@@ -806,7 +824,8 @@ impl CollectionService for CollectionServiceImpl {
             .await?;
         }
 
-        // ── 6. Rewrite metadata sidecar ───────────────────────────────────────
+        // ── 6. Rewrite metadata sidecar
+        // ───────────────────────────────────────
         let sidecar_authors: Vec<SidecarAuthor> = edit
             .authors
             .iter()
@@ -888,7 +907,8 @@ impl CollectionService for CollectionServiceImpl {
     }
 
     async fn replace_cover(&self, book_token: BookToken, cover_bytes: Vec<u8>) -> Result<(), Error> {
-        // ── 1. Find book ──────────────────────────────────────────────────────
+        // ── 1. Find book
+        // ──────────────────────────────────────────────────────
         let book_repo = self.repository_service.book_repository().clone();
         let book = read_only_transaction(&**self.repository_service.repository(), |tx| {
             Box::pin(async move { book_repo.find_by_token(tx, book_token).await })
@@ -899,7 +919,8 @@ impl CollectionService for CollectionServiceImpl {
         let book_id = book.id;
         let book_version = book.version;
 
-        // ── 2. Store cover (normalization happens in the storage layer) ───────
+        // ── 2. Store cover (normalization happens in the storage layer)
+        // ───────
         self.file_store.store_cover(book_token, &cover_bytes).await?;
 
         // ── 3. Set has_cover = true in DB ────────────────────────────────────
@@ -946,7 +967,8 @@ mod tests {
         test_support::{nop_event_service, nop_format_service, nop_job_service},
     };
 
-    // ─── Service builder ──────────────────────────────────────────────────────
+    // ─── Service builder
+    // ──────────────────────────────────────────────────────
 
     fn create_service(
         book_repo: MockBookRepository,
@@ -1013,7 +1035,8 @@ mod tests {
         }
     }
 
-    // ─── collection_stats ─────────────────────────────────────────────────────
+    // ─── collection_stats
+    // ─────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn collection_stats_returns_counts() {
@@ -1055,7 +1078,8 @@ mod tests {
         assert_eq!(stats.authors, 0);
     }
 
-    // ─── delete_book ──────────────────────────────────────────────────────────
+    // ─── delete_book
+    // ──────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn delete_book_returns_not_found_when_book_missing() {
@@ -1172,7 +1196,8 @@ mod tests {
         book_repo.expect_delete_book().returning(|_, _| Box::pin(async { Ok(()) }));
         book_repo.expect_count_books_for_author().returning(|_, _| Box::pin(async { Ok(1) })); // still has 1 other book → not an orphan
 
-        // No expectation set on delete_author — mockall will panic if it is called
+        // No expectation set on delete_author — mockall will panic if it is
+        // called
         let author_repo = MockAuthorRepository::new();
 
         let mut job_repo = MockImportJobRepository::new();
@@ -1383,7 +1408,8 @@ mod tests {
         svc.delete_book(token).await.unwrap();
     }
 
-    // ─── replace_cover ────────────────────────────────────────────────────────
+    // ─── replace_cover
+    // ────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn replace_cover_enqueues_enrichment() {
@@ -1430,7 +1456,8 @@ mod tests {
         svc.replace_cover(BookToken::new(book_id), vec![0u8; 4]).await.unwrap();
     }
 
-    // ─── search_books ─────────────────────────────────────────────────────────
+    // ─── search_books
+    // ─────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn search_books_rejects_user_scoped_filter() {
@@ -1450,7 +1477,8 @@ mod tests {
         assert!(matches!(result, Err(Error::Validation(_))));
     }
 
-    // ─── approve_book ─────────────────────────────────────────────────────────
+    // ─── approve_book
+    // ─────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn approve_book_rejects_non_needs_review_status() {
@@ -1626,7 +1654,8 @@ mod tests {
         // mock is dropped
     }
 
-    // ─── reject_book ──────────────────────────────────────────────────────────
+    // ─── reject_book
+    // ──────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn reject_book_rejects_non_needs_review_status() {

@@ -282,7 +282,8 @@ mod tests {
 
     #[test]
     fn composite_filter_round_trip() {
-        // AND { Author IncludesAny [Tata, Thor], ReadStatus IncludesAny [Active] }
+        // AND { Author IncludesAny [Tata, Thor], ReadStatus IncludesAny
+        // [Active] }
         let filter = BookFilter::Rule(FilterRule::Author {
             op: SetOp::IncludesAny,
             values: vec![entity(42, "A. J. Tata"), entity(17, "Brad Thor")],

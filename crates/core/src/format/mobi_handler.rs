@@ -36,10 +36,12 @@ impl ConvertMobiHandler {
 
 impl ConvertMobiHandler {
     async fn run(&self, book_id: BookId) -> Result<(), Error> {
-        // ── 1. Check mobi_enabled setting ─────────────────────────────────────
+        // ── 1. Check mobi_enabled setting
+        // ─────────────────────────────────────
         let mobi_enabled = self.core.app_setting_service.mobi_enabled().await?;
 
-        // ── 2. Load all book data in a single read transaction ────────────────
+        // ── 2. Load all book data in a single read transaction
+        // ────────────────
         let repo = self.core.repository_service.clone();
         let (book, files, authors, identifiers, genres, tags, series_opt, publisher_opt) =
             read_only_transaction(&**self.core.repository_service.repository(), |tx| {
@@ -85,25 +87,29 @@ impl ConvertMobiHandler {
             })
             .await?;
 
-        // ── 2b. Bail if mobi disabled and no existing MOBI file ───────────────
-        // When mobi_enabled is false we still re-convert if the book already has
-        // a MOBI file, keeping it in sync with any metadata changes.
+        // ── 2b. Bail if mobi disabled and no existing MOBI file
+        // ─────────────── When mobi_enabled is false we still
+        // re-convert if the book already has a MOBI file, keeping it in
+        // sync with any metadata changes.
         let mobi_exists = files.iter().any(|f| f.file_role == FileRole::Enriched && f.format == FileFormat::Mobi);
         if !mobi_enabled && !mobi_exists {
             tracing::debug!(book_id, "MOBI conversion skipped: mobi_enabled is false and no existing MOBI file");
             return Ok(());
         }
 
-        // ── 3. Find the enriched EPUB file ────────────────────────────────────
+        // ── 3. Find the enriched EPUB file
+        // ────────────────────────────────────
         let Some(enriched_file) = files.iter().find(|f| f.file_role == FileRole::Enriched && f.format == FileFormat::Epub) else {
             tracing::warn!(book_id, "MOBI conversion skipped: no enriched EPUB found");
             return Ok(());
         };
 
-        // ── 4. Resolve source path ────────────────────────────────────────────
+        // ── 4. Resolve source path
+        // ────────────────────────────────────────────
         let source_path = self.core.file_store.resolve(&enriched_file.path);
 
-        // ── 5. Build sidecar from DB data ─────────────────────────────────────
+        // ── 5. Build sidecar from DB data
+        // ─────────────────────────────────────
         let sidecar = BookSidecar {
             title: book.title.clone(),
             authors: authors
@@ -138,18 +144,22 @@ impl ConvertMobiHandler {
             files: vec![],
         };
 
-        // ── 6. Resolve cover path ─────────────────────────────────────────────
+        // ── 6. Resolve cover path
+        // ─────────────────────────────────────────────
         let cover_path = book.has_cover.then(|| self.core.file_store.cover_path(book.token));
 
-        // ── 7. Derive slug ────────────────────────────────────────────────────
+        // ── 7. Derive slug
+        // ────────────────────────────────────────────────────
         let first_author_name = authors.first().map(|(name, _, _)| name.as_str());
         let slug = book_slug(&book.title, first_author_name);
 
-        // ── 8. Create temp file for MOBI output ───────────────────────────────
+        // ── 8. Create temp file for MOBI output
+        // ───────────────────────────────
         let mobi_temp = tempfile::NamedTempFile::new().map_err(|e| Error::Infrastructure(format!("temp file: {e}")))?;
         let mobi_dest = mobi_temp.path().to_path_buf();
 
-        // ── 9. Call FormatService to convert ──────────────────────────────────
+        // ── 9. Call FormatService to convert
+        // ──────────────────────────────────
         let request = EnrichmentRequest {
             source: EBookFile {
                 format: FileFormat::Epub,
@@ -165,7 +175,8 @@ impl ConvertMobiHandler {
 
         self.core.format_service.enrich(&request).await?;
 
-        // ── 10. Hash and size the MOBI output ─────────────────────────────────
+        // ── 10. Hash and size the MOBI output
+        // ─────────────────────────────────
         let mobi_hash = bb_utils::hash::hash_file(&mobi_dest)
             .await
             .map_err(|e| Error::Infrastructure(format!("hash failed: {e}")))?;
@@ -174,10 +185,12 @@ impl ConvertMobiHandler {
             .map_err(|e| Error::Infrastructure(format!("metadata failed: {e}")))?
             .len() as i64;
 
-        // ── 11. Move MOBI file into the library ───────────────────────────────
+        // ── 11. Move MOBI file into the library
+        // ───────────────────────────────
         let mobi_path = self.core.file_store.store_book_file(book.token, &slug, FileFormat::Mobi, &mobi_dest).await?;
 
-        // ── 12. Upsert book_file record ───────────────────────────────────────
+        // ── 12. Upsert book_file record
+        // ───────────────────────────────────────
         let book_repo = self.core.repository_service.book_repository().clone();
         transaction(&**self.core.repository_service.repository(), |tx| {
             let book_repo = book_repo.clone();

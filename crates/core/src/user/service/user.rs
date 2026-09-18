@@ -50,8 +50,8 @@ impl UserService for UserServiceImpl {
                 .await?
                 .ok_or(Error::RepositoryError(RepositoryError::NotFound))?;
 
-            // Delete all shelves owned by this user. Shelves belong to the user,
-            // so they are removed rather than re-parented.
+            // Delete all shelves owned by this user. Shelves belong to the
+            // user, so they are removed rather than re-parented.
             shelf_repository.delete_shelves_for_user(tx, id).await?;
 
             // Clean up the user's personal library before deleting the user.

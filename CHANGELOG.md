@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.35](https://github.com/szinn/BookBoss/compare/v0.8.34..v0.8.35) - 2026-09-18
+
+### Bug Fixes
+
+- _(core)_ Unbreak build against argon2 0.6.0 API changes - ([96ed8cf](https://github.com/szinn/BookBoss/commit/96ed8cfce279bdee094ce29f0d196adfcacb8f48))
+- _(frontend)_ Make OIDC discovery lazy and self-healing - ([2ebb717](https://github.com/szinn/BookBoss/commit/2ebb71744b64240babb94b12a4822c43da632b4f))
+
+### Miscellaneous Tasks
+
+- _(frontend)_ Suppress clippy pedantic/derive false-positive warnings - ([581bd4d](https://github.com/szinn/BookBoss/commit/581bd4d9334cda7168c80a42a26f25aa63a5504b))
+
 ## [0.8.34](https://github.com/szinn/BookBoss/compare/v0.8.33..v0.8.34) - 2026-08-23
 
 ### Features

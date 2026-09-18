@@ -862,7 +862,8 @@ mod tests {
         svc.delete_tag(token).await.unwrap();
     }
 
-    // ─── fetch_hydration_data ────────────────────────────────────────────────────
+    // ─── fetch_hydration_data
+    // ────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_fetch_hydration_data_empty_book_ids_returns_default() {
@@ -942,8 +943,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_fetch_hydration_data_deduplicates_author_ids() {
-        // Two BookAuthor rows for the same author_id (10) — find_by_ids should be
-        // called with a deduplicated slice of length 1, not 2.
+        // Two BookAuthor rows for the same author_id (10) — find_by_ids should
+        // be called with a deduplicated slice of length 1, not 2.
         let ba1 = BookAuthor::fake(1, 10, "author", 0);
         let ba2 = BookAuthor::fake(2, 10, "author", 0);
         let author = fake_author(10, "Frank Herbert");

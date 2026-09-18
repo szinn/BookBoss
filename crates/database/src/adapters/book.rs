@@ -232,8 +232,8 @@ impl BookRepository for BookRepositoryAdapter {
 
         let mut query = if let Some(offset) = offset { query.offset(offset) } else { query };
 
-        // SQLite requires LIMIT when OFFSET is present; use i64::MAX to mean "no
-        // effective limit"
+        // SQLite requires LIMIT when OFFSET is present; use i64::MAX to mean
+        // "no effective limit"
         match (offset, page_size) {
             (_, Some(page_size)) => query = query.limit(page_size),
             (Some(_), None) => query = query.limit(i64::MAX as u64),
@@ -607,8 +607,8 @@ impl BookRepository for BookRepositoryAdapter {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
         // Books that have an Original epub but no Enriched epub.
-        // Only consider Available books — Incoming books still in review must not be
-        // enriched.
+        // Only consider Available books — Incoming books still in review must
+        // not be enriched.
         let enriched_subq = {
             let mut q = Query::select();
             q.column(book_files::Column::BookId)
@@ -642,8 +642,8 @@ impl BookRepository for BookRepositoryAdapter {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
         // Books that have an Enriched EPUB but no Enriched KEPUB.
-        // Only consider Available books — Incoming books still in review must not be
-        // converted.
+        // Only consider Available books — Incoming books still in review must
+        // not be converted.
         let kepub_subq = {
             let mut q = Query::select();
             q.column(book_files::Column::BookId)
@@ -859,10 +859,11 @@ impl BookRepository for BookRepositoryAdapter {
         }
         let rows2 = q2.into_model::<BookIdOnly>().all(transaction).await.map_err(handle_dberr)?;
 
-        // Query 3: books with stale enriched EPUB (created_at < books.updated_at),
-        // available, id > after_id, ORDER BY book_id ASC, LIMIT batch_size.
-        // ExprTrait is scoped to this block to avoid method resolution conflicts
-        // with ColumnTrait::eq used in queries 1 and 2.
+        // Query 3: books with stale enriched EPUB (created_at <
+        // books.updated_at), available, id > after_id, ORDER BY book_id
+        // ASC, LIMIT batch_size. ExprTrait is scoped to this block to
+        // avoid method resolution conflicts with ColumnTrait::eq used
+        // in queries 1 and 2.
         let rows3 = {
             use sea_orm::{ExprTrait, sea_query::Expr};
             let mut q3 = prelude::BookFiles::find()
@@ -952,8 +953,8 @@ impl BookRepository for BookRepositoryAdapter {
         let transaction = TransactionImpl::get_db_transaction(transaction)?;
 
         // Books that have an Enriched EPUB but no Enriched MOBI.
-        // Only consider Available books — Incoming books still in review must not be
-        // converted.
+        // Only consider Available books — Incoming books still in review must
+        // not be converted.
         let mobi_subq = {
             let mut q = Query::select();
             q.column(book_files::Column::BookId)
@@ -1816,7 +1817,8 @@ mod tests {
         assert!(!ids.contains(&book.id), "book with fingerprint set should not be returned");
     }
 
-    // ─── book_authors_for_books ──────────────────────────────────────────────────
+    // ─── book_authors_for_books
+    // ──────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_book_authors_for_books_empty_input() {
@@ -1887,8 +1889,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_book_authors_for_books_sort_order() {
-        // A book with two co-authors at sort_order 1 and 0 — result must come back in
-        // ascending sort_order order (primary author first).
+        // A book with two co-authors at sort_order 1 and 0 — result must come
+        // back in ascending sort_order order (primary author first).
         let svc = setup().await;
         let tx = svc.repository().begin().await.unwrap();
         let book = svc.book_repository().add_book(&*tx, new_book("Dune")).await.unwrap();
@@ -1935,7 +1937,8 @@ mod tests {
         assert_eq!(result[1].author_id, a_editor.id);
     }
 
-    // ─── book_genres_for_books ───────────────────────────────────────────────────
+    // ─── book_genres_for_books
+    // ───────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_book_genres_for_books_empty_input() {
@@ -1985,7 +1988,8 @@ mod tests {
         assert!(result.is_empty());
     }
 
-    // ─── book_tags_for_books ─────────────────────────────────────────────────────
+    // ─── book_tags_for_books
+    // ─────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_book_tags_for_books_empty_input() {

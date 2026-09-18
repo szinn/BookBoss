@@ -286,7 +286,8 @@ mod tests {
         create_repository_service(db).await.unwrap()
     }
 
-    // ─── enqueue_raw ──────────────────────────────────────────────────────────
+    // ─── enqueue_raw
+    // ──────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_enqueue_creates_pending_job() {
@@ -305,7 +306,8 @@ mod tests {
         assert_eq!(job.max_attempts, 3);
     }
 
-    // ─── claim_next ───────────────────────────────────────────────────────────
+    // ─── claim_next
+    // ───────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_claim_next_returns_none_when_empty() {
@@ -349,7 +351,8 @@ mod tests {
         let _ = job;
     }
 
-    // ─── complete ─────────────────────────────────────────────────────────────
+    // ─── complete
+    // ─────────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_complete_sets_status_and_timestamp() {
@@ -398,7 +401,8 @@ mod tests {
         assert_eq!(failed.error_message.as_deref(), Some("fatal error"));
     }
 
-    // ─── reset_running_to_pending ─────────────────────────────────────────────
+    // ─── reset_running_to_pending
+    // ─────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_reset_running_to_pending_returns_count() {
@@ -420,7 +424,8 @@ mod tests {
         assert!(reclaimed.is_some());
     }
 
-    // ─── delete_old_jobs ──────────────────────────────────────────────────────
+    // ─── delete_old_jobs
+    // ──────────────────────────────────────────────────────
 
     // ─── count_all_pending ──────────────────────────────────────────────────
 
@@ -443,7 +448,8 @@ mod tests {
         assert_eq!(count, 2); // pending + running, not completed
     }
 
-    // ─── delete_old_jobs ──────────────────────────────────────────────────────
+    // ─── delete_old_jobs
+    // ──────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_delete_old_jobs_deletes_completed_before_cutoff() {

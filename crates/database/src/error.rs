@@ -56,8 +56,8 @@ pub fn handle_dberr(error: DbErr) -> RepositoryError {
         return RepositoryError::Connection(error.to_string());
     }
 
-    // Check sql_err first — it is database-agnostic and handles common constraint
-    // violations uniformly across Postgres, MySQL, and SQLite.
+    // Check sql_err first — it is database-agnostic and handles common
+    // constraint violations uniformly across Postgres, MySQL, and SQLite.
     if let Some(sql_err) = error.sql_err() {
         return match sql_err {
             sea_orm::SqlErr::UniqueConstraintViolation(msg) => RepositoryError::Constraint(msg),
@@ -69,8 +69,9 @@ pub fn handle_dberr(error: DbErr) -> RepositoryError {
         };
     }
 
-    // Fall back to database-specific error codes for errors not covered by sql_err
-    // (read-only transactions, serialization failures, query cancellation, etc.).
+    // Fall back to database-specific error codes for errors not covered by
+    // sql_err (read-only transactions, serialization failures, query
+    // cancellation, etc.).
     if let DbErr::Query(RuntimeErr::SqlxError(sqlx_err)) | DbErr::Exec(RuntimeErr::SqlxError(sqlx_err)) = &error
         && let Some(db_err) = sqlx_err.as_database_error()
         && let Some(code) = db_err.code()
@@ -145,7 +146,8 @@ mod tests {
         locker.execute("BEGIN IMMEDIATE").await.expect("begin immediate");
         locker.execute("INSERT INTO t (v) VALUES (1)").await.expect("locker insert");
 
-        // Contending connection with a short busy_timeout so the test stays fast.
+        // Contending connection with a short busy_timeout so the test stays
+        // fast.
         let url = format!("sqlite://{}", db_path.display());
         let mut opt = ConnectOptions::new(&url);
         opt.max_connections(1).min_connections(1);

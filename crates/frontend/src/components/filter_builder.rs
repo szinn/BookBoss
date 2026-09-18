@@ -527,7 +527,8 @@ pub(crate) fn FilterBuilder(
             items: vec![BookFilter::Rule(r)],
         },
     };
-    // Remove the current shelf from the picker so a shelf cannot filter on itself.
+    // Remove the current shelf from the picker so a shelf cannot filter on
+    // itself.
     let mut entity_options = entity_options;
     if let Some(exclude_id) = current_shelf_id {
         entity_options.shelves.retain(|(id, _)| *id != exclude_id);

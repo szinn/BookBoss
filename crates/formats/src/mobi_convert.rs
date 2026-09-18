@@ -72,8 +72,8 @@ pub fn convert_to_mobi(source_epub: &Path, dest: &Path, sidecar: &BookSidecar, c
         buf
     };
 
-    // Parse manifest (id → href), spine (ordered idrefs), NCX href, and guide toc
-    // href.
+    // Parse manifest (id → href), spine (ordered idrefs), NCX href, and guide
+    // toc href.
     let (manifest, spine_idrefs, ncx_href, guide_toc_href) = parse_opf_manifest_and_spine(&opf_bytes)?;
 
     // Build ordered list of HTML hrefs from the spine.
@@ -122,7 +122,8 @@ pub fn convert_to_mobi(source_epub: &Path, dest: &Path, sidecar: &BookSidecar, c
             continue;
         };
 
-        // Directory of this HTML file within the zip (for resolving relative hrefs).
+        // Directory of this HTML file within the zip (for resolving relative
+        // hrefs).
         let html_zip_dir = match zip_path.rfind('/') {
             Some(pos) => zip_path[..pos].to_string(),
             None => String::new(),
@@ -148,7 +149,8 @@ pub fn convert_to_mobi(source_epub: &Path, dest: &Path, sidecar: &BookSidecar, c
         let mut src_to_record: HashMap<String, u32> = HashMap::new();
         for src in &img_srcs {
             let abs_href = resolve_zip_path(&opf_dir, &resolve_zip_path(&html_dir, src));
-            // Position among body images (0-based) + cover offset + 1 = 1-based.
+            // Position among body images (0-based) + cover offset + 1 =
+            // 1-based.
             if let Some(pos) = body_image_hrefs.iter().position(|h| h == &abs_href) {
                 let record_idx = cover_offset + pos as u32 + 1;
                 src_to_record.insert(src.clone(), record_idx);
@@ -193,8 +195,9 @@ pub fn convert_to_mobi(source_epub: &Path, dest: &Path, sidecar: &BookSidecar, c
     }
     merged.extend_from_slice(b"</html>");
 
-    // 1b. Convert href="#anchor" → filepos=NNNNNNNNNN for Kindle MOBI6 navigation.
-    // Also returns the anchor→bytepos map used to build the NCX INDX record.
+    // 1b. Convert href="#anchor" → filepos=NNNNNNNNNN for Kindle MOBI6
+    // navigation. Also returns the anchor→bytepos map used to build the NCX
+    // INDX record.
     let (merged, id_to_pos) = apply_filepos_links(&merged);
 
     // 2. Collect images.
@@ -569,7 +572,8 @@ fn apply_filepos_links(html: &[u8]) -> (Vec<u8>, HashMap<String, usize>) {
             let anchor_val = std::str::from_utf8(&out[val_start..val_start + rel_end]).unwrap_or("").to_string();
             // Backtrack to the opening '<' of the enclosing tag.
             let tag_start = out[..pos].iter().rposition(|&b| b == b'<').unwrap_or(0);
-            // id= takes precedence over name= so only insert if not already present.
+            // id= takes precedence over name= so only insert if not already
+            // present.
             id_to_pos.entry(anchor_val).or_insert(tag_start);
             pos = val_start + rel_end + 1;
             continue;
@@ -912,7 +916,8 @@ fn build_indx(nav_points: &[NavPoint], cncx_offsets: &[usize], id_to_pos: &HashM
     leaf_header[0x0C..0x10].copy_from_slice(&1u32.to_be_bytes()); // indexType = 1 (leaf node)
     leaf_header[0x14..0x18].copy_from_slice(&leaf_idxt_offset.to_be_bytes()); // idxtOffset
     leaf_header[0x18..0x1C].copy_from_slice(&(nav_points.len() as u32).to_be_bytes()); // numEntries
-    // Leaf INDX: encoding and language fields are sentinels (Calibre convention)
+    // Leaf INDX: encoding and language fields are sentinels (Calibre
+    // convention)
     leaf_header[0x1C..0x20].copy_from_slice(&0xFFFF_FFFFu32.to_be_bytes()); // encoding (sentinel)
     leaf_header[0x20..0x24].copy_from_slice(&0xFFFF_FFFFu32.to_be_bytes()); // language (sentinel)
     // tagxOffset = 0: leaf uses the header INDX's TAGX
@@ -955,9 +960,11 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
     let mut in_manifest = false;
     let mut in_spine = false;
     let mut in_guide = false;
-    // href of the NCX item (set when we see media-type="application/x-dtbncx+xml").
+    // href of the NCX item (set when we see
+    // media-type="application/x-dtbncx+xml").
     let mut ncx_href: Option<String> = None;
-    // Fallback: spine toc="..." attribute lets us look up the NCX id in manifest.
+    // Fallback: spine toc="..." attribute lets us look up the NCX id in
+    // manifest.
     let mut spine_toc_id: Option<String> = None;
     // href of the OPF guide's type="toc" reference (HTML ToC page).
     let mut guide_toc_href: Option<String> = None;
@@ -972,7 +979,8 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
                     "guide" => in_guide = true,
                     "spine" => {
                         in_spine = true;
-                        // <spine toc="ncx-id"> — fallback if media-type lookup fails.
+                        // <spine toc="ncx-id"> — fallback if media-type lookup
+                        // fails.
                         for attr in e.attributes().flatten() {
                             if attr.key.as_ref() == "toc" {
                                 spine_toc_id = Some(attr.value.as_ref().to_string());
@@ -1045,7 +1053,8 @@ fn parse_opf_manifest_and_spine(opf: &[u8]) -> Result<(HashMap<String, String>, 
                         }
                     }
                     "spine" => {
-                        // Self-closing <spine toc="..."/> (unusual but possible).
+                        // Self-closing <spine toc="..."/> (unusual but
+                        // possible).
                         in_spine = true;
                         for attr in e.attributes().flatten() {
                             if attr.key.as_ref() == "toc" {
@@ -1606,8 +1615,8 @@ mod tests {
         convert_to_mobi(&epub_path, &mobi_path, &sidecar, Some(fake_cover)).expect("convert_to_mobi with cover failed");
 
         let out = std::fs::read(&mobi_path).unwrap();
-        // EXTH record type 506 is present: the bytes 0x00 0x00 0x01 0xFA (506 in
-        // big-endian u32).
+        // EXTH record type 506 is present: the bytes 0x00 0x00 0x01 0xFA (506
+        // in big-endian u32).
         let exth_506_type = 506u32.to_be_bytes();
         let found = out.windows(4).any(|w| w == exth_506_type);
         assert!(found, "EXTH record type 506 (cover record index) should be present in output");
@@ -1724,11 +1733,12 @@ mod tests {
             "chapter label 'Chapter One' should appear in CNCX record"
         );
 
-        // The MOBI header ncxRecord field (at byte offset 16+228 = 244 from record 0
-        // start) must not be 0xFFFFFFFF — it should point to the INDX record.
-        // Record 0 starts at offset data_start in the file.  For a 2-record text body +
-        // no images, ncxRecord = 3 (records 1,2 = text; record 3 = INDX).
-        // We verify only that the field is not the "no NCX" sentinel.
+        // The MOBI header ncxRecord field (at byte offset 16+228 = 244 from
+        // record 0 start) must not be 0xFFFFFFFF — it should point to
+        // the INDX record. Record 0 starts at offset data_start in the
+        // file.  For a 2-record text body + no images, ncxRecord = 3
+        // (records 1,2 = text; record 3 = INDX). We verify only that
+        // the field is not the "no NCX" sentinel.
         let num_records = u16::from_be_bytes([out[76], out[77]]) as usize;
         let record_list_start = 78usize;
         let record0_offset = u32::from_be_bytes([
@@ -1738,8 +1748,8 @@ mod tests {
             out[record_list_start + 3],
         ]) as usize;
         let _ = num_records;
-        // ncxRecord is at MOBI-header offset 228 (last 4 bytes), MOBI header starts at
-        // record0+16.
+        // ncxRecord is at MOBI-header offset 228 (last 4 bytes), MOBI header
+        // starts at record0+16.
         let ncx_record_field_pos = record0_offset + 16 + 228;
         let ncx_record_val = u32::from_be_bytes([
             out[ncx_record_field_pos],
@@ -1749,7 +1759,8 @@ mod tests {
         ]);
         assert_ne!(ncx_record_val, 0xFFFF_FFFF, "ncxRecord field should not be the 'no NCX' sentinel");
 
-        // Locate the header INDX record (at ncxRecord) and verify its indexType=0.
+        // Locate the header INDX record (at ncxRecord) and verify its
+        // indexType=0.
         let indx_record_num = ncx_record_val as usize;
         let hdr_indx_offset = u32::from_be_bytes([
             out[record_list_start + indx_record_num * 8],

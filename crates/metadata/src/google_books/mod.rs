@@ -131,7 +131,8 @@ impl GoogleBooksAdapter {
     }
 
     async fn fetch_cover(&self, info: &VolumeInfo) -> Option<Vec<u8>> {
-        // Prefer thumbnail; strip zoom parameter to get a slightly larger image.
+        // Prefer thumbnail; strip zoom parameter to get a slightly larger
+        // image.
         let url = info
             .image_links
             .as_ref()
@@ -232,14 +233,16 @@ impl MetadataProvider for GoogleBooksAdapter {
 
         let mut title_search_performed = false;
 
-        // ── Step 1: ISBN search ───────────────────────────────────────────────
+        // ── Step 1: ISBN search
+        // ───────────────────────────────────────────────
         let isbn_volume = if let Some(ref isbn_str) = isbn {
             self.search_isbn(isbn_str).await?
         } else {
             None
         };
 
-        // ── Step 2: Validate ISBN result against embedded title/author ────────
+        // ── Step 2: Validate ISBN result against embedded title/author
+        // ────────
         //
         // If no title is available there is nothing to validate against, so the
         // ISBN result is accepted as-is (the pipeline will score it 0.0 and
@@ -258,7 +261,8 @@ impl MetadataProvider for GoogleBooksAdapter {
             (None, _) => None,
         };
 
-        // ── Step 3: Title search fallback ─────────────────────────────────────
+        // ── Step 3: Title search fallback
+        // ─────────────────────────────────────
         let best_volume = if best_volume.is_none() {
             if let Some(title_str) = title {
                 title_search_performed = true;
@@ -276,7 +280,8 @@ impl MetadataProvider for GoogleBooksAdapter {
             best_volume
         };
 
-        // ── Log summary and return ─────────────────────────────────────────────
+        // ── Log summary and return
+        // ─────────────────────────────────────────────
         let final_score = best_volume.as_ref().map(|v| Self::score_candidate(v, title, author));
         tracing::debug!(
             isbn = ?isbn,

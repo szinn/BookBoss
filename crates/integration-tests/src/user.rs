@@ -41,8 +41,8 @@ async fn delete_user_removes_personal_library_and_owned_shelves() {
     .await
     .unwrap();
 
-    // Delete the user — service layer must delete shelves and the library before
-    // removing the user row.
+    // Delete the user — service layer must delete shelves and the library
+    // before removing the user row.
     ctx.services.user_service.delete_user(user.id).await.unwrap();
 
     // The personal library should be gone.

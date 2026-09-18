@@ -28,7 +28,8 @@ async fn get_authors() -> Result<Vec<AuthorRow>, ServerFnError> {
 
     let mut rows = Vec::with_capacity(authors.len());
     for author in &authors {
-        // list_books filters by Available status, so this excludes incoming books.
+        // list_books filters by Available status, so this excludes incoming
+        // books.
         let books = book_service
             .list_books(
                 &BookQuery {

@@ -118,7 +118,8 @@ pub(crate) async fn get_user_libraries() -> Result<Vec<UserLibraryDto>, ServerFn
     let current_user = authenticated_user(&auth_session)?;
     let user_id = current_user.id();
     let mut libs = core_services.library_service.libraries_for_user(user_id).await.map_err(to_server_err)?;
-    // Sort the user's personal library (the one they own) to the top of the list.
+    // Sort the user's personal library (the one they own) to the top of the
+    // list.
     libs.sort_by_key(|l| u8::from(l.owner_id != Some(user_id)));
     Ok(libs
         .into_iter()

@@ -436,8 +436,9 @@ impl ShelfService for ShelfServiceImpl {
             };
 
             // Manual shelves are membership lists, not library-scoped queries —
-            // their books may live in any library. Smart/System shelves run filter
-            // queries against a library, so they still pass Some(library_id).
+            // their books may live in any library. Smart/System shelves run
+            // filter queries against a library, so they still pass
+            // Some(library_id).
             let scope_library = match target_shelf.shelf_type {
                 ShelfType::Manual => None,
                 ShelfType::Smart | ShelfType::System => Some(target_shelf.library_id),
@@ -496,7 +497,8 @@ mod tests {
         user::{UserId, repository::user_settings::MockUserSettingRepository},
     };
 
-    // ─── Helpers ──────────────────────────────────────────────────────────────
+    // ─── Helpers
+    // ──────────────────────────────────────────────────────────────
 
     /// General-purpose service factory for tests that do NOT call
     /// `create_manual_shelf` or `create_smart_shelf`. Those methods require
@@ -580,7 +582,8 @@ mod tests {
         }
     }
 
-    // ─── create_manual_shelf ──────────────────────────────────────────────────
+    // ─── create_manual_shelf
+    // ──────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_create_manual_shelf_returns_token() {
@@ -641,7 +644,8 @@ mod tests {
         assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::Conflict))));
     }
 
-    // ─── rename_shelf ─────────────────────────────────────────────────────────
+    // ─── rename_shelf
+    // ─────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_rename_shelf_success() {
@@ -739,7 +743,8 @@ mod tests {
         let updated = shelf.clone();
         let shelf_for_token = shelf.clone();
         let shelf_for_list = shelf.clone();
-        // list_for_user returns the shelf itself — must not conflict with itself
+        // list_for_user returns the shelf itself — must not conflict with
+        // itself
         let mut shelf_repo = MockShelfRepository::new();
         shelf_repo.expect_find_by_token().returning(move |_, _| {
             let s = shelf_for_token.clone();
@@ -761,7 +766,8 @@ mod tests {
         result.unwrap();
     }
 
-    // ─── delete_shelf ─────────────────────────────────────────────────────────
+    // ─── delete_shelf
+    // ─────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_delete_shelf_success() {
@@ -807,7 +813,8 @@ mod tests {
         assert!(matches!(result, Err(Error::Validation(_))));
     }
 
-    // ─── add_book_to_shelf ────────────────────────────────────────────────────
+    // ─── add_book_to_shelf
+    // ────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_add_book_to_shelf_success() {
@@ -873,7 +880,8 @@ mod tests {
         assert!(matches!(result, Err(Error::Validation(_))));
     }
 
-    // ─── remove_book_from_shelf ───────────────────────────────────────────────
+    // ─── remove_book_from_shelf
+    // ───────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_remove_book_from_shelf_success() {
@@ -916,7 +924,8 @@ mod tests {
         assert!(matches!(result, Err(Error::Validation(_))));
     }
 
-    // ─── books_for_shelf ──────────────────────────────────────────────────────
+    // ─── books_for_shelf
+    // ──────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_books_for_shelf_owner_can_access_private() {
@@ -968,7 +977,8 @@ mod tests {
         assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::NotFound))));
     }
 
-    // ─── list_shelves_for_user ────────────────────────────────────────────────
+    // ─── list_shelves_for_user
+    // ────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_list_shelves_for_user_returns_all() {
@@ -990,7 +1000,8 @@ mod tests {
         assert_eq!(result.unwrap().len(), 2);
     }
 
-    // ─── get_shelf ────────────────────────────────────────────────────────────
+    // ─── get_shelf
+    // ────────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_get_shelf_owner_can_access() {
@@ -1038,7 +1049,8 @@ mod tests {
         assert!(matches!(result, Err(Error::Validation(_))));
     }
 
-    // ─── update_shelf ─────────────────────────────────────────────────────────
+    // ─── update_shelf
+    // ─────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_update_shelf_success() {
@@ -1155,7 +1167,8 @@ mod tests {
         result.unwrap();
     }
 
-    // ─── create_smart_shelf ───────────────────────────────────────────────────
+    // ─── create_smart_shelf
+    // ───────────────────────────────────────────────────
 
     fn simple_filter() -> crate::filter::BookFilter {
         use crate::filter::{BookFilter, FilterReadStatus, FilterRule, SetOp};
@@ -1212,7 +1225,8 @@ mod tests {
         assert!(matches!(result, Err(Error::RepositoryError(RepositoryError::Conflict))));
     }
 
-    // ─── update_shelf_filter ──────────────────────────────────────────────────
+    // ─── update_shelf_filter
+    // ──────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_update_shelf_filter_succeeds() {
@@ -1270,7 +1284,8 @@ mod tests {
         assert!(matches!(result, Err(Error::Validation(_))));
     }
 
-    // ─── count_for_filter ─────────────────────────────────────────────────────
+    // ─── count_for_filter
+    // ─────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_count_for_filter_manual_shelf_returns_count() {
@@ -1334,7 +1349,8 @@ mod tests {
         assert!(matches!(result, Err(Error::Validation(_))));
     }
 
-    // ─── books_for_filter ─────────────────────────────────────────────────────
+    // ─── books_for_filter
+    // ─────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_books_for_filter_forwards_library_id() {
@@ -1356,7 +1372,8 @@ mod tests {
         svc.books_for_filter(token, 1, None, None, None).await.unwrap();
     }
 
-    // ─── create_device_shelf ──────────────────────────────────────────────────
+    // ─── create_device_shelf
+    // ──────────────────────────────────────────────────
 
     fn fake_device_shelf(owner_id: UserId, device_id: u64) -> Shelf {
         use crate::filter::{BookFilter, FilterReadStatus, FilterRule, SetOp};
@@ -1408,7 +1425,8 @@ mod tests {
         assert_eq!(token, returned_token);
     }
 
-    // ─── find_device_shelf ────────────────────────────────────────────────────
+    // ─── find_device_shelf
+    // ────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_find_device_shelf_returns_shelf_when_found() {

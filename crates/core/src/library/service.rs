@@ -121,7 +121,8 @@ impl LibraryService for LibraryServiceImpl {
             return Err(Error::Validation("Library name cannot be empty".into()));
         }
         with_transaction!(self, library_repository, |tx| {
-            // Check for duplicate name before inserting to give a clear error message.
+            // Check for duplicate name before inserting to give a clear error
+            // message.
             if library_repository.find_by_name(tx, &name).await?.is_some() {
                 return Err(Error::Validation("A library with this name already exists".into()));
             }
@@ -143,12 +144,14 @@ impl LibraryService for LibraryServiceImpl {
             // Re-parent all shelves from this library to "All Books"
             library_repository.reparent_shelves(tx, library.id, ALL_BOOKS_LIBRARY_ID).await?;
 
-            // Reset any user whose default library was this one back to "All Books"
+            // Reset any user whose default library was this one back to "All
+            // Books"
             library_repository
                 .reset_default_library_for_users(tx, &library.token.to_string(), ALL_BOOKS_LIBRARY_TOKEN)
                 .await?;
 
-            // Delete the library (cascade handles library_books and user_libraries via FK)
+            // Delete the library (cascade handles library_books and
+            // user_libraries via FK)
             library_repository.delete_library(tx, library.id).await
         })
     }
@@ -268,10 +271,10 @@ impl LibraryService for LibraryServiceImpl {
                 .reparent_shelves_for_user(tx, user_id, ALL_BOOKS_LIBRARY_ID, library.id)
                 .await?;
 
-            // 4. Seed with books the user has a meaningful relationship with: books on any
-            //    of their shelves, plus books they have metadata for (read status, rating,
-            //    notes). add_book_to_library is idempotent so the union is naturally
-            //    deduplicated.
+            // 4. Seed with books the user has a meaningful relationship with:
+            //    books on any of their shelves, plus books they have metadata
+            //    for (read status, rating, notes). add_book_to_library is
+            //    idempotent so the union is naturally deduplicated.
             let shelf_book_ids = shelf_repository.book_ids_for_user(tx, user_id).await?;
             let metadata_book_ids = user_book_metadata_repository.book_ids_for_user(tx, user_id).await?;
 
@@ -285,8 +288,8 @@ impl LibraryService for LibraryServiceImpl {
             Ok(library)
         })?;
 
-        // 5. Set default library (outside transaction; user_setting_service handles its
-        //    own transaction)
+        // 5. Set default library (outside transaction; user_setting_service
+        //    handles its own transaction)
         let _ = self.user_setting_service.set(user_id, "default_library", &library.token.to_string()).await;
 
         Ok(library)

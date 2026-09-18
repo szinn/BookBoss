@@ -37,9 +37,9 @@ impl BookIdSweep for BackfillThumbnailsHandler {
     }
 
     async fn process_batch(&self, core: &Arc<CoreServices>, ids: Vec<BookId>) -> Result<(), Error> {
-        // BookToken is deterministically derived from BookId — no DB lookup needed.
-        // fetch_batch already restricts to books with covers, so has_cover is
-        // guaranteed.
+        // BookToken is deterministically derived from BookId — no DB lookup
+        // needed. fetch_batch already restricts to books with covers,
+        // so has_cover is guaranteed.
         for id in &ids {
             core.file_store.backfill_thumbnail(BookToken::new(*id)).await?;
         }

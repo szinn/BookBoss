@@ -510,7 +510,8 @@ mod tests {
         })
     }
 
-    // ─── add_shelf ────────────────────────────────────────────────────────────
+    // ─── add_shelf
+    // ────────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_add_shelf_success() {
@@ -871,7 +872,8 @@ mod tests {
         ));
     }
 
-    // ─── TitleText filter ─────────────────────────────────────────────────────
+    // ─── TitleText filter
+    // ─────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_books_for_filter_title_contains() {
@@ -940,7 +942,8 @@ mod tests {
         assert_eq!(books[0].id, dune);
     }
 
-    // ─── Series filter ────────────────────────────────────────────────────────
+    // ─── Series filter
+    // ────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_books_for_filter_series_includes_any() {
@@ -1064,7 +1067,8 @@ mod tests {
         assert_eq!(books[0].id, standalone);
     }
 
-    // ─── Author filter ────────────────────────────────────────────────────────
+    // ─── Author filter
+    // ────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_books_for_filter_author_includes_any() {
@@ -1184,7 +1188,8 @@ mod tests {
         assert_eq!(books[0].id, dune);
     }
 
-    // ─── Genre filter ─────────────────────────────────────────────────────────
+    // ─── Genre filter
+    // ─────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_books_for_filter_genre_includes_any() {
@@ -1213,7 +1218,8 @@ mod tests {
         assert_eq!(books[0].id, dune);
     }
 
-    // ─── Tag filter ───────────────────────────────────────────────────────────
+    // ─── Tag filter
+    // ───────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_books_for_filter_tag_includes_any() {
@@ -1242,7 +1248,8 @@ mod tests {
         assert_eq!(books[0].id, dune);
     }
 
-    // ─── ReadStatus filter ────────────────────────────────────────────────────
+    // ─── ReadStatus filter
+    // ────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_books_for_filter_read_status_includes_any_explicit() {
@@ -1344,7 +1351,8 @@ mod tests {
         assert_eq!(books[0].id, unread);
     }
 
-    // ─── Rating filter ────────────────────────────────────────────────────────
+    // ─── Rating filter
+    // ────────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_books_for_filter_rating_gte() {
@@ -1366,7 +1374,8 @@ mod tests {
         assert_eq!(books[0].id, high);
     }
 
-    // ─── Composite filters ────────────────────────────────────────────────────
+    // ─── Composite filters
+    // ────────────────────────────────────────────────────
 
     #[tokio::test]
     async fn test_books_for_filter_or_group() {
@@ -1413,7 +1422,8 @@ mod tests {
         let herbert = new_author(&svc, "Frank Herbert").await;
         link_author(&svc, dune, herbert).await;
 
-        // AND(title contains "Dune", author includes Frank Herbert) — exact match
+        // AND(title contains "Dune", author includes Frank Herbert) — exact
+        // match
         let filter = BookFilter::Rule(FilterRule::TitleText {
             op: TextOp::Contains,
             value: "Dune".to_owned(),
