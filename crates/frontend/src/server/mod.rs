@@ -30,6 +30,7 @@ pub(crate) mod oidc;
 pub(crate) mod opds;
 pub(crate) mod session_pool;
 
+pub(crate) use oidc::OidcClientCell;
 pub(crate) use session_pool::{AuthSession, BackendSessionPool};
 
 pub(crate) mod auth_user;
@@ -54,25 +55,6 @@ impl IntoSubsystem<anyhow::Error> for FrontendSubsystem {
         let backend_pool = BackendSessionPool::new(core_services.clone());
         let session_config = SessionConfig::default().with_lifetime(DEFAULT_EXPIRATION_DURATION);
         let auth_config = AuthConfig::<UserId>::default();
-
-        // Build the OIDC client at startup so discovery happens once, not per-request.
-        // SSO is best-effort: any failure (partial config, unreachable IdP, malformed
-        // discovery URL) leaves SSO disabled and logs the cause, but the server still
-        // starts with password login working. is_sso_available() handles the partial-
-        // config case (logs each missing field).
-        let oidc_client: Option<Arc<oidc::OidcClient>> = match self.oidc_config.as_ref() {
-            Some(cfg) if cfg.is_sso_available() => match oidc::OidcClient::new(cfg, &self.config.base_url).await {
-                Ok(client) => {
-                    tracing::info!("OIDC SSO enabled via {}", cfg.discovery_url.as_deref().unwrap_or("?"));
-                    Some(Arc::new(client))
-                }
-                Err(e) => {
-                    tracing::error!(error = %e, "OIDC SSO disabled — initialization failed; password login still available");
-                    None
-                }
-            },
-            _ => None,
-        };
 
         let x_request_id = HeaderName::from_static(REQUEST_ID_HEADER);
         let session_store = SessionStore::<BackendSessionPool>::new(Some(backend_pool.clone()), session_config).await?;
@@ -112,13 +94,15 @@ impl IntoSubsystem<anyhow::Error> for FrontendSubsystem {
             .merge(koreader)
             .merge(opds);
 
-        // When SSO is configured, merge the OIDC router and expose the client
-        // and config to handlers / server fns. `oidc_client` is `Some` exactly
-        // when `oidc_config.is_set()` was true above, so unwrapping the cloned
-        // config here is safe by construction.
-        if let Some(client) = oidc_client {
-            let cfg = self.oidc_config.clone().expect("oidc_config is Some when oidc_client was built");
-            app_router = app_router.merge(oidc::oidc_router()).layer(Extension(client)).layer(Extension(Arc::new(cfg)));
+        // When SSO is fully configured, merge the OIDC router and expose an
+        // `OidcClientCell` to handlers / server fns. Discovery is NOT
+        // performed here: the cell defers it to the first request that needs
+        // it (login page render or the "sign in with SSO" button) and
+        // retries on subsequent requests if it failed, so a transient IdP
+        // outage doesn't permanently disable SSO for the process's lifetime.
+        if let Some(cfg) = self.oidc_config.clone().filter(OidcConfig::is_sso_available) {
+            let cell = Arc::new(OidcClientCell::new(cfg, self.config.base_url.clone()));
+            app_router = app_router.merge(oidc::oidc_router()).layer(Extension(cell));
         }
 
         let app_router = app_router

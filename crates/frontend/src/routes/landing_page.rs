@@ -14,13 +14,29 @@ pub(crate) struct LandingState {
 }
 
 #[cfg(feature = "server")]
-use {crate::password::validate_password_strength, crate::routes::server_helpers::to_server_err, crate::server::AuthSession, bb_core::CoreServices};
+use {
+    crate::password::validate_password_strength, crate::routes::server_helpers::to_server_err, crate::server::AuthSession, crate::server::OidcClientCell,
+    bb_core::CoreServices,
+};
 
-/// Returns the configured SSO button label when SSO is enabled, `None`
-/// otherwise. Used by `LoginForm` to conditionally render the SSO button.
-#[get("/api/v1/get_sso_config", oidc_config: Option<axum::Extension<std::sync::Arc<crate::OidcConfig>>>)]
+/// Returns the configured SSO button label when SSO is enabled and
+/// currently available, `None` otherwise. Attempts OIDC discovery on demand
+/// via [`OidcClientCell::ensure_client`] if it hasn't succeeded yet, so a
+/// recovered IdP is picked up on the next login-page load without
+/// restarting the server.
+#[get(
+    "/api/v1/get_sso_config",
+    oidc_cell: Option<axum::Extension<std::sync::Arc<OidcClientCell>>>,
+)]
 pub(crate) async fn get_sso_config() -> Result<Option<String>, ServerFnError> {
-    Ok(oidc_config.map(|ext| ext.0.button_label().to_string()))
+    let Some(axum::Extension(cell)) = oidc_cell else {
+        return Ok(None);
+    };
+    if cell.ensure_client().await.is_some() {
+        Ok(Some(cell.config().button_label().to_owned()))
+    } else {
+        Ok(None)
+    }
 }
 
 #[get("/api/v1/get_landing_state", core_services: axum::Extension<std::sync::Arc<CoreServices>>, auth_session: axum::Extension<AuthSession>)]
@@ -198,7 +214,8 @@ fn ForceChangePasswordForm(user_token: String, on_changed: EventHandler<()>, on_
     let confirm_touched = use_memo(move || !confirm_password().is_empty());
     let passwords_match = use_memo(move || password() == confirm_password());
 
-    // autofocus doesn't fire on dynamically inserted elements, so focus manually.
+    // autofocus doesn't fire on dynamically inserted elements, so focus
+    // manually.
     use_effect(move || {
         spawn(async move {
             let _ = document::eval("document.getElementById('fcp-password')?.focus()").await;
