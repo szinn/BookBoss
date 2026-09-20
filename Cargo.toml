@@ -44,7 +44,7 @@ rand = "0.10.2"
 sha2 = "0.11.0"
 
 # Identifiers
-alderkit-token = "0.1.0"
+alderkit-token = "0.1.1"
 
 # Image management
 image = "0.25.10"

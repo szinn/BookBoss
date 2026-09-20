@@ -10,7 +10,7 @@
 "git-cliff" = "2.14.1"
 "npm:tailwindcss" = "4.3.3"
 "prettier" = "3.9.8"
-"protobuf" = "36.1"
+"protobuf" = "36.2"
 "tailwindcss" = "4.2.1"
 
 [tool_alias]
