@@ -7,7 +7,7 @@
 "cargo:dioxus-cli" = "0.7.10"
 "cargo:mdbook" = "0.5.4"
 "colima" = "0.10.3"
-"git-cliff" = "2.14.1"
+"git-cliff" = "2.14.2"
 "npm:tailwindcss" = "4.3.3"
 "prettier" = "3.9.8"
 "protobuf" = "36.2"
