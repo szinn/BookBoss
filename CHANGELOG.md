@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.37](https://github.com/szinn/BookBoss/compare/v0.8.36..v0.8.37) - 2026-09-23
+
+### Features
+
+- _(core)_ Store reading position source and in-file progress - ([f910299](https://github.com/szinn/BookBoss/commit/f91029927cb28594c92aff6276a480a482ca498a))
+
+### Bug Fixes
+
+- _(frontend)_ Send complete Kobo reading state - ([d9dc295](https://github.com/szinn/BookBoss/commit/d9dc2955e013e683365780fff5033b8122422853))
+- _(frontend)_ Persist Kobo location source and in-file progress - ([ac6eec3](https://github.com/szinn/BookBoss/commit/ac6eec330172af76f65a282cc1e24fdc3cad651b))
+
 ## [0.8.36](https://github.com/szinn/BookBoss/compare/v0.8.35..v0.8.36) - 2026-09-23
 
 ### Bug Fixes
