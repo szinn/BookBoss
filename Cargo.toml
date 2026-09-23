@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/bookboss", "crates/integration-tests"]
 
 [workspace.package]
-version = "0.8.35"
+version = "0.8.36"
 edition = "2024"
 rust-version = "1.95"
 repository = "https://github.com/szinn/BookBoss"
