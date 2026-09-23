@@ -57,6 +57,7 @@ struct KoboLocation {
 struct KoboBookmark {
     location: Option<KoboLocation>,
     progress_percent: f64,
+    content_source_progress_percent: Option<f64>,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -207,53 +208,19 @@ pub(super) async fn handle_put(
     let new_status = kobo_status_to_read_status(&status_info.status);
     let finished = matches!(new_status, ReadStatus::Read);
 
-    // Extract position and progress from CurrentBookmark. Apply Finished
-    // override: clear location and force 100% when Finished.
-    let (progress_bps, position_type, position_token) = if finished {
-        (Some(10000u16), None, None)
-    } else if let Some(bm) = item.current_bookmark {
-        #[allow(clippy::cast_sign_loss, reason = "progress_percent is always positive")]
-        let progress_bps = (bm.progress_percent * 100.0).round() as u16;
-        let (pt, pv) = bm
-            .location
-            .filter(|l| !l.kind.is_empty() && !l.value.is_empty())
-            .map(|l| (Some(l.kind), Some(l.value)))
-            .unwrap_or_default();
-        (Some(progress_bps), pt, pv)
-    } else {
-        (None, None, None)
-    };
-
-    let stats = item.statistics.unwrap_or_default();
+    let report = device_state_from_kobo(finished, item.current_bookmark, &item.statistics.unwrap_or_default(), status_info.last_modified);
 
     tracing::debug!(
         device_id = kobo.device.id,
         book_token = %token,
         status = ?new_status,
-        progress_bps = progress_bps,
-        position_type = position_type,
-        position_token = position_token,
-        stats = ?stats,
-        last_modified = ?status_info.last_modified,
+        report = ?report,
         "Updating book status"
     );
 
     if let Err(e) = core_services
         .reading_service
-        .sync_device_state(
-            kobo.device.owner_id,
-            book.id,
-            new_status,
-            DeviceReadingState {
-                progress_bps,
-                position_type,
-                position_token,
-                spent_reading_minutes: stats.spent_reading_minutes,
-                remaining_time_minutes: stats.remaining_time_minutes,
-                last_progress_at: status_info.last_modified,
-                ..DeviceReadingState::default()
-            },
-        )
+        .sync_device_state(kobo.device.owner_id, book.id, new_status, report)
         .await
     {
         tracing::error!(error = ?e, "sync_device_state failed");
@@ -265,6 +232,41 @@ pub(super) async fn handle_put(
 
 // ── Mapping helpers
 // ────────────────────────────────────────────────────────
+
+/// Converts a Kobo percentage (0–100) to basis points.
+#[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation, reason = "clamped to 0–100")]
+fn percent_to_bps(percent: f64) -> u16 {
+    (percent.clamp(0.0, 100.0) * 100.0).round() as u16
+}
+
+/// Maps a Kobo state PUT to a `DeviceReadingState`.
+///
+/// When the Kobo reports `Finished` the location is cleared and progress is
+/// forced to 100%. A location is only kept when `Type` and `Value` are both
+/// present; `Source` (the content file a `KoboSpan` belongs to) is stored
+/// alongside so the position can be restored on another device.
+fn device_state_from_kobo(finished: bool, bookmark: Option<KoboBookmark>, stats: &KoboStatistics, last_modified: Option<DateTime<Utc>>) -> DeviceReadingState {
+    let mut report = DeviceReadingState {
+        spent_reading_minutes: stats.spent_reading_minutes,
+        remaining_time_minutes: stats.remaining_time_minutes,
+        last_progress_at: last_modified,
+        ..DeviceReadingState::default()
+    };
+
+    if finished {
+        report.progress_bps = Some(10000);
+    } else if let Some(bm) = bookmark {
+        report.progress_bps = Some(percent_to_bps(bm.progress_percent));
+        report.content_source_progress_bps = bm.content_source_progress_percent.map(percent_to_bps);
+        if let Some(loc) = bm.location.filter(|l| !l.kind.is_empty() && !l.value.is_empty()) {
+            report.position_type = Some(loc.kind);
+            report.position_token = Some(loc.value);
+            report.position_source = Some(loc.source).filter(|s| !s.is_empty());
+        }
+    }
+
+    report
+}
 
 /// Maps a stored `UserBookMetadata` to the Kobo state wire format.
 pub(super) fn build_kobo_state(state: &bb_core::reading::UserBookMetadata) -> serde_json::Value {
@@ -311,4 +313,62 @@ pub(super) fn build_kobo_state(state: &bb_core::reading::UserBookMetadata) -> se
     }
 
     obj
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse(body: serde_json::Value) -> StateItem {
+        serde_json::from_value(body).unwrap()
+    }
+
+    fn reading_item() -> StateItem {
+        parse(json!({
+            "CurrentBookmark": {
+                "ProgressPercent": 37.0,
+                "ContentSourceProgressPercent": 42.5,
+                "Location": { "Source": "OEBPS/ch03.xhtml", "Type": "KoboSpan", "Value": "kobo.12.1" },
+            },
+            "Statistics": { "SpentReadingMinutes": 95, "RemainingTimeMinutes": 160 },
+            "StatusInfo": { "Status": "Reading", "LastModified": "2026-09-23T18:00:00Z" },
+        }))
+    }
+
+    #[test]
+    fn put_keeps_location_source_and_content_progress() {
+        let item = reading_item();
+        let report = device_state_from_kobo(false, item.current_bookmark, &item.statistics.unwrap_or_default(), None);
+
+        assert_eq!(report.progress_bps, Some(3700));
+        assert_eq!(report.content_source_progress_bps, Some(4250));
+        assert_eq!(report.position_type.as_deref(), Some("KoboSpan"));
+        assert_eq!(report.position_token.as_deref(), Some("kobo.12.1"));
+        assert_eq!(report.position_source.as_deref(), Some("OEBPS/ch03.xhtml"));
+        assert_eq!(report.spent_reading_minutes, Some(95));
+        assert_eq!(report.remaining_time_minutes, Some(160));
+    }
+
+    #[test]
+    fn put_finished_clears_location() {
+        let item = reading_item();
+        let report = device_state_from_kobo(true, item.current_bookmark, &KoboStatistics::default(), None);
+
+        assert_eq!(report.progress_bps, Some(10000));
+        assert_eq!(report.content_source_progress_bps, None);
+        assert_eq!(report.position_token, None);
+        assert_eq!(report.position_source, None);
+    }
+
+    #[test]
+    fn put_without_location_value_stores_no_position() {
+        let item = parse(json!({
+            "CurrentBookmark": { "ProgressPercent": 5.0, "Location": { "Source": "OEBPS/ch01.xhtml" } },
+        }));
+        let report = device_state_from_kobo(false, item.current_bookmark, &KoboStatistics::default(), None);
+
+        assert_eq!(report.progress_bps, Some(500));
+        assert_eq!(report.position_type, None);
+        assert_eq!(report.position_source, None);
+    }
 }
