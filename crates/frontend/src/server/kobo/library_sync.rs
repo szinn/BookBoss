@@ -21,7 +21,7 @@ use axum::{
     http::{HeaderMap, HeaderName, HeaderValue, StatusCode},
     response::IntoResponse,
 };
-use bb_core::CoreServices;
+use bb_core::{CoreServices, device::BookSyncEntry, reading::UserBookMetadata};
 use chrono::Utc;
 
 use super::{
@@ -112,11 +112,13 @@ pub async fn handle(kobo: KoboDevice, req_headers: HeaderMap, core_services: Arc
     }
 
     // Upgraded (format changed) and refreshed (metadata changed) books →
-    // ChangedEntitlement so the device replaces its existing copy.
+    // ChangedEntitlement so the device replaces its existing copy, except on
+    // a full sync (see `build_existing_book_entitlement`).
+    let full_sync = since.is_none();
     for entry in diff.upgraded_books.iter().chain(diff.refreshed_books.iter()) {
         let rs = state_map.get(&entry.book.id);
         let series = entry.book.series_id.and_then(|id| series_map.get(&id)).cloned();
-        items.push(dto::build_changed_entitlement(entry, t, base, rs, series));
+        items.push(build_existing_book_entitlement(full_sync, entry, t, base, rs, series));
     }
 
     // 6. Compute cursor for next request.
@@ -146,4 +148,80 @@ pub async fn handle(kobo: KoboDevice, req_headers: HeaderMap, core_services: Arc
     }
 
     Ok((resp_headers, Json(items)))
+}
+
+/// Builds the entitlement for a book that has a `DeviceBook` record (upgraded
+/// or refreshed).
+///
+/// On a full sync (`since` is `None`) the device may not actually hold the
+/// book — e.g. a factory-reset Kobo re-using a device whose sync was reset.
+/// The Kobo ignores `ChangedEntitlement` for books it doesn't have, so a full
+/// sync always sends `NewEntitlement`, matching Calibre-Web and Komga.
+fn build_existing_book_entitlement(
+    full_sync: bool,
+    entry: &BookSyncEntry,
+    sync_token: &str,
+    base: &str,
+    reading_state: Option<&UserBookMetadata>,
+    series_name: Option<String>,
+) -> KoboSyncItem {
+    if full_sync {
+        dto::build_new_entitlement(entry, sync_token, base, reading_state, series_name)
+    } else {
+        dto::build_changed_entitlement(entry, sync_token, base, reading_state, series_name)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bb_core::book::{Book, BookFile, BookStatus, BookToken, FileFormat, FileRole};
+
+    use super::*;
+
+    fn entry() -> BookSyncEntry {
+        let now = Utc::now();
+        BookSyncEntry {
+            book: Book {
+                id: 1,
+                version: 1,
+                token: BookToken::new(1),
+                title: "Dead Line".to_string(),
+                status: BookStatus::Available,
+                description: None,
+                published_date: None,
+                language: None,
+                series_id: None,
+                series_number: None,
+                publisher_id: None,
+                page_count: None,
+                rating: None,
+                metadata_source: None,
+                has_cover: false,
+                sidecar_fingerprint: None,
+                created_at: now,
+                updated_at: now,
+            },
+            file: BookFile {
+                book_id: 1,
+                format: FileFormat::Kepub,
+                file_role: FileRole::Enriched,
+                path: "dead-line.kepub.epub".to_string(),
+                file_size: 0,
+                file_hash: String::new(),
+                created_at: now,
+            },
+        }
+    }
+
+    #[test]
+    fn full_sync_sends_new_entitlement_for_existing_book() {
+        let item = build_existing_book_entitlement(true, &entry(), "tok", "http://bb", None, None);
+        assert!(matches!(item, KoboSyncItem::NewEntitlement(_)));
+    }
+
+    #[test]
+    fn incremental_sync_sends_changed_entitlement_for_existing_book() {
+        let item = build_existing_book_entitlement(false, &entry(), "tok", "http://bb", None, None);
+        assert!(matches!(item, KoboSyncItem::ChangedEntitlement(_)));
+    }
 }
