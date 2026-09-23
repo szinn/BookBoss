@@ -283,7 +283,7 @@ pub(super) fn build_new_entitlement(
     KoboSyncItem::NewEntitlement(KoboEntitlementContainer {
         book_entitlement: entitlement,
         book_metadata: metadata,
-        reading_state: reading_state.map(super::library_state::build_kobo_state),
+        reading_state: reading_state.map(|rs| super::library_state::build_kobo_state(book, rs)),
     })
 }
 
@@ -307,7 +307,7 @@ pub(super) fn build_changed_entitlement(
     KoboSyncItem::ChangedEntitlement(KoboEntitlementContainer {
         book_entitlement: entitlement,
         book_metadata: metadata,
-        reading_state: reading_state.map(super::library_state::build_kobo_state),
+        reading_state: reading_state.map(|rs| super::library_state::build_kobo_state(book, rs)),
     })
 }
 

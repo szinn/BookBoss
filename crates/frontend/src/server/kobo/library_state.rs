@@ -31,14 +31,14 @@ use std::{collections::HashMap, sync::Arc};
 use axum::{Json, body::Bytes, extract::Path, http::StatusCode, response::IntoResponse};
 use bb_core::{
     CoreServices,
-    book::BookToken,
-    reading::{DeviceReadingState, ReadStatus},
+    book::{Book, BookToken},
+    reading::{DeviceReadingState, ReadStatus, UserBookMetadata},
 };
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_json::json;
 
-use super::KoboDevice;
+use super::{KoboDevice, dto::book_uuid_from_token};
 
 // ── Deserialization types
 // ──────────────────────────────────────────────────
@@ -135,7 +135,7 @@ pub(super) async fn handle_get(kobo: KoboDevice, Path(params): Path<HashMap<Stri
 
     let item = match state {
         None => json!({}),
-        Some(s) => build_kobo_state(&s),
+        Some(s) => build_kobo_state(&book, &s),
     };
 
     Json(json!([item])).into_response()
@@ -269,55 +269,120 @@ fn device_state_from_kobo(finished: bool, bookmark: Option<KoboBookmark>, stats:
 }
 
 /// Maps a stored `UserBookMetadata` to the Kobo state wire format.
-pub(super) fn build_kobo_state(state: &bb_core::reading::UserBookMetadata) -> serde_json::Value {
+///
+/// Shape follows Calibre-Web (`get_kobo_reading_state_response`) and Komga
+/// (`ReadingStateDto`). `Location` is only sent when `Source` is known: a
+/// `KoboSpan` value is only unique within its content file.
+pub(super) fn build_kobo_state(book: &Book, state: &UserBookMetadata) -> serde_json::Value {
     let kobo_status = read_status_to_kobo_status(state.read_status);
-    let last_modified = state.last_progress_at.unwrap_or_else(Utc::now).to_rfc3339();
+    let last_modified = state.last_progress_at.unwrap_or(book.updated_at).to_rfc3339();
 
-    let (progress, location) = match state.read_status {
-        ReadStatus::Read => (100.0f64, None),
-        ReadStatus::Unread => (0.0f64, None),
-        _ => {
-            let p = state.progress_percentage.map_or(0.0, |v| f64::from(v) / 100.0);
-            let loc = match (&state.position_type, &state.position_token) {
-                (Some(t), Some(v)) if !t.is_empty() && !v.is_empty() => Some(json!({
-                    "Type": t,
-                    "Value": v,
-                })),
-                _ => None,
-            };
-            (p, loc)
+    let mut bookmark = json!({ "LastModified": last_modified });
+    match state.read_status {
+        ReadStatus::Read => {
+            bookmark["ProgressPercent"] = json!(100.0);
         }
+        ReadStatus::Unread => {
+            bookmark["ProgressPercent"] = json!(0.0);
+        }
+        _ => {
+            if let Some(p) = state.progress_percentage {
+                bookmark["ProgressPercent"] = json!(f64::from(p) / 100.0);
+            }
+            if let Some(p) = state.content_source_progress_percentage {
+                bookmark["ContentSourceProgressPercent"] = json!(f64::from(p) / 100.0);
+            }
+            if let (Some(t), Some(v), Some(src)) = (&state.position_type, &state.position_token, &state.position_source)
+                && !t.is_empty()
+                && !v.is_empty()
+                && !src.is_empty()
+            {
+                bookmark["Location"] = json!({ "Value": v, "Type": t, "Source": src });
+            }
+        }
+    }
+
+    let mut statistics = json!({ "LastModified": last_modified });
+    if let Some(m) = state.spent_reading_minutes {
+        statistics["SpentReadingMinutes"] = json!(m);
+    }
+    if let Some(m) = state.remaining_time_minutes {
+        statistics["RemainingTimeMinutes"] = json!(m);
+    }
+
+    let times_started = if state.read_status == ReadStatus::Unread {
+        0
+    } else {
+        state.times_read.max(1)
     };
 
-    let mut bookmark = json!({
-        "ProgressPercent": progress,
-        "ContentSourceProgressPercent": progress,
-    });
-    if let Some(loc) = location {
-        bookmark["Location"] = loc;
-    }
-
-    let mut obj = json!({
-        "CurrentBookmark": bookmark,
+    json!({
+        "EntitlementId": book_uuid_from_token(book.token),
+        "Created": book.created_at.to_rfc3339(),
+        "LastModified": last_modified,
+        "PriorityTimestamp": last_modified,
         "StatusInfo": {
-            "Status": kobo_status,
             "LastModified": last_modified,
+            "Status": kobo_status,
+            "TimesStartedReading": times_started,
         },
-    });
-
-    if state.spent_reading_minutes.is_some() || state.remaining_time_minutes.is_some() {
-        obj["Statistics"] = json!({
-            "SpentReadingMinutes": state.spent_reading_minutes,
-            "RemainingTimeMinutes": state.remaining_time_minutes,
-        });
-    }
-
-    obj
+        "Statistics": statistics,
+        "CurrentBookmark": bookmark,
+    })
 }
 
 #[cfg(test)]
 mod tests {
+    use bb_core::book::BookStatus;
+    use chrono::TimeZone;
+
     use super::*;
+
+    fn book() -> Book {
+        let created = Utc.with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap();
+        Book {
+            id: 1,
+            version: 1,
+            token: BookToken::new(1),
+            title: "Dead Line".to_string(),
+            status: BookStatus::Available,
+            description: None,
+            published_date: None,
+            language: None,
+            series_id: None,
+            series_number: None,
+            publisher_id: None,
+            page_count: None,
+            rating: None,
+            metadata_source: None,
+            has_cover: false,
+            sidecar_fingerprint: None,
+            created_at: created,
+            updated_at: created,
+        }
+    }
+
+    fn reading_state() -> UserBookMetadata {
+        UserBookMetadata {
+            user_id: 1,
+            book_id: 1,
+            read_status: ReadStatus::Reading,
+            progress_percentage: Some(3700),
+            position_type: Some("KoboSpan".to_string()),
+            position_token: Some("kobo.12.1".to_string()),
+            position_source: Some("OEBPS/ch03.xhtml".to_string()),
+            content_source_progress_percentage: Some(4250),
+            last_progress_at: Some(Utc.with_ymd_and_hms(2026, 9, 23, 18, 0, 0).unwrap()),
+            spent_reading_minutes: Some(95),
+            remaining_time_minutes: Some(160),
+            personal_rating: None,
+            times_read: 0,
+            date_started: None,
+            date_finished: None,
+            last_opened_at: None,
+            notes: None,
+        }
+    }
 
     fn parse(body: serde_json::Value) -> StateItem {
         serde_json::from_value(body).unwrap()
@@ -370,5 +435,54 @@ mod tests {
         assert_eq!(report.progress_bps, Some(500));
         assert_eq!(report.position_type, None);
         assert_eq!(report.position_source, None);
+    }
+
+    #[test]
+    fn state_includes_full_location_and_timestamps() {
+        let book = book();
+        let v = build_kobo_state(&book, &reading_state());
+        let last_modified = "2026-09-23T18:00:00+00:00";
+
+        assert_eq!(v["EntitlementId"], book_uuid_from_token(book.token));
+        assert_eq!(v["Created"], "2026-01-01T00:00:00+00:00");
+        assert_eq!(v["LastModified"], last_modified);
+        assert_eq!(v["PriorityTimestamp"], last_modified);
+        assert_eq!(v["StatusInfo"]["Status"], "Reading");
+        assert_eq!(v["StatusInfo"]["TimesStartedReading"], 1);
+        assert_eq!(v["Statistics"]["SpentReadingMinutes"], 95);
+
+        let bm = &v["CurrentBookmark"];
+        assert_eq!(bm["LastModified"], last_modified);
+        assert_eq!(bm["ProgressPercent"], 37.0);
+        assert_eq!(bm["ContentSourceProgressPercent"], 42.5);
+        assert_eq!(
+            bm["Location"],
+            json!({ "Value": "kobo.12.1", "Type": "KoboSpan", "Source": "OEBPS/ch03.xhtml" })
+        );
+    }
+
+    #[test]
+    fn state_omits_location_without_source() {
+        let state = UserBookMetadata {
+            position_source: None,
+            ..reading_state()
+        };
+        let v = build_kobo_state(&book(), &state);
+
+        assert!(v["CurrentBookmark"].get("Location").is_none());
+        assert_eq!(v["CurrentBookmark"]["ProgressPercent"], 37.0);
+    }
+
+    #[test]
+    fn state_for_finished_book_has_full_progress_and_no_location() {
+        let state = UserBookMetadata {
+            read_status: ReadStatus::Read,
+            ..reading_state()
+        };
+        let v = build_kobo_state(&book(), &state);
+
+        assert_eq!(v["StatusInfo"]["Status"], "Finished");
+        assert_eq!(v["CurrentBookmark"]["ProgressPercent"], 100.0);
+        assert!(v["CurrentBookmark"].get("Location").is_none());
     }
 }
