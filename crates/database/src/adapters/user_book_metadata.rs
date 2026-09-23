@@ -51,6 +51,8 @@ impl From<user_book_metadata::Model> for UserBookMetadata {
             progress_percentage: m.progress_percentage.map(|v| v as u16),
             position_type: m.position_type,
             position_token: m.position_token,
+            position_source: m.position_source,
+            content_source_progress_percentage: m.content_source_progress_percentage.map(|v| v as u16),
             last_progress_at: m.last_progress_at.map(|t| t.with_timezone(&Utc)),
             spent_reading_minutes: m.spent_reading_minutes,
             remaining_time_minutes: m.remaining_time_minutes,
@@ -91,6 +93,8 @@ impl UserBookMetadataRepository for UserBookMetadataRepositoryAdapter {
             active.progress_percentage = Set(metadata.progress_percentage.map(|v| v as i16));
             active.position_type = Set(metadata.position_type);
             active.position_token = Set(metadata.position_token);
+            active.position_source = Set(metadata.position_source);
+            active.content_source_progress_percentage = Set(metadata.content_source_progress_percentage.map(|v| v as i16));
             active.last_progress_at = Set(metadata.last_progress_at.map(Into::into));
             active.spent_reading_minutes = Set(metadata.spent_reading_minutes);
             active.remaining_time_minutes = Set(metadata.remaining_time_minutes);
@@ -109,6 +113,8 @@ impl UserBookMetadataRepository for UserBookMetadataRepositoryAdapter {
                 progress_percentage: Set(metadata.progress_percentage.map(|v| v as i16)),
                 position_type: Set(metadata.position_type),
                 position_token: Set(metadata.position_token),
+                position_source: Set(metadata.position_source),
+                content_source_progress_percentage: Set(metadata.content_source_progress_percentage.map(|v| v as i16)),
                 last_progress_at: Set(metadata.last_progress_at.map(Into::into)),
                 spent_reading_minutes: Set(metadata.spent_reading_minutes),
                 remaining_time_minutes: Set(metadata.remaining_time_minutes),
@@ -284,6 +290,8 @@ mod tests {
             progress_percentage: None,
             position_type: None,
             position_token: None,
+            position_source: None,
+            content_source_progress_percentage: None,
             last_progress_at: None,
             spent_reading_minutes: None,
             remaining_time_minutes: None,
@@ -344,6 +352,34 @@ mod tests {
         assert_eq!(saved.times_read, 1);
         assert_eq!(saved.personal_rating, Some(5));
         assert_eq!(saved.notes.as_deref(), Some("Excellent"));
+    }
+
+    #[tokio::test]
+    async fn test_upsert_round_trips_position_source_and_content_progress() {
+        let svc = setup().await;
+        let user_id = new_user(&svc, "alice").await;
+        let book_id = new_book(&svc, "Dune").await;
+        let tx = svc.repository().begin().await.unwrap();
+
+        let meta = bb_core::reading::UserBookMetadata {
+            read_status: ReadStatus::Reading,
+            position_type: Some("KoboSpan".to_owned()),
+            position_token: Some("kobo.12.1".to_owned()),
+            position_source: Some("OEBPS/ch03.xhtml".to_owned()),
+            content_source_progress_percentage: Some(4250),
+            ..base_metadata(user_id, book_id)
+        };
+        svc.user_book_metadata_repository().upsert(&*tx, meta).await.unwrap();
+
+        let found = svc
+            .user_book_metadata_repository()
+            .find_by_user_and_book(&*tx, user_id, book_id)
+            .await
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(found.position_source.as_deref(), Some("OEBPS/ch03.xhtml"));
+        assert_eq!(found.content_source_progress_percentage, Some(4250));
     }
 
     // ─── find_by_user_and_book ───────────────────────────────────────────────

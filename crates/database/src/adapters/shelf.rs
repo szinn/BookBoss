@@ -487,6 +487,8 @@ mod tests {
                     progress_percentage: None,
                     position_type: None,
                     position_token: None,
+                    position_source: None,
+                    content_source_progress_percentage: None,
                     last_progress_at: None,
                     spent_reading_minutes: None,
                     remaining_time_minutes: None,

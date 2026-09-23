@@ -13,6 +13,8 @@ pub struct Model {
     pub progress_percentage: Option<i16>,
     pub position_type: Option<String>,
     pub position_token: Option<String>,
+    pub position_source: Option<String>,
+    pub content_source_progress_percentage: Option<i16>,
     pub last_progress_at: Option<DateTimeWithTimeZone>,
     pub spent_reading_minutes: Option<i32>,
     pub remaining_time_minutes: Option<i32>,

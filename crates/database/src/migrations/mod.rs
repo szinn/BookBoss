@@ -41,6 +41,7 @@ mod m20260403_000038_drop_shelf_visibility;
 mod m20260403_000039_add_owner_id_to_libraries;
 mod m20260404_000040_create_koreader_document_hashes_table;
 mod m20260415_000041_create_app_settings_table;
+mod m20260923_000042_add_position_source_to_user_book_metadata;
 
 pub struct Migrator;
 
@@ -89,6 +90,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260403_000039_add_owner_id_to_libraries::Migration),
             Box::new(m20260404_000040_create_koreader_document_hashes_table::Migration),
             Box::new(m20260415_000041_create_app_settings_table::Migration),
+            Box::new(m20260923_000042_add_position_source_to_user_book_metadata::Migration),
         ]
     }
 }

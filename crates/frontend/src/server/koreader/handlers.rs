@@ -5,7 +5,10 @@
 use std::sync::Arc;
 
 use axum::{Extension, Json, extract::Path, http::StatusCode, response::Response};
-use bb_core::{CoreServices, reading::ReadStatus};
+use bb_core::{
+    CoreServices,
+    reading::{DeviceReadingState, ReadStatus},
+};
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
@@ -119,12 +122,13 @@ pub async fn syncs_progress_push(
             user_id,
             book_id,
             target_status,
-            Some(progress_bps),
-            Some("KoReader".to_string()),
-            Some(body.progress.clone()),
-            None,
-            None,
-            Some(now),
+            DeviceReadingState {
+                progress_bps: Some(progress_bps),
+                position_type: Some("KoReader".to_string()),
+                position_token: Some(body.progress.clone()),
+                last_progress_at: Some(now),
+                ..DeviceReadingState::default()
+            },
         )
         .await
     {

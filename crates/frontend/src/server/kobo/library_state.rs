@@ -29,7 +29,11 @@
 use std::{collections::HashMap, sync::Arc};
 
 use axum::{Json, body::Bytes, extract::Path, http::StatusCode, response::IntoResponse};
-use bb_core::{CoreServices, book::BookToken, reading::ReadStatus};
+use bb_core::{
+    CoreServices,
+    book::BookToken,
+    reading::{DeviceReadingState, ReadStatus},
+};
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_json::json;
@@ -240,12 +244,15 @@ pub(super) async fn handle_put(
             kobo.device.owner_id,
             book.id,
             new_status,
-            progress_bps,
-            position_type,
-            position_token,
-            stats.spent_reading_minutes,
-            stats.remaining_time_minutes,
-            status_info.last_modified,
+            DeviceReadingState {
+                progress_bps,
+                position_type,
+                position_token,
+                spent_reading_minutes: stats.spent_reading_minutes,
+                remaining_time_minutes: stats.remaining_time_minutes,
+                last_progress_at: status_info.last_modified,
+                ..DeviceReadingState::default()
+            },
         )
         .await
     {

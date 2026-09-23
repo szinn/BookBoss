@@ -59,6 +59,12 @@ pub struct UserBookMetadata {
     pub position_type: Option<String>,
     /// Raw device-specific resume position (EPUB CFI, Kobo XPath, etc.).
     pub position_token: Option<String>,
+    /// Content file the position refers to (e.g. `"OEBPS/ch03.xhtml"`); Kobo
+    /// `KoboSpan` values are only unique within this file.
+    pub position_source: Option<String>,
+    /// Progress within `position_source` in basis points, as reported by the
+    /// device.
+    pub content_source_progress_percentage: Option<u16>,
     pub last_progress_at: Option<DateTime<Utc>>,
     /// Minutes spent reading as reported by the device.
     pub spent_reading_minutes: Option<i32>,
@@ -72,6 +78,23 @@ pub struct UserBookMetadata {
     pub date_finished: Option<DateTime<Utc>>,
     pub last_opened_at: Option<DateTime<Utc>>,
     pub notes: Option<String>,
+}
+
+/// Reading state as reported by a sync device (Kobo, `KOReader`), applied via
+/// [`ReadingService::sync_device_state`](crate::reading::ReadingService::sync_device_state).
+#[derive(Debug, Clone, Default)]
+pub struct DeviceReadingState {
+    /// Overall progress in basis points.
+    pub progress_bps: Option<u16>,
+    /// Progress within `position_source` in basis points.
+    pub content_source_progress_bps: Option<u16>,
+    pub position_type: Option<String>,
+    pub position_token: Option<String>,
+    pub position_source: Option<String>,
+    pub spent_reading_minutes: Option<i32>,
+    pub remaining_time_minutes: Option<i32>,
+    /// When the device recorded this state; `None` keeps the stored value.
+    pub last_progress_at: Option<DateTime<Utc>>,
 }
 
 #[cfg(test)]
