@@ -92,7 +92,7 @@ openidconnect = { version = "4.0.1", default-features = false, features = [
 ] }
 
 # Config
-config = "0.15.25"
+config = "0.15.26"
 
 # Utility
 chrono = { version = "0.4.45", features = ["serde"] }
