@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.38](https://github.com/szinn/BookBoss/compare/v0.8.37..v0.8.38) - 2026-10-05
+
+### Bug Fixes
+
+- _(metadata)_ Keep titles after episode/series prefixes when matching - ([4408d66](https://github.com/szinn/BookBoss/commit/4408d6657517c7cdcacf56b209ad0d6ee6e057d2))
+
 ## [0.8.37](https://github.com/szinn/BookBoss/compare/v0.8.36..v0.8.37) - 2026-09-23
 
 ### Features
