@@ -52,7 +52,7 @@ pub fn convert_to_kepub(epub_path: &Path, dest: &Path) -> Result<(), Error> {
     let mut entries: Vec<(usize, String)> = Vec::with_capacity(entry_count);
     for i in 0..entry_count {
         let f = src.by_index(i)?;
-        entries.push((i, f.name().to_string()));
+        entries.push((i, f.name()?.into_owned()));
     }
 
     let dest_file = std::fs::File::create(dest)?;
@@ -394,6 +394,6 @@ mod tests {
         let out = std::fs::read(&dst).unwrap();
         let cursor = std::io::Cursor::new(out);
         let mut archive = zip::ZipArchive::new(cursor).unwrap();
-        assert_eq!(archive.by_index(0).unwrap().name(), "mimetype");
+        assert_eq!(archive.by_index(0).unwrap().name().unwrap(), "mimetype");
     }
 }

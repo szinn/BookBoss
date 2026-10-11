@@ -92,7 +92,7 @@ pub fn enrich_epub(source: &Path, dest: &Path, sidecar: &BookSidecar, cover: Opt
     let mut entries: Vec<(usize, String)> = Vec::with_capacity(entry_count);
     for i in 0..entry_count {
         let f = src.by_index(i)?;
-        entries.push((i, f.name().to_string()));
+        entries.push((i, f.name()?.into_owned()));
     }
 
     // ── 4. Write destination archive ─────────────────────────────────────────
@@ -154,7 +154,7 @@ where
 {
     let mut f = src.by_index(index)?;
     let method = f.compression();
-    let name = f.name().to_string();
+    let name = f.name()?.into_owned();
     let mut buf = Vec::new();
     f.read_to_end(&mut buf)?;
     let opts = SimpleFileOptions::default().compression_method(method);
@@ -563,7 +563,7 @@ mod tests {
         let file = std::fs::File::open(&dst).unwrap();
         let mut archive = zip::ZipArchive::new(file).unwrap();
         let first = archive.by_index(0).unwrap();
-        assert_eq!(first.name(), "mimetype");
+        assert_eq!(first.name().unwrap(), "mimetype");
     }
 
     // ── Convention cover (id="cover", no meta, no properties) ────────────────

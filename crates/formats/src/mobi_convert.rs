@@ -86,7 +86,7 @@ pub fn convert_to_mobi(source_epub: &Path, dest: &Path, sidecar: &BookSidecar, c
 
     // Collect all entry names up front (borrow checker).
     let entry_names: Vec<String> = (0..archive.len())
-        .map(|i| archive.by_index(i).map(|f| f.name().to_string()))
+        .map(|i| archive.by_index(i).and_then(|f| f.name().map(std::borrow::Cow::into_owned)))
         .collect::<Result<_, _>>()?;
 
     // Build a lookup: zip path → index.
