@@ -19,6 +19,10 @@ pub(crate) fn ShelfBar(
     on_edit_shelf: EventHandler<()>,
     /// Called when the user clicks "Delete" on the current own shelf.
     on_delete_shelf: EventHandler<()>,
+    /// Called after a book is successfully dropped onto a shelf, once the
+    /// success flash finishes.
+    #[props(default)]
+    on_shelves_changed: EventHandler<()>,
     /// When `true` the delete button is disabled (shelf is managed by a
     /// device).
     #[props(default = false)]
@@ -158,7 +162,12 @@ pub(crate) fn ShelfBar(
                                         });
                                     }
                                 },
-                                onanimationend: move |_| success_shelf.set(None),
+                                onanimationend: move |_| {
+                                    if success_shelf().is_some() {
+                                        on_shelves_changed.call(());
+                                    }
+                                    success_shelf.set(None);
+                                },
                                 if is_smart { "✦ " }
                                 "{shelf.name}"
                                 if let Some(n) = shelf.count {

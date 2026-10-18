@@ -581,6 +581,10 @@ pub(crate) fn ShelfPage(token: String) -> Element {
                 },
                 is_device_shelf: current_shelf.as_ref().is_some_and(|s| s.is_device_shelf),
                 on_delete_shelf: move |()| show_delete.set(true),
+                on_shelves_changed: move |()| {
+                    shelves_resource.restart();
+                    books_resource.restart();
+                },
             }
 
             match books_resource() {

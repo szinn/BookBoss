@@ -400,6 +400,10 @@ pub(crate) fn BooksPage() -> Element {
                             current_shelf_token: None,
                             on_edit_shelf: |()| {},
                             on_delete_shelf: |()| {},
+                            on_shelves_changed: move |()| {
+                                *books_refresh.write() += 1;
+                                shelves_resource.restart();
+                            },
                         }
                         div { class: "flex-1 overflow-auto",
                             CurrentlyReadingSection { books: filtered_reading }
