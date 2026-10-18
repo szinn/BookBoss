@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.39](https://github.com/szinn/BookBoss/compare/v0.8.38..v0.8.39) - 2026-10-18
+
+### Bug Fixes
+
+- _(formats)_ Adapt to zip 9 fallible ZipFile::name() - ([5564a3c](https://github.com/szinn/BookBoss/commit/5564a3c9e8424385f31cd9fdb6cdf62a6d7ddbda))
+- _(frontend)_ Refresh shelf counts after drag-and-drop onto a shelf - ([efc0603](https://github.com/szinn/BookBoss/commit/efc060332688f45ea2ce7b2547918c18e4c5cc93))
+
 ## [0.8.38](https://github.com/szinn/BookBoss/compare/v0.8.37..v0.8.38) - 2026-10-05
 
 ### Bug Fixes
