@@ -3,7 +3,7 @@ jobs = 8
 # dx 0.7 sets RUSTC=dx to intercept compilation for hot-reload, which
 # conflicts with sccache (sccache probes the compiler with -E, which dx
 # doesn't support). Disable sccache for this project.
-rustc-wrapper = ""
+# rustc-wrapper = ""
 
 [target.x86_64-unknown-linux-gnu]
 rustflags = ["-Clink-arg=-fuse-ld=mold"]
