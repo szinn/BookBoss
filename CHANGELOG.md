@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.40](https://github.com/szinn/BookBoss/compare/v0.8.39..v0.8.40) - 2026-10-24
+
+### Bug Fixes
+
+- _(core)_ Verify_password no longer gates on OpdsAccess - ([e8b0a7b](https://github.com/szinn/BookBoss/commit/e8b0a7b19434f3137ae9f7f3dd3113737e5d51c0))
+- _(frontend)_ Use time::Duration for axum_session 0.22 session lifetime - ([5445dc5](https://github.com/szinn/BookBoss/commit/5445dc5559ebe1cca81d631d0455832301685160))
+- _(frontend)_ Send WWW-Authenticate challenge on OPDS 401 - ([ac9ac71](https://github.com/szinn/BookBoss/commit/ac9ac71dc67325ec41dfc94f76d5e1e5ef3612e9))
+
+### Miscellaneous Tasks
+
+- _(ci)_ Enable sccache - ([1d041db](https://github.com/szinn/BookBoss/commit/1d041db4bd73f32a3535115e84a206584ea18bde))
+
 ## [0.8.39](https://github.com/szinn/BookBoss/compare/v0.8.38..v0.8.39) - 2026-10-18
 
 ### Bug Fixes
