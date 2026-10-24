@@ -30,7 +30,8 @@ pub trait OpdsService: Send + Sync {
     async fn regenerate_password(&self, user: &User) -> Result<String, Error>;
 
     /// Verifies a plaintext password against the stored OPDS password for a
-    /// user.
+    /// user. Does not check `OpdsAccess`; callers are responsible for
+    /// capability checks.
     async fn verify_password(&self, user: &User, password: &str) -> Result<bool, Error>;
 }
 
@@ -146,10 +147,6 @@ impl OpdsService for OpdsServiceImpl {
     }
 
     async fn verify_password(&self, user: &User, password: &str) -> Result<bool, Error> {
-        if !user.has_capability(Capability::OpdsAccess) {
-            return Ok(false);
-        }
-
         let user_id = user.id;
         let setting = with_read_only_transaction!(self, user_setting_repository, |tx| user_setting_repository
             .get(tx, user_id, OPDS_PASSWORD_KEY)
@@ -414,10 +411,24 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn verify_password_returns_false_without_capability() {
-        let svc = create_service(MockUserSettingRepository::new());
+    async fn verify_password_ignores_capability() {
+        let cipher = test_cipher();
+        let encrypted = encrypt_password(&cipher, "testpassword").unwrap();
 
-        let valid = svc.verify_password(&user_without_opds_access(), "anything").await.unwrap();
-        assert!(!valid);
+        let mut mock = MockUserSettingRepository::new();
+        mock.expect_get().returning(move |_, _, _| {
+            let encrypted = encrypted.clone();
+            Box::pin(async move {
+                Ok(Some(UserSetting {
+                    user_id: 1,
+                    key: OPDS_PASSWORD_KEY.to_owned(),
+                    value: encrypted,
+                }))
+            })
+        });
+        let svc = create_service(mock);
+
+        let valid = svc.verify_password(&user_without_opds_access(), "testpassword").await.unwrap();
+        assert!(valid);
     }
 }
