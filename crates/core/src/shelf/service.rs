@@ -422,7 +422,8 @@ impl ShelfService for ShelfServiceImpl {
             }
 
             let filter = match target_shelf.shelf_type {
-                // System shelves are always filter-based (like Smart), so they use stored filter_criteria.
+                // System shelves are always filter-based (like Smart), so they
+                // use stored filter_criteria.
                 ShelfType::Smart | ShelfType::System => target_shelf
                     .filter_criteria
                     .ok_or_else(|| Error::Validation("smart shelf has no filter criteria".to_string()))?,

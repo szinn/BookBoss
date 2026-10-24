@@ -429,7 +429,8 @@ fn read_status_condition(op: SetOp, values: &[FilterReadStatus], user_id: UserId
     };
 
     Ok(match op {
-        // IncludesAll degrades to IncludesAny: a book has exactly one read status.
+        // IncludesAll degrades to IncludesAny: a book has exactly one read
+        // status.
         SetOp::IncludesAny | SetOp::IncludesAll => {
             if statuses.is_empty() {
                 return Ok(never());
@@ -465,7 +466,8 @@ fn read_status_condition(op: SetOp, values: &[FilterReadStatus], user_id: UserId
         }
         // IsEmpty: no UBM row has ever been written for this book+user pair
         SetOp::IsEmpty => Condition::all().add(books::Column::Id.not_in_subquery(ubm_for_user())),
-        // IsNotEmpty: at least one UBM row exists (user has interacted with the book)
+        // IsNotEmpty: at least one UBM row exists (user has interacted with the
+        // book)
         SetOp::IsNotEmpty => Condition::all().add(books::Column::Id.in_subquery(ubm_for_user())),
     })
 }

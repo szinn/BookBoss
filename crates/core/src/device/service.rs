@@ -353,9 +353,10 @@ impl DeviceService for DeviceServiceImpl {
                 let kind = match device_book_map.get(&book.id) {
                     None => EntryKind::New,
                     Some(db) if db.format != best.format || db.file_role != best.file_role => EntryKind::Upgraded,
-                    // No cursor (since = None) means full sync from scratch — re-deliver all
-                    // existing books as Refreshed so nothing is skipped. Also re-deliver any
-                    // book whose metadata has changed since the last sync.
+                    // No cursor (since = None) means full sync from scratch —
+                    // re-deliver all existing books as Refreshed so nothing is
+                    // skipped. Also re-deliver any book whose metadata has
+                    // changed since the last sync.
                     Some(_) if since.is_none_or(|s| book.updated_at > s) => EntryKind::Refreshed,
                     Some(_) => continue, // unchanged — skip
                 };

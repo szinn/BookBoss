@@ -98,6 +98,7 @@ config = "0.15.27"
 chrono = { version = "0.4.45", features = ["serde"] }
 derive_builder = "0.20.2"
 rust_decimal = { version = "1.43.0", features = ["serde-str"] }
+time = "0.3.55"
 rust_decimal_macros = "1.40.0"
 tempfile = "3.27.0"
 

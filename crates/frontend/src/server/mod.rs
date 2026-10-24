@@ -8,8 +8,8 @@ use axum::{
 use axum_session::{SessionConfig, SessionLayer, SessionStore};
 use axum_session_auth::{AuthConfig, AuthSessionLayer};
 use bb_core::{CoreServices, user::UserId};
-use chrono::Duration;
 use dioxus::server::DioxusRouterExt;
+use time::Duration;
 use tokio_graceful_shutdown::{IntoSubsystem, SubsystemHandle};
 use tower::ServiceBuilder;
 use tower_http::{
