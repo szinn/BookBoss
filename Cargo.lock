@@ -103,9 +103,9 @@ dependencies = [
 
 [[package]]
 name = "alderkit-token"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94dfe423b2917208235bafe8bac911bff86a5e3db21aa67ef5ee3bc50dee6a0a"
+checksum = "b9b3e85fba3bb93b4a9ad0f599f4eb839f1897a6252021a9846c42573046d5ce"
 dependencies = [
  "rand 0.10.3",
  "serde",
