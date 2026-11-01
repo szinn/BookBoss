@@ -86,7 +86,7 @@ tower-http = { version = "0.7.1", features = [
 ] }
 
 # OpenID Connect
-openidconnect = { version = "4.0.1", default-features = false, features = [
+openidconnect = { version = "4.1.0", default-features = false, features = [
     "reqwest",
     "rustls-tls",
 ] }
