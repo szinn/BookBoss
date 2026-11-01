@@ -64,12 +64,21 @@
     },
     {
       description: "Dioxus Group",
-      matchDatasources: ["cargo"],
+      matchDatasources: ["crate"],
       groupName: "Dioxus",
       group: {
         commitMessageTopic: "{{{groupName}}} group"
       },
       matchPackageNames: ["/dioxus/"]
+    },
+    {
+      description: "Tonic Group",
+      matchDatasources: ["crate"],
+      groupName: "Tonic",
+      group: {
+        commitMessageTopic: "{{{groupName}}} group"
+      },
+      matchPackageNames: ["/^tonic(-|$)/"]
     }
   ]
 }
