@@ -17,7 +17,7 @@ cd "$SCRIPT_DIR/.."
 
 # Ensure the tag doesn't already exist
 jj sync
-if git tag -l "$VERSION" | grep -q "^${VERSION}$"; then
+if [[ -n "$(jj tag list "exact:$VERSION")" ]]; then
     echo "Error: Tag $VERSION already exists"
     exit 1
 fi
@@ -51,14 +51,19 @@ jj desc -m "chore(release): Preparing release for version $VERSION"
 jj new
 jj tug
 
-# Tag the current change — git-cliff reads this tag when generating the changelog
+# Sign before tagging: tags() is in immutable_heads(), so once tagged the commit
+# becomes immutable and git.sign-on-push will refuse to sign it.
+echo "    Signing release commit..."
+jj sign -r @-
+
+# Tag the signed release commit
 echo "    Tagging $VERSION..."
 jj tag set -r @- "$VERSION"
 
-# Finalize the change and push to GitHub (triggers the release workflow)
+# Push bookmark and tag to GitHub (triggers the release workflow).
+# --tag auto-tracks the new remote tag; a plain push refuses untracked tags.
 echo "    Pushing..."
-jj gp
+jj git push --bookmark main --tag "$VERSION"
 jj sync
-git push --tags
 
 echo "==> Release $VERSION pushed. Monitor the GitHub Actions workflow for progress."
