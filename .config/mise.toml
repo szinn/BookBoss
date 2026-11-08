@@ -9,7 +9,7 @@
 "cargo:sea-orm-cli" = "2.0.4"
 "colima" = "0.10.3"
 "git-cliff" = "2.14.2"
-"npm:tailwindcss" = "4.3.3"
+"npm:tailwindcss" = "4.3.5"
 "prettier" = "3.9.10"
 "protobuf" = "36.2"
 "tailwindcss" = "4.2.1"
