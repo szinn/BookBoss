@@ -124,7 +124,7 @@ tonic-reflection = "0.14.9"
 
 # Format utilities
 quick-xml = "0.42.0"
-zip = "9.2.1"
+zip = "9.4.2"
 
 # Serialization
 serde = { version = "1.0.229", features = ["derive"] }
