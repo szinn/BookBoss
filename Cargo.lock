@@ -747,9 +747,9 @@ dependencies = [
 
 [[package]]
 name = "axum_session"
-version = "0.22.1"
+version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63a2163c4a2d3e40c9108dadc0c76e13bc3eea2f66cdda964c7731acced5220e"
+checksum = "4ad830814452e2d7c9c92bbcd8fed3b277477531f84e64fa91c4ad180e2413e0"
 dependencies = [
  "aes-gcm 0.11.1",
  "async-trait",
@@ -778,9 +778,9 @@ dependencies = [
 
 [[package]]
 name = "axum_session_auth"
-version = "0.22.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03a328be44ba7465a7077a6349938a12c2d27d1f02a76f4f48ec45f8e921db63"
+checksum = "21a3795312d14bebb7c2c7ae0a4466e36d1ffec5c6c5cfb1ae41117376fc4f76"
 dependencies = [
  "anyhow",
  "async-recursion",
