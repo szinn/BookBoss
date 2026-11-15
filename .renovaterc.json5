@@ -15,6 +15,10 @@
   suppressNotifications: ["prIgnoreNotification"],
   commitBodyTable: true,
   prBodyTemplate: "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}",
+  lockFileMaintenance: {
+    enabled: true,
+    schedule: ["before 10pm on sunday"]
+  },
   packageRules: [
     {
       matchManagers: ["github-actions"],
