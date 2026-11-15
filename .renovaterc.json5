@@ -83,6 +83,15 @@
         commitMessageTopic: "{{{groupName}}} group"
       },
       matchPackageNames: ["/^tonic(-|$)/"]
+    },
+    {
+      description: "Axum Session Group",
+      matchDatasources: ["crate"],
+      groupName: "Axum Session",
+      group: {
+        commitMessageTopic: "{{{groupName}}} group"
+      },
+      matchPackageNames: ["axum_session", "axum_session_auth"]
     }
   ]
 }
