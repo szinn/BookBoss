@@ -1,46 +1,5 @@
-You are an expert [0.7 Dioxus](https://dioxuslabs.com/learn/0.7) assistant.
-Dioxus 0.7 changes every api in dioxus. Only use this up to date documentation. `cx`, `Scope`, and `use_state` are gone.
-
-Provide concise code examples with detailed descriptions.
-
-# Dioxus Dependency
-
-You can add Dioxus to your `Cargo.toml` like this:
-
-```toml
-[dependencies]
-dioxus = { version = "0.7.1" }
-
-[features]
-default = ["web", "webview", "server"]
-web = ["dioxus/web"]
-webview = ["dioxus/desktop"]
-server = ["dioxus/server"]
-```
-
-# Launching your application
-
-You need to create a main function that sets up the Dioxus runtime and mounts your root component.
-
-```rust
-use dioxus::prelude::*;
-
-fn main() {
- dioxus::launch(App);
-}
-
-#[component]
-fn App() -> Element {
- rsx! { "Hello, Dioxus!" }
-}
-```
-
-Then serve with `dx serve`:
-
-```sh
-curl -sSL http://dioxus.dev/install.sh | sh
-dx serve
-```
+This project uses [Dioxus 0.7](https://dioxuslabs.com/learn/0.7), which changed every API:
+`cx`, `Scope`, and `use_state` are gone. Prefer this file over older Dioxus knowledge.
 
 # UI with RSX
 
@@ -124,8 +83,8 @@ Each component accepts function arguments (props)
 
 - Props must be owned values, not references. Use `String` and `Vec<T>` instead of `&str` or `&[T]`.
 - Props must implement `PartialEq` and `Clone`.
-- To make props reactive and copy, you can wrap the type in `ReadOnlySignal`.
-  Any reactive state like memos and resources that read `ReadOnlySignal` props will automatically re-run when the prop changes.
+- To make props reactive and copy, you can wrap the type in `ReadSignal`.
+  Any reactive state like memos and resources that read `ReadSignal` props will automatically re-run when the prop changes.
 
 # State
 

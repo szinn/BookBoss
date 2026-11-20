@@ -76,6 +76,5 @@ book_authors::ActiveModel { book_id: Set(book.id as i64), ... }.insert(db_tx).aw
 2. Create `database/src/adapters/<name>.rs` with adapter impl + tests
 3. Register in `database/src/adapters/mod.rs`
 4. Import + wire into builder in `database/src/lib.rs`
-5. Add `Mock<Name>Repository` to **4** test helpers:
-   `core/src/auth/service.rs`, `core/src/book/service.rs`,
-   `core/src/user/service/user.rs`, `core/src/user/service/user_settings.rs`
+5. Add `Mock<Name>Repository` to every test helper that builds a full `RepositoryService`
+   (search `crates/core/src` for `Mock…Repository::new` to find them)
