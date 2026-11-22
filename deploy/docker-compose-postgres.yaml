@@ -12,7 +12,7 @@
 
 services:
   db:
-    image: postgres:18
+    image: postgres:19
     environment:
       POSTGRES_USER: bookboss
       POSTGRES_PASSWORD: bookboss
